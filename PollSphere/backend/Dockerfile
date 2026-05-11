@@ -2,8 +2,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy only the backend package.json
-COPY package.json ./
+# Copy both package.json and package-lock.json
+COPY package*.json ./
 
 # Install dependencies directly inside the container
 RUN npm install

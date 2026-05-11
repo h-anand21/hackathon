@@ -96,6 +96,17 @@ export const submitResponse = async (req: Request, res: ExpressResponse): Promis
       answers
     });
 
+    // 6. EMIT REAL-TIME UPDATE TO CREATOR'S DASHBOARD
+    const io = req.app.get('io');
+    if (io) {
+      // Re-fetch analytics dynamically
+      const { getPollAnalytics } = require('../services/analytics.service');
+      const updatedAnalytics = await getPollAnalytics(poll._id.toString());
+      
+      // Broadcast specifically to the room watching this poll
+      io.to(`poll_${poll._id.toString()}`).emit('poll_updated', updatedAnalytics);
+    }
+
     res.status(201).json({ success: true, message: "Vote submitted successfully" });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

@@ -4,6 +4,7 @@ import { getPollAnalytics } from '../api/analytics.api';
 import { updatePollStatus } from '../api/poll.api';
 import { useAuth } from '@clerk/clerk-react';
 import { Button } from '../components/ui/Button';
+import { socket } from '../socket/socket';
 
 export const AnalyticsPage: React.FC = () => {
   const { pollId } = useParams({ strict: false });
@@ -17,18 +18,36 @@ export const AnalyticsPage: React.FC = () => {
     if (!pollId) return;
     getPollAnalytics(pollId)
       .then(res => {
-        if (res.success) {
-          setData(res);
-        }
+        if (res.success) setData(res);
       })
-      .catch(err => {
-        setError(err.response?.data?.error || "Failed to load analytics");
-      })
+      .catch(err => setError(err.response?.data?.error || "Failed to load analytics"))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
     fetchAnalytics();
+
+    // WebSockets Real-Time Magic!
+    if (pollId) {
+      socket.connect();
+      socket.emit('join_poll_room', pollId);
+
+      // Listen for the backend pushing new vote data instantly
+      socket.on('poll_updated', (updatedAnalytics) => {
+        setData((prev: any) => ({
+          ...prev,
+          analytics: updatedAnalytics
+        }));
+      });
+    }
+
+    return () => {
+      if (pollId) {
+        socket.emit('leave_poll_room', pollId);
+        socket.off('poll_updated');
+        socket.disconnect();
+      }
+    };
   }, [pollId]);
 
   if (!isLoaded || !userId) return <div className="p-8 text-center text-gray-500">Please log in to view analytics.</div>;

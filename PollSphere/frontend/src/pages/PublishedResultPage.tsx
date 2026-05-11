@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { getPublicResults } from '../api/analytics.api';
+import { socket } from '../socket/socket';
 
 export const PublishedResultPage: React.FC = () => {
   const { shareId } = useParams({ strict: false });
@@ -16,6 +17,23 @@ export const PublishedResultPage: React.FC = () => {
       })
       .catch(err => setError(err.response?.data?.error || "Results are not public or not found"))
       .finally(() => setLoading(false));
+
+    // WebSockets Real-Time Magic for Public Viewers!
+    socket.connect();
+    socket.emit('join_poll_room', shareId);
+
+    socket.on('poll_updated', (updatedAnalytics) => {
+      setData((prev: any) => ({
+        ...prev,
+        analytics: updatedAnalytics
+      }));
+    });
+
+    return () => {
+      socket.emit('leave_poll_room', shareId);
+      socket.off('poll_updated');
+      socket.disconnect();
+    };
   }, [shareId]);
 
   if (loading) return <div className="p-10 text-center text-gray-500">Loading public results...</div>;
