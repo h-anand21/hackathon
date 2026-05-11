@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { CreatePollForm } from '../forms/CreatePollForm';
 import { QuestionForm } from '../forms/QuestionForm';
-import { createPoll, addQuestionToPoll } from '../api/poll.api';
+import { createPoll, addQuestionToPoll, updatePollStatus } from '../api/poll.api';
 import { Poll, Question } from '../types/poll.types';
 import { useAuth } from '@clerk/clerk-react';
+import { useNavigate } from '@tanstack/react-router';
 
 export const CreatePollPage: React.FC = () => {
   const { isLoaded, userId } = useAuth();
+  const navigate = useNavigate();
   const [activePoll, setActivePoll] = useState<Poll | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isPollLoading, setIsPollLoading] = useState(false);
@@ -46,6 +48,17 @@ export const CreatePollPage: React.FC = () => {
     }
   };
 
+  const handleFinish = async () => {
+    if (!activePoll) return;
+    try {
+      await updatePollStatus(activePoll._id, 'active');
+      navigate({ to: `/analytics/${activePoll._id}` });
+    } catch(e) {
+      console.error(e);
+      alert("Failed to activate poll");
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto py-10 px-4">
       <h1 className="text-3xl font-extrabold text-gray-900 mb-8 tracking-tight">Create a New Poll</h1>
@@ -80,7 +93,7 @@ export const CreatePollPage: React.FC = () => {
           
           {questions.length > 0 && (
             <div className="mt-8 pt-6 border-t flex justify-end">
-               <button className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition shadow-md hover:shadow-lg">
+               <button onClick={handleFinish} className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition shadow-md hover:shadow-lg">
                  Finish & Publish Poll
                </button>
             </div>

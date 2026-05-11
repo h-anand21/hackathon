@@ -6,7 +6,14 @@ const api = axios.create({
 
 // We will inject the Clerk token into headers before each request
 api.interceptors.request.use(async (config) => {
-  // Logic to grab token goes here (handled dynamically in hooks/useAuth usually or globally)
+  // Access the global Clerk object injected by ClerkProvider
+  const clerk = (window as any).Clerk;
+  if (clerk && clerk.session) {
+    const token = await clerk.session.getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
   return config;
 });
 
