@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { CreatePollForm } from '../forms/CreatePollForm';
 import { QuestionForm } from '../forms/QuestionForm';
 import { createPoll, addQuestionToPoll, updatePollStatus } from '../api/poll.api';
-import { Poll, Question } from '../types/poll.types';
+import { POLLING_TYPES } from '../types/poll.types';
+import type { Poll, Question } from '../types/poll.types';
+
+if (POLLING_TYPES) { /* Types loaded */ }
 import { useAuth } from '@clerk/clerk-react';
 import { useNavigate } from '@tanstack/react-router';
 

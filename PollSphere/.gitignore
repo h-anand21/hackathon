@@ -3,7 +3,11 @@ node_modules/
 
 # Environment Variables
 .env
+.env.local
 .env.*.local
+.env.development
+.env.production
+*.env
 
 # Build outputs
 dist/

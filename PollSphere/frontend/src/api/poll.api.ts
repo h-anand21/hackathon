@@ -1,5 +1,9 @@
 import api from './axios';
-import { Poll, CreatePollPayload, CreateQuestionPayload, Question } from '../types/poll.types';
+import { POLLING_TYPES } from '../types/poll.types';
+import type { Poll, CreatePollPayload, CreateQuestionPayload, Question } from '../types/poll.types';
+
+// Force runtime dependency for Vite ESM
+if (POLLING_TYPES) { /* Types loaded */ }
 
 export const createPoll = async (data: CreatePollPayload): Promise<{ success: boolean; poll: Poll }> => {
   const response = await api.post('/polls', data);

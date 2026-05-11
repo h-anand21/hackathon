@@ -9,6 +9,9 @@ dist-ssr/
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+*.env
 
 # Logs
 *.log
