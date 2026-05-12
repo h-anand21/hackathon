@@ -20,7 +20,7 @@ export const getPollById = async (id: string): Promise<{ success: boolean; poll:
   return response.data;
 };
 
-export const addQuestionToPoll = async (pollId: string, data: CreateQuestionPayload): Promise<{ success: boolean; question: Question }> => {
+export const addQuestionToPoll = async (pollId: string, data: CreateQuestionPayload): Promise<{ success: boolean; question: Question; options?: any[] }> => {
   const response = await api.post(`/polls/${pollId}/questions`, data);
   return response.data;
 };

@@ -25,10 +25,7 @@ const responseSchema = new Schema<IResponse>(
   { timestamps: true }
 );
 
-// Mongoose index to ensure a specific authenticated user can only vote ONCE per poll
-responseSchema.index(
-  { pollId: 1, voterId: 1 }, 
-  { unique: true, partialFilterExpression: { voterId: { $exists: true } } }
-);
+// The unique index on { pollId: 1, voterId: 1 } was removed because it blocked anonymous users
+// who all have voterId: null. Duplicate checking is handled entirely in the controller now.
 
 export const Response = mongoose.model<IResponse>('Response', responseSchema);

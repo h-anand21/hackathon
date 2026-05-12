@@ -26,7 +26,16 @@ initSocket(io);
 // Pass io to Express app so controllers (like response.controller) can broadcast events!
 app.set('io', io);
 
-connectDB().then(() => {
+import mongoose from 'mongoose';
+
+connectDB().then(async () => {
+  // 🚨 DROP THE PROBLEMATIC INDEX THAT BLOCKS ANONYMOUS VOTERS 🚨
+  try {
+    await mongoose.connection.collection('responses').dropIndex('pollId_1_voterId_1');
+    console.log("Dropped old unique index on pollId and voterId.");
+  } catch (e) {
+    // Ignore error if index doesn't exist
+  }
   server.listen(port, () => {
     console.log(`Server is running on port ${port} with WebSockets enabled`);
   });

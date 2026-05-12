@@ -6,6 +6,9 @@ import routes from './routes';
 
 const app = express();
 
+// Trust the proxy (Docker/Cloudflare) so we get the REAL IP of the user, not the server's IP
+app.set('trust proxy', true);
+
 app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));

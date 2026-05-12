@@ -7,11 +7,19 @@ if (POLLING_TYPES) { /* Types loaded */ }
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from '@tanstack/react-router';
 
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Calendar, BarChart2, Check, Copy, ExternalLink, Plus, Sparkles } from 'lucide-react';
+
+import { toast } from 'sonner';
+
 export const MyPollsPage: React.FC = () => {
   const { isLoaded, userId } = useAuth();
   const [polls, setPolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (userId) {
@@ -24,63 +32,129 @@ export const MyPollsPage: React.FC = () => {
     }
   }, [userId]);
 
-  if (!isLoaded || !userId) return <div className="p-8 text-center text-gray-500">Please log in to see your polls.</div>;
-  if (loading) return <div className="p-10 text-center text-gray-500">Loading your polls...</div>;
+  const handleCopy = (url: string, id: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    toast.success("Link copied to clipboard!", {
+      description: "You can now share this poll with your audience.",
+    });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  if (!isLoaded || !userId) return <div className="p-20 text-center text-muted-foreground font-bold">Please log in to see your polls.</div>;
+  if (loading) return <div className="p-20 text-center text-muted-foreground animate-pulse font-bold">Loading your polls...</div>;
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-4">
-      <div className="flex justify-between items-center mb-10">
-        <h1 className="text-3xl font-black text-gray-900">My Polls</h1>
-        <Link to="/create-poll" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-md">
-          + Create New Poll
+    <div className="max-w-7xl mx-auto py-12 px-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12">
+        <div>
+          <h1 className="text-4xl font-black text-foreground tracking-tight">My Polls</h1>
+          <p className="text-muted-foreground mt-1 text-lg">Manage and track your active polling campaigns.</p>
+        </div>
+        <Link to="/create-poll">
+          <Button variant="accent" size="lg" className="rounded-2xl border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] flex items-center gap-2">
+            <Plus size={20} />
+            Create New Poll
+          </Button>
         </Link>
       </div>
 
-      {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6">{error}</div>}
+      {error && (
+        <div className="bg-destructive/10 text-destructive p-4 rounded-xl mb-8 border-2 border-destructive flex items-center gap-3 font-bold">
+          <ExternalLink size={20} />
+          {error}
+        </div>
+      )}
 
       {polls.length === 0 ? (
-        <div className="bg-white p-12 rounded-3xl border-2 border-dashed border-gray-200 text-center">
-          <p className="text-gray-500 text-lg mb-6">You haven't created any polls yet.</p>
-          <Link to="/create-poll" className="text-blue-600 font-bold hover:underline">Start by creating your first poll &rarr;</Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {polls.map(poll => (
-            <div key={poll._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                    poll.status === 'published' ? 'bg-green-100 text-green-700' : 
-                    poll.status === 'active' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {poll.status}
-                  </span>
-                  <span className="text-xs text-gray-400">{new Date(poll.createdAt).toLocaleDateString()}</span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1">{poll.title}</h3>
-                {poll.description && <p className="text-gray-500 text-sm mb-4 line-clamp-2">{poll.description}</p>}
-              </div>
-              
-              <div className="mt-6 flex gap-3">
-                <Link 
-                  to={`/analytics/$pollId`} 
-                  params={{ pollId: poll._id }}
-                  className="flex-1 text-center py-2 bg-gray-50 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-100 transition"
-                >
-                  View Stats
-                </Link>
-                {poll.status !== 'draft' && (
-                   <Link 
-                     to={`/poll/$shareId`} 
-                     params={{ shareId: poll._id }}
-                     className="flex-1 text-center py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-100 transition"
-                   >
-                     Vote Link
-                   </Link>
-                )}
-              </div>
+        <Card className="border-2 border-dashed border-border bg-transparent p-20 text-center rounded-3xl">
+          <CardContent className="flex flex-col items-center gap-6">
+            <div className="p-6 bg-muted rounded-full">
+              <BarChart2 size={64} className="text-muted-foreground" />
             </div>
-          ))}
+            <p className="text-muted-foreground text-2xl font-bold">You haven't created any polls yet.</p>
+            <Link to="/create-poll">
+              <Button variant="accent" size="lg" className="rounded-xl border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                Start by creating your first poll &rarr;
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {polls.map(poll => {
+            const slug = poll.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'poll';
+            const shareUrl = `${window.location.origin}/poll/${slug}/${poll._id}`;
+            
+            return (
+              <Card key={poll._id} className="group hover:-translate-y-2 border-2 border-foreground rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] transition-all duration-300 overflow-hidden">
+                <CardHeader className="pb-4 bg-muted/50 border-b-2 border-foreground">
+                  <div className="flex justify-between items-start mb-2">
+                    <Badge 
+                      variant={poll.status === 'published' ? 'success' : poll.status === 'active' ? 'accent' : 'secondary'} 
+                      className="uppercase tracking-widest border border-foreground/20"
+                    >
+                      {poll.status}
+                    </Badge>
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-background/80 px-2.5 py-1.5 rounded-lg border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                      <Calendar size={12} className="text-primary" />
+                      {new Date(poll.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <CardTitle className="text-2xl font-black group-hover:text-primary transition-colors line-clamp-1">{poll.title}</CardTitle>
+                </CardHeader>
+                
+                <CardContent className="py-6 min-h-[6rem]">
+                  {poll.description && <p className="text-muted-foreground text-sm font-medium line-clamp-3 leading-relaxed">{poll.description}</p>}
+                </CardContent>
+                
+                <CardFooter className="flex flex-col gap-4 p-6 pt-0">
+                  <div className="flex w-full gap-3">
+                    <Link 
+                      to={`/analytics/${poll._id}`} 
+                      className="flex-1"
+                    >
+                      <Button variant="outline" className="w-full font-black border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none transition-all">
+                        Stats
+                      </Button>
+                    </Link>
+                    {poll.status !== 'draft' && (
+                      <Link 
+                        to={`/poll/${slug}/${poll._id}`} 
+                        className="flex-1"
+                      >
+                        <Button className="w-full font-black border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none transition-all">
+                          Vote
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                  
+                  {poll.status !== 'draft' && (
+                    <div className="flex w-full items-center group/copy mt-2">
+                      <div className="relative flex-1">
+                         <input 
+                          type="text" 
+                          readOnly 
+                          value={shareUrl} 
+                          className="w-full text-[10px] font-mono py-2.5 px-3 border-2 border-foreground bg-muted/30 text-muted-foreground rounded-l-xl outline-none transition-colors border-r-0"
+                          onClick={(e) => e.currentTarget.select()}
+                        />
+                      </div>
+                      <Button 
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleCopy(shareUrl, poll._id)}
+                        className="rounded-l-none rounded-r-xl px-4 h-[39px] border-2 border-foreground"
+                      >
+                        {copiedId === poll._id ? <Check size={16} className="text-success" /> : <Copy size={16} />}
+                      </Button>
+                    </div>
+                  )}
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

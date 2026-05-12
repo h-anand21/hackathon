@@ -13,10 +13,17 @@ if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Publishable Key")
 }
 
+import { ThemeProvider } from './components/ThemeProvider'
+
+import { Toaster } from 'sonner'
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <RouterProvider router={router} />
+      <ThemeProvider attribute="class" defaultTheme="light" storageKey="pollsphere-theme">
+        <RouterProvider router={router} />
+        <Toaster position="bottom-right" richColors />
+      </ThemeProvider>
     </ClerkProvider>
   </React.StrictMode>,
 )
