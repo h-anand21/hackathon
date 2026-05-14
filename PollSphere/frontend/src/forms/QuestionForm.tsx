@@ -75,7 +75,7 @@ export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading, initialData
             {errors.text && (
               <p className="text-destructive text-xs font-bold flex items-center gap-1.5 mt-1.5">
                 <AlertCircle size={14} />
-                {errors.text.message}
+                {(errors.text as any)?.message}
               </p>
             )}
           </div>
@@ -116,10 +116,10 @@ export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading, initialData
                       </Button>
                     )}
                   </div>
-                  {errors.options?.[index]?.value && (
+                  {(errors as any).options?.[index]?.value && (
                     <p className="text-destructive text-xs font-bold flex items-center gap-1.5 mt-1.5 ml-12">
                       <AlertCircle size={14} />
-                      {errors.options[index]?.value?.message}
+                      {(errors as any).options?.[index]?.value?.message}
                     </p>
                   )}
                 </div>
@@ -129,7 +129,7 @@ export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading, initialData
             {errors.options && !Array.isArray(errors.options) && (
               <p className="text-destructive text-xs font-bold flex items-center gap-1.5 mt-1.5">
                 <AlertCircle size={14} />
-                {errors.options.message}
+                {(errors as any).options?.message}
               </p>
             )}
             
