@@ -25,13 +25,13 @@ interface Props {
 }
 
 export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading, initialData }) => {
-  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<QuestionFormValues>({
-    resolver: zodResolver(questionSchema),
+  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<any>({
+    resolver: zodResolver(questionSchema) as any,
     defaultValues: {
       text: initialData?.text || '',
       isMandatory: initialData?.isMandatory ?? true,
       options: initialData?.options?.map(val => ({ value: val })) || [{ value: '' }, { value: '' }]
-    } as QuestionFormValues
+    }
   });
 
   // Update form when initialData changes (Edit mode)
