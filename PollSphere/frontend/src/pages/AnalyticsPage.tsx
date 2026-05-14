@@ -5,11 +5,12 @@ import { updatePollStatus } from '../api/poll.api';
 import { useAuth } from '@clerk/clerk-react';
 import { Button } from '../components/ui/Button';
 import { socket } from '../socket/socket';
-
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Users, BarChart3, Rocket, AlertCircle, Share2, Activity, TrendingUp, MousePointer2, Trophy, Clock } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { motion } from 'framer-motion';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import { toast } from 'sonner';
 
 export const AnalyticsPage: React.FC = () => {
   const { pollId } = useParams({ strict: false });
@@ -78,10 +79,21 @@ export const AnalyticsPage: React.FC = () => {
     'var(--chart-5)'
   ];
 
+  const handlePublish = async () => {
+    try {
+      await updatePollStatus(pollId!, 'published');
+      toast.success("Poll results are now public!");
+      fetchAnalytics();
+    } catch (e) {
+      toast.error('Failed to publish poll');
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto py-12 px-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 animate-in fade-in slide-in-from-top-4 duration-500">
-        <div>
+    <div className="max-w-5xl mx-auto py-12 px-6">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <div className="flex items-center gap-3 mb-2">
             <Badge variant={poll.status === 'published' ? 'success' : 'secondary'} className="uppercase border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)]">
               {poll.status}
@@ -89,8 +101,9 @@ export const AnalyticsPage: React.FC = () => {
             <span className="text-muted-foreground text-sm font-bold uppercase tracking-widest">Analytics Dashboard</span>
           </div>
           <h1 className="text-4xl font-black tracking-tight">{poll.title}</h1>
-        </div>
-        <div className="flex flex-col items-end gap-2">
+        </motion.div>
+        
+        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col items-end gap-2">
           <div className="flex items-center gap-4">
             {poll.status !== 'published' && (
               <Button onClick={handlePublish} size="lg" className="rounded-xl border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] bg-teal-600 hover:bg-teal-700 text-white flex items-center gap-2">
@@ -111,187 +124,200 @@ export const AnalyticsPage: React.FC = () => {
           >
             Vote you if you want <MousePointer2 size={10} />
           </Link>
-        </div>
+        </motion.div>
       </div>
 
+      {/* Quick Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
-        <Card className="border-2 border-foreground bg-primary/5 p-6 flex items-center gap-6 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]">
-          <div className="p-4 bg-primary text-primary-foreground rounded-xl border-2 border-foreground">
-            <Users size={32} />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Global Reach</p>
-            <p className="text-4xl font-black">{analytics.totalResponses}</p>
-          </div>
-        </Card>
-        <Card className="border-2 border-foreground bg-success/5 p-6 flex items-center gap-6 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]">
-          <div className="p-4 bg-success text-success-foreground rounded-xl border-2 border-foreground">
-            <Activity size={32} />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Live Status</p>
-            <p className="text-xl font-black flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              Monitoring
-            </p>
-          </div>
-        </Card>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <Card className="border-2 border-foreground bg-primary/5 p-6 flex items-center gap-6 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+            <div className="p-4 bg-primary text-primary-foreground rounded-xl border-2 border-foreground">
+              <Users size={32} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Global Reach</p>
+              <p className="text-4xl font-black">{analytics.totalResponses}</p>
+            </div>
+          </Card>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <Card className="border-2 border-foreground bg-success/5 p-6 flex items-center gap-6 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+            <div className="p-4 bg-success text-success-foreground rounded-xl border-2 border-foreground">
+              <Activity size={32} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Live Status</p>
+              <p className="text-xl font-black flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                Monitoring
+              </p>
+            </div>
+          </Card>
+        </motion.div>
       </div>
 
-      {/* Live Analytics Summary Overview */}
-      <Card className="border-2 border-foreground shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] rounded-3xl overflow-hidden mb-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
-        <CardHeader className="bg-foreground text-background p-6">
-          <CardTitle className="flex items-center gap-3 text-xl">
-            <TrendingUp size={24} />
-            Live Response Summary
-          </CardTitle>
-          <p className="text-xs font-bold text-background/70 uppercase tracking-widest mt-1">Comparative overview across all questions</p>
-        </CardHeader>
-        <CardContent className="p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            {/* Visual Bar Chart Summary (Left) */}
-            <div className="space-y-6">
-              {analytics.questions.map((q: any, idx: number) => {
-                const maxOption = q.options.reduce((prev: any, current: any) => (parseFloat(prev.percentage) > parseFloat(current.percentage)) ? prev : current, q.options[0]);
-                const barColor = chartColors[idx % chartColors.length];
-                return (
-                  <div key={q.questionId} className="group relative space-y-1">
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-tighter text-muted-foreground">
-                      <span className="truncate max-w-[200px]">Q{idx + 1}: {q.text}</span>
-                      <span className="group-hover:text-foreground transition-colors">Top: {maxOption.percentage}%</span>
-                    </div>
-                    <div className="h-3 w-full bg-muted rounded-full overflow-hidden border-2 border-foreground/5 shadow-inner">
-                      <div 
-                        className="h-full transition-all duration-1000 ease-out relative" 
-                        style={{ width: `${maxOption.percentage}%`, backgroundColor: barColor }}
-                      >
-                         <div className="absolute top-0 right-0 h-full w-4 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+      {/* Animated Summary Overview */}
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
+        <Card className="border-2 border-foreground shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] rounded-3xl overflow-hidden mb-16">
+          <CardHeader className="bg-foreground text-background p-6">
+            <CardTitle className="flex items-center gap-3 text-xl"><TrendingUp /> Response Summary Overview</CardTitle>
+          </CardHeader>
+          <CardContent className="p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              <div className="space-y-6">
+                {analytics.questions.map((q: any, idx: number) => {
+                  const maxOption = q.options.reduce((p: any, c: any) => (parseFloat(p.percentage) > parseFloat(c.percentage)) ? p : c, q.options[0]);
+                  return (
+                    <div key={q.questionId} className="space-y-2">
+                      <div className="flex justify-between text-[10px] font-black uppercase tracking-tighter text-muted-foreground">
+                        <span>Q{idx+1}: {q.text}</span>
+                        <span>{maxOption.percentage}%</span>
+                      </div>
+                      <div className="h-3 w-full bg-muted rounded-full overflow-hidden border-2 border-foreground/5">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${maxOption.percentage}%` }}
+                          transition={{ duration: 1.5, ease: "easeOut" }}
+                          className="h-full" 
+                          style={{ backgroundColor: chartColors[idx % chartColors.length] }}
+                        />
                       </div>
                     </div>
-                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-foreground text-background text-[10px] px-3 py-2 rounded-xl font-black opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50 shadow-xl border-2 border-background">
-                      {maxOption.voteCount} Votes for "{maxOption.text}"
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Red Box Replacement: Interactive Metrics + Timeline (Right) */}
-            <div className="flex flex-col gap-6">
-              <div className="grid grid-cols-2 gap-4">
-                 <div className="p-5 rounded-2xl border-2 border-foreground bg-primary/5 flex flex-col items-center justify-center text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
-                    <Users size={20} className="text-primary mb-2" />
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Total Respondents</p>
-                    <p className="text-3xl font-black">{analytics.totalResponses}</p>
-                 </div>
-                 <div className="p-5 rounded-2xl border-2 border-foreground bg-accent/5 flex flex-col items-center justify-center text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
-                    <Trophy size={20} className="text-accent mb-2" />
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Crowd Favorite</p>
-                    <p className="text-sm font-black truncate w-full px-2" title={analytics.mostVotedOption?.text}>{analytics.mostVotedOption?.text || "N/A"}</p>
-                 </div>
+                  );
+                })}
               </div>
-
-              {/* Voting Activity Timeline (Real-time trend) */}
-              <div className="flex-1 p-5 rounded-2xl border-2 border-foreground bg-muted/30 flex flex-col shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-muted-foreground" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Voting Activity Trend</span>
+              <div className="flex flex-col gap-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-5 rounded-2xl border-2 border-foreground bg-primary/5 text-center">
+                    <Trophy size={20} className="text-primary mx-auto mb-2" />
+                    <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-muted-foreground">Crowd Fav</p>
+                    <p className="text-xs font-black truncate">{analytics.mostVotedOption?.text || "N/A"}</p>
                   </div>
-                  <Badge variant="outline" className="text-[9px] border-foreground/20">LIVE</Badge>
+                  <div className="p-5 rounded-2xl border-2 border-foreground bg-accent/5 text-center">
+                    <Clock size={20} className="text-accent mx-auto mb-2" />
+                    <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-muted-foreground">Last Update</p>
+                    <p className="text-xs font-black">Just now</p>
+                  </div>
                 </div>
-                
-                <div className="flex-1 flex items-end gap-1 min-h-[80px]">
-                  {analytics.timeline?.length > 0 ? (
-                    analytics.timeline.map((t: any, i: number) => (
-                      <div 
-                        key={i} 
-                        className="flex-1 bg-primary/40 hover:bg-primary transition-all rounded-t-sm relative group/bar"
-                        style={{ height: `${Math.max((t.count / analytics.totalResponses) * 100, 10)}%` }}
-                      >
-                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-foreground text-background text-[8px] px-1.5 py-1 rounded-md opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap z-10">
-                           {t.count} Votes at {new Date(t.timestamp).toLocaleTimeString('en-IN', { hour: 'numeric', hour12: true, timeZone: 'Asia/Kolkata' })}
-                         </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="w-full flex flex-col items-center justify-center text-muted-foreground italic text-xs gap-2">
-                      <Activity size={24} className="animate-pulse opacity-20" />
-                      Waiting for activity...
-                    </div>
-                  )}
-                </div>
-                <div className="mt-2 border-t border-border pt-2 flex justify-between text-[8px] font-black text-muted-foreground uppercase tracking-widest">
-                  <span>Start</span>
-                  <span>Timeline (Last 10 Events)</span>
-                  <span>Now</span>
+                <div className="flex-1 p-5 rounded-2xl border-2 border-foreground bg-muted/30 flex flex-col min-h-[140px]">
+                   <span className="text-[10px] font-black uppercase tracking-widest mb-4 opacity-50">Real-time Vote Flux</span>
+                   <div className="flex-1 flex items-end gap-1.5">
+                      {analytics.timeline?.map((t: any, i: number) => (
+                        <motion.div 
+                          key={i}
+                          initial={{ height: 0 }}
+                          animate={{ height: `${Math.max((t.count / analytics.totalResponses) * 100, 10)}%` }}
+                          className="flex-1 bg-primary/40 rounded-t-md hover:bg-primary transition-colors"
+                        />
+                      ))}
+                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      <div className="space-y-10">
-        <div className="flex items-center gap-2 mb-6">
-           <div className="h-[2px] flex-1 bg-border" />
-           <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] px-4">Detailed Breakdown</span>
-           <div className="h-[2px] flex-1 bg-border" />
+      {/* Detailed Breakdown with Pie Charts */}
+      <div className="space-y-16">
+        <div className="flex items-center gap-4">
+           <div className="h-[2px] flex-1 bg-foreground/10" />
+           <span className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground">Detailed Breakdown</span>
+           <div className="h-[2px] flex-1 bg-foreground/10" />
         </div>
+        
         {analytics.questions.map((q: any, idx: number) => (
-          <Card key={q.questionId} className="border-2 border-foreground shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
-            <CardHeader className="bg-primary/5 border-b-2 border-foreground p-6 sm:p-8">
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-xl sm:text-2xl font-black">
-                  <span className="text-primary mr-2">Q{idx + 1}.</span> {q.text}
-                </CardTitle>
-                <div className="text-right">
-                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Votes</p>
-                   <p className="text-2xl font-black">{q.totalVotes}</p>
+          <motion.div
+            key={q.questionId}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <Card className="border-2 border-foreground shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] rounded-3xl overflow-hidden">
+              <CardHeader className="bg-primary/5 border-b-2 border-foreground p-8">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-2xl sm:text-3xl font-black">
+                    <span className="text-primary mr-3 italic">Q{idx + 1}.</span> {q.text}
+                  </CardTitle>
+                  <div className="text-right shrink-0 ml-4">
+                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Question Total</p>
+                     <p className="text-3xl font-black text-foreground">{q.totalVotes}</p>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="p-6 sm:p-8 space-y-6">
-              {q.options.map((opt: any, optIdx: number) => {
-                const optionColor = chartColors[optIdx % chartColors.length];
-                return (
-                  <div key={opt.optionId} className="group relative space-y-2">
-                    <div className="flex justify-between items-end">
-                      <span className="font-bold text-foreground text-lg group-hover:text-primary transition-colors">{opt.text}</span>
-                      <div className="text-right">
-                        <span className="text-2xl font-black" style={{ color: optionColor }}>{opt.percentage}%</span>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{opt.voteCount} Votes</p>
-                      </div>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-5 border-2 border-foreground/5 overflow-hidden shadow-inner cursor-help">
-                      <div 
-                        className="h-full transition-all duration-1000 ease-out relative" 
-                        style={{ width: `${opt.percentage}%`, backgroundColor: optionColor }}
-                      >
-                         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                    </div>
-                    {/* Detailed Tooltip on Hover */}
-                    <div className="absolute -top-10 right-0 bg-foreground text-background text-[10px] px-3 py-1.5 rounded-lg font-black opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-10 shadow-lg border-2 border-background">
-                      {opt.voteCount} / {q.totalVotes} total votes
+              </CardHeader>
+              
+              <CardContent className="p-8">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
+                  {/* Left: Animated Line Bars */}
+                  <div className="lg:col-span-3 space-y-8">
+                    {q.options.map((opt: any, optIdx: number) => {
+                      const color = chartColors[optIdx % chartColors.length];
+                      return (
+                        <div key={opt.optionId} className="group space-y-3">
+                          <div className="flex justify-between items-end">
+                            <span className="font-black text-xl text-foreground group-hover:text-primary transition-colors">{opt.text}</span>
+                            <div className="text-right">
+                              <span className="text-2xl font-black" style={{ color }}>{opt.percentage}%</span>
+                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{opt.voteCount} Votes</p>
+                            </div>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-6 border-2 border-foreground/10 overflow-hidden relative shadow-inner">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              whileInView={{ width: `${opt.percentage}%` }}
+                              transition={{ duration: 1.5, ease: "circOut", delay: 0.2 }}
+                              viewport={{ once: true }}
+                              className="h-full relative" 
+                              style={{ backgroundColor: color }}
+                            >
+                               <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </motion.div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Right: Pie Chart Visualization */}
+                  <div className="lg:col-span-2 h-[300px] flex items-center justify-center bg-muted/20 rounded-3xl border-2 border-dashed border-border p-4 relative group">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={q.options}
+                          dataKey="voteCount"
+                          nameKey="text"
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={90}
+                          paddingAngle={5}
+                        >
+                          {q.options.map((_: any, oIdx: number) => (
+                            <Cell key={`cell-${oIdx}`} fill={chartColors[oIdx % chartColors.length]} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip 
+                          contentStyle={{ 
+                            borderRadius: '16px', 
+                            border: '2px solid black', 
+                            fontWeight: '900',
+                            fontSize: '12px'
+                          }} 
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="absolute pointer-events-none flex flex-col items-center justify-center">
+                       <span className="text-[10px] font-black uppercase text-muted-foreground tracking-tighter">Shares</span>
+                       <span className="text-xl font-black text-foreground">Q{idx+1}</span>
                     </div>
                   </div>
-                );
-              })}
-            </CardContent>
-          </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
       </div>
     </div>
   );
-
-  async function handlePublish() {
-    try {
-      await updatePollStatus(pollId!, 'published');
-      fetchAnalytics();
-    } catch (e) {
-      alert('Failed to publish poll');
-    }
-  }
 };
