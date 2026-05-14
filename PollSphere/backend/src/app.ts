@@ -14,6 +14,10 @@ app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.json({ message: "PollSphere API is running! 🚀" });
+});
+
 app.use('/api', routes);
 
 export default app;
