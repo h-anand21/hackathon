@@ -31,7 +31,7 @@ export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading, initialData
       text: initialData?.text || '',
       isMandatory: initialData?.isMandatory ?? true,
       options: initialData?.options?.map(val => ({ value: val })) || [{ value: '' }, { value: '' }]
-    }
+    } as QuestionFormValues
   });
 
   // Update form when initialData changes (Edit mode)

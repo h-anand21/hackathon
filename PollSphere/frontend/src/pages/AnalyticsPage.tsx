@@ -7,7 +7,7 @@ import { Button } from '../components/ui/Button';
 import { socket } from '../socket/socket';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { Users, BarChart3, Rocket, AlertCircle, Share2, Activity, TrendingUp, MousePointer2, Trophy, Clock } from 'lucide-react';
+import { Users, Rocket, AlertCircle, Share2, Activity, TrendingUp, MousePointer2, Trophy, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { toast } from 'sonner';
@@ -111,7 +111,7 @@ export const AnalyticsPage: React.FC = () => {
                 Publish Results
               </Button>
             )}
-            <Link to={`/poll/${poll.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/${poll._id}`}>
+            <Link to={`/poll/${poll.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/${poll._id}` as any}>
               <Button variant="outline" size="lg" className="rounded-xl border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] flex items-center gap-2">
                 <Share2 size={18} />
                 View Poll
@@ -119,7 +119,7 @@ export const AnalyticsPage: React.FC = () => {
             </Link>
           </div>
           <Link 
-            to={`/poll/${poll.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/${poll._id}`}
+            to={`/poll/${poll.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/${poll._id}` as any}
             className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline flex items-center gap-1 mt-1 mr-2"
           >
             Vote you if you want <MousePointer2 size={10} />

@@ -5,7 +5,7 @@ import { socket } from '../socket/socket';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
-import { Users, BarChart3, AlertCircle, TrendingUp, Trophy, Clock, Activity } from 'lucide-react';
+import { Users, BarChart3, AlertCircle, TrendingUp, Trophy, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 

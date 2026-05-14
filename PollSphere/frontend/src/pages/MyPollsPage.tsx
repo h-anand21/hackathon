@@ -27,7 +27,7 @@ export const MyPollsPage: React.FC = () => {
         .then(res => {
           if (res.success) setPolls(res.polls);
         })
-        .catch(err => setError("Failed to load your polls"))
+        .catch(() => setError("Failed to load your polls"))
         .finally(() => setLoading(false));
     }
   };
@@ -160,7 +160,7 @@ export const MyPollsPage: React.FC = () => {
                 <CardFooter className="flex flex-col gap-4 p-6 pt-0">
                   <div className="flex w-full gap-3">
                     <Link 
-                      to={`/analytics/${poll._id}`} 
+                      to={`/analytics/${poll._id}` as any} 
                       className="flex-1"
                     >
                       <Button variant="outline" className="w-full font-black border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none transition-all">
@@ -169,7 +169,7 @@ export const MyPollsPage: React.FC = () => {
                     </Link>
                     {poll.status !== 'draft' ? (
                       <Link 
-                        to={poll.status === 'published' ? `/published/${poll._id}` : `/poll/${slug}/${poll._id}`} 
+                        to={(poll.status === 'published' ? `/published/${poll._id}` : `/poll/${slug}/${poll._id}`) as any} 
                         className="flex-1"
                       >
                         <Button className="w-full font-black border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none transition-all">

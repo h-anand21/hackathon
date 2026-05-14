@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from '@tanstack/react-router';
+import { useParams, useNavigate } from '@tanstack/react-router';
 import { getPublicPoll, submitVote } from '../api/response.api';
 import { Button } from '../components/ui/Button';
 import { useAuth, SignInButton } from '@clerk/clerk-react';
