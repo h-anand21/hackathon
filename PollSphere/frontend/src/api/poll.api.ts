@@ -29,3 +29,8 @@ export const updatePollStatus = async (pollId: string, status: string): Promise<
   const response = await api.patch(`/polls/${pollId}`, { status });
   return response.data;
 };
+
+export const deletePoll = async (pollId: string): Promise<{ success: boolean; message: string }> => {
+  const response = await api.delete(`/polls/${pollId}`);
+  return response.data;
+};

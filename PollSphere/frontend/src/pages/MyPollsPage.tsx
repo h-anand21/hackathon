@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getMyPolls } from '../api/poll.api';
+import { getMyPolls, deletePoll } from '../api/poll.api';
 import { POLLING_TYPES } from '../types/poll.types';
 import type { Poll } from '../types/poll.types';
 
@@ -10,7 +10,7 @@ import { Link } from '@tanstack/react-router';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Calendar, BarChart2, Check, Copy, ExternalLink, Plus, Sparkles } from 'lucide-react';
+import { Calendar, BarChart2, Check, Copy, ExternalLink, Plus, Trash2 } from 'lucide-react';
 
 import { toast } from 'sonner';
 
@@ -21,7 +21,7 @@ export const MyPollsPage: React.FC = () => {
   const [error, setError] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchPolls = () => {
     if (userId) {
       getMyPolls()
         .then(res => {
@@ -30,6 +30,10 @@ export const MyPollsPage: React.FC = () => {
         .catch(err => setError("Failed to load your polls"))
         .finally(() => setLoading(false));
     }
+  };
+
+  useEffect(() => {
+    fetchPolls();
   }, [userId]);
 
   const handleCopy = (url: string, id: string) => {
@@ -39,6 +43,22 @@ export const MyPollsPage: React.FC = () => {
       description: "You can now share this poll with your audience.",
     });
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleDelete = async (id: string, title: string) => {
+    if (!window.confirm(`Are you sure you want to delete the poll: "${title}"? This action cannot be undone.`)) return;
+
+    try {
+      const res = await deletePoll(id);
+      if (res.success) {
+        toast.success("Poll deleted successfully");
+        setPolls(prev => prev.filter(p => p._id !== id));
+      } else {
+        toast.error("Failed to delete poll");
+      }
+    } catch (err) {
+      toast.error("An error occurred while deleting the poll");
+    }
   };
 
   if (!isLoaded || !userId) return <div className="p-20 text-center text-muted-foreground font-bold">Please log in to see your polls.</div>;
@@ -87,7 +107,16 @@ export const MyPollsPage: React.FC = () => {
             const shareUrl = `${window.location.origin}/poll/${slug}/${poll._id}`;
             
             return (
-              <Card key={poll._id} className="group hover:-translate-y-2 border-2 border-foreground rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] transition-all duration-300 overflow-hidden">
+              <Card key={poll._id} className="group hover:-translate-y-2 border-2 border-foreground rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] transition-all duration-300 overflow-hidden relative">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => handleDelete(poll._id, poll.title)}
+                  className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground text-muted-foreground rounded-xl"
+                >
+                  <Trash2 size={18} />
+                </Button>
+                
                 <CardHeader className="pb-4 bg-muted/50 border-b-2 border-foreground">
                   <div className="flex justify-between items-start mb-2">
                     <Badge 
@@ -101,7 +130,7 @@ export const MyPollsPage: React.FC = () => {
                       {new Date(poll.createdAt).toLocaleDateString()}
                     </div>
                   </div>
-                  <CardTitle className="text-2xl font-black group-hover:text-primary transition-colors line-clamp-1">{poll.title}</CardTitle>
+                  <CardTitle className="text-2xl font-black group-hover:text-primary transition-colors line-clamp-1 pr-8">{poll.title}</CardTitle>
                 </CardHeader>
                 
                 <CardContent className="py-6 min-h-[6rem]">
