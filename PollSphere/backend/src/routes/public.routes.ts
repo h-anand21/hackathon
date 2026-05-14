@@ -3,6 +3,7 @@ import { validate } from '../middlewares/validate.middleware';
 import { submitResponseSchema } from '../validators/response.validator';
 import { getPublicPoll, submitResponse } from '../controllers/response.controller';
 import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node';
+import { rateLimiter } from '../middlewares/rateLimiter';
 
 const router = Router();
 
@@ -14,8 +15,8 @@ const looseAuth = ClerkExpressWithAuth();
 // GET /api/public/poll/:shareId - Fetch poll data for voting
 router.get('/poll/:shareId', getPublicPoll);
 
-// POST /api/public/poll/:shareId/submit - Submit a vote
-router.post('/poll/:shareId/submit', looseAuth, validate(submitResponseSchema), submitResponse);
+// POST /api/public/poll/:shareId/submit - Submit a vote (Rate limited)
+router.post('/poll/:shareId/submit', rateLimiter(10, 60), looseAuth, validate(submitResponseSchema), submitResponse);
 
 // GET /api/public/poll/:shareId/results - View public stats (only if status is published)
 import { getPublicResults } from '../controllers/analytics.controller';
