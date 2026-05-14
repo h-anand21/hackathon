@@ -118,15 +118,19 @@ export const MyPollsPage: React.FC = () => {
                         Stats
                       </Button>
                     </Link>
-                    {poll.status !== 'draft' && (
+                    {poll.status !== 'draft' ? (
                       <Link 
-                        to={`/poll/${slug}/${poll._id}`} 
+                        to={poll.status === 'published' ? `/published/${poll._id}` : `/poll/${slug}/${poll._id}`} 
                         className="flex-1"
                       >
                         <Button className="w-full font-black border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none transition-all">
-                          Vote
+                          {poll.status === 'published' ? 'Final Results' : 'Vote Now'}
                         </Button>
                       </Link>
+                    ) : (
+                      <Button disabled className="flex-1 font-black opacity-50 border-2 border-foreground bg-muted text-muted-foreground">
+                        Result Pending
+                      </Button>
                     )}
                   </div>
                   

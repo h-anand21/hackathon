@@ -51,8 +51,37 @@ export const getPollAnalytics = async (pollId: string) => {
     };
   });
 
+  // 4. Voting Timeline (Last 24 hours trend)
+  const timeline = await Response.aggregate([
+    { $match: { pollId: new mongoose.Types.ObjectId(pollId) } },
+    {
+      $group: {
+        _id: {
+          hour: { $hour: { date: '$createdAt', timezone: 'Asia/Kolkata' } },
+          day: { $dayOfMonth: { date: '$createdAt', timezone: 'Asia/Kolkata' } }
+        },
+        count: { $sum: 1 },
+        timestamp: { $first: '$createdAt' }
+      }
+    },
+    { $sort: { timestamp: 1 } },
+    { $limit: 10 }
+  ]);
+
+  // Find most voted option across all questions
+  let mostVotedOption = { text: "N/A", count: 0 };
+  formattedData.forEach(q => {
+    q.options.forEach(opt => {
+      if (opt.voteCount > mostVotedOption.count) {
+        mostVotedOption = { text: opt.text, count: opt.voteCount };
+      }
+    });
+  });
+
   return {
     totalResponses,
-    questions: formattedData
+    questions: formattedData,
+    timeline,
+    mostVotedOption
   };
 };

@@ -32,6 +32,11 @@
   --destructive-foreground: #fafafa;
   --success: #10b981;
   --success-foreground: #ffffff;
+  --chart-1: #0d9488;
+  --chart-2: #f59e0b;
+  --chart-3: #10b981;
+  --chart-4: #84cc16;
+  --chart-5: #eab308;
   --dot-color: #e5e7eb;
 }
 
@@ -51,6 +56,11 @@
   --destructive-foreground: #09090b;
   --success: #34d399;
   --success-foreground: #09090b;
+  --chart-1: #2dd4bf;
+  --chart-2: #fbbf24;
+  --chart-3: #34d399;
+  --chart-4: #a3e635;
+  --chart-5: #facc15;
   --dot-color: #27272a;
 }
 
