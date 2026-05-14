@@ -108,29 +108,31 @@ export const MyPollsPage: React.FC = () => {
             
             return (
               <Card key={poll._id} className="group hover:-translate-y-2 border-2 border-foreground rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] transition-all duration-300 overflow-hidden relative">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => handleDelete(poll._id, poll.title)}
-                  className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground text-muted-foreground rounded-xl"
-                >
-                  <Trash2 size={18} />
-                </Button>
-                
-                <CardHeader className="pb-4 bg-muted/50 border-b-2 border-foreground">
-                  <div className="flex justify-between items-start mb-2">
-                    <Badge 
-                      variant={poll.status === 'published' ? 'success' : poll.status === 'active' ? 'accent' : 'secondary'} 
-                      className="uppercase tracking-widest border border-foreground/20"
-                    >
-                      {poll.status}
-                    </Badge>
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-background/80 px-2.5 py-1.5 rounded-lg border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-                      <Calendar size={12} className="text-primary" />
-                      {new Date(poll.createdAt).toLocaleDateString()}
+                <CardHeader className="pb-4 bg-muted/50 border-b-2 border-foreground relative">
+                  <div className="flex justify-between items-center mb-4 gap-2">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <Badge 
+                        variant={poll.status === 'published' ? 'success' : poll.status === 'active' ? 'accent' : 'secondary'} 
+                        className="uppercase tracking-widest border border-foreground/20 text-[9px] h-7 px-2"
+                      >
+                        {poll.status}
+                      </Badge>
+                      <div className="flex items-center gap-1 text-[9px] font-black text-muted-foreground uppercase tracking-widest bg-background/80 px-2 h-7 rounded-lg border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] whitespace-nowrap">
+                        <Calendar size={10} className="text-primary" />
+                        {new Date(poll.createdAt).toLocaleDateString()}
+                      </div>
                     </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => handleDelete(poll._id, poll.title)}
+                      className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all rounded-lg border-2 border-transparent hover:border-foreground shrink-0"
+                    >
+                      <Trash2 size={16} />
+                    </Button>
                   </div>
-                  <CardTitle className="text-2xl font-black group-hover:text-primary transition-colors line-clamp-1 pr-8">{poll.title}</CardTitle>
+                  
+                  <CardTitle className="text-2xl font-black group-hover:text-primary transition-colors line-clamp-1">{poll.title}</CardTitle>
                 </CardHeader>
                 
                 <CardContent className="py-6 min-h-[6rem]">
