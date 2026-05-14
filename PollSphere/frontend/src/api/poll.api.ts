@@ -34,3 +34,13 @@ export const deletePoll = async (pollId: string): Promise<{ success: boolean; me
   const response = await api.delete(`/polls/${pollId}`);
   return response.data;
 };
+
+export const deleteQuestion = async (questionId: string): Promise<{ success: boolean; message: string }> => {
+  const response = await api.delete(`/questions/${questionId}`);
+  return response.data;
+};
+
+export const updateQuestion = async (questionId: string, data: any): Promise<{ success: boolean; question: Question }> => {
+  const response = await api.patch(`/questions/${questionId}`, data);
+  return response.data;
+};

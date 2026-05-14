@@ -10,7 +10,7 @@ import { Link } from '@tanstack/react-router';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Calendar, BarChart2, Check, Copy, ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { Calendar, BarChart2, Check, Copy, ExternalLink, Plus, Trash2, Edit2 } from 'lucide-react';
 
 import { toast } from 'sonner';
 
@@ -122,14 +122,32 @@ export const MyPollsPage: React.FC = () => {
                         {new Date(poll.createdAt).toLocaleDateString()}
                       </div>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => handleDelete(poll._id, poll.title)}
-                      className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all rounded-lg border-2 border-transparent hover:border-foreground shrink-0"
-                    >
-                      <Trash2 size={16} />
-                    </Button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {poll.status === 'draft' && (
+                        <Link 
+                          to="/create-poll" 
+                          search={{ pollId: poll._id }}
+                        >
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-9 w-9 text-amber-700 bg-amber-100 hover:bg-amber-200 transition-all rounded-xl border-2 border-white shadow-[2px_2px_8px_rgba(0,0,0,0.05)]"
+                            title="Continue Editing Draft"
+                          >
+                            <Edit2 size={18} />
+                          </Button>
+                        </Link>
+                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => handleDelete(poll._id, poll.title)}
+                        className="h-9 w-9 text-rose-700 bg-rose-100 hover:bg-rose-200 transition-all rounded-xl border-2 border-white shadow-[2px_2px_8px_rgba(0,0,0,0.05)]"
+                        title="Delete Poll"
+                      >
+                        <Trash2 size={18} />
+                      </Button>
+                    </div>
                   </div>
                   
                   <CardTitle className="text-2xl font-black group-hover:text-primary transition-colors line-clamp-1">{poll.title}</CardTitle>

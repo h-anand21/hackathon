@@ -21,16 +21,29 @@ type QuestionFormValues = z.infer<typeof questionSchema>;
 interface Props {
   onSubmit: (data: { text: string; isMandatory: boolean; options: string[] }) => void;
   isLoading: boolean;
+  initialData?: { text: string; isMandatory: boolean; options: string[] } | null;
 }
 
-export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
+export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading, initialData }) => {
   const { register, control, handleSubmit, reset, formState: { errors } } = useForm<QuestionFormValues>({
     resolver: zodResolver(questionSchema),
     defaultValues: {
-      isMandatory: true,
-      options: [{ value: '' }, { value: '' }]
+      text: initialData?.text || '',
+      isMandatory: initialData?.isMandatory ?? true,
+      options: initialData?.options?.map(val => ({ value: val })) || [{ value: '' }, { value: '' }]
     }
   });
+
+  // Update form when initialData changes (Edit mode)
+  React.useEffect(() => {
+    if (initialData) {
+      reset({
+        text: initialData.text,
+        isMandatory: initialData.isMandatory,
+        options: initialData.options.map(val => ({ value: val }))
+      });
+    }
+  }, [initialData, reset]);
 
   const { fields, append, remove } = useFieldArray({
     control,
