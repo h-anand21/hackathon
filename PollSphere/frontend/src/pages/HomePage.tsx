@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import {
   Zap, Users, BarChart3, Shield, Share2, Trophy, Clock, Moon,
   ChevronDown, ChevronUp, ArrowRight, CheckCircle2, Rocket,
-  Activity, Star, Globe
+  Activity, Star, Globe, Plus, Send, MousePointer2, MessageSquare
 } from 'lucide-react';
 
 // --- Data ---
@@ -83,6 +83,376 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         {open ? <ChevronUp size={20} className="text-primary shrink-0" /> : <ChevronDown size={20} className="text-muted-foreground shrink-0" />}
       </button>
       {open && <div className="px-6 pb-6 text-muted-foreground font-medium leading-relaxed border-t-2 border-foreground/10 pt-4">{a}</div>}
+    </div>
+  );
+}
+
+// Live Demo Section — interactive vote simulation
+const DEMO_OPTIONS = [
+  { label: 'React + Node.js', color: 'bg-teal-500', votes: 0 },
+  { label: 'Next.js + Prisma', color: 'bg-amber-500', votes: 0 },
+  { label: 'Vue + Django', color: 'bg-violet-500', votes: 0 },
+  { label: 'Svelte + Go', color: 'bg-rose-500', votes: 0 },
+];
+
+function LiveDemoSection() {
+  const [selected, setSelected] = useState(0);
+  const [votes, setVotes] = useState([42, 28, 19, 11]);
+  const [total, setTotal] = useState(100);
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: false, margin: '-100px' });
+
+  // Auto-cycle votes
+  useEffect(() => {
+    if (!inView) return;
+    const t = setInterval(() => {
+      const next = Math.floor(Math.random() * 4);
+      setSelected(next);
+      setVotes(prev => {
+        const updated = [...prev];
+        updated[next] += 1;
+        return updated;
+      });
+      setTotal(prev => prev + 1);
+    }, 1800);
+    return () => clearInterval(t);
+  }, [inView]);
+
+  const maxVotes = Math.max(...votes);
+
+  return (
+    <section className="py-24 px-6" ref={ref}>
+      <div className="max-w-6xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+          <span className="text-xs font-black uppercase tracking-[0.3em] text-primary">See It In Action</span>
+          <h2 className="text-5xl font-black tracking-tight mt-2">Watch Votes Happen Live</h2>
+          <p className="text-muted-foreground font-medium mt-4 max-w-lg mx-auto">This is a real simulation — votes are being cast automatically right now.</p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+
+          {/* LEFT: Poll card with animated radio buttons */}
+          <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+            className="bg-background border-2 border-foreground rounded-3xl shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] p-8 flex flex-col">
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-rose-500" />
+                <span className="w-3 h-3 rounded-full bg-amber-500" />
+                <span className="w-3 h-3 rounded-full bg-green-500" />
+              </div>
+              <span className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Live Poll</span>
+              <span className="ml-auto flex items-center gap-1.5 text-xs font-black text-green-500">
+                <motion.span className="w-2 h-2 rounded-full bg-green-500"
+                  animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 1, repeat: Infinity }} />
+                LIVE
+              </span>
+            </div>
+            <h3 className="text-xl font-black mb-1 mt-3">What's your favourite dev stack?</h3>
+            <p className="text-xs text-muted-foreground font-bold mb-6">Auto-voting in progress...</p>
+
+            {/* Options with animated radio */}
+            <div className="space-y-3 flex-1">
+              {DEMO_OPTIONS.map((opt, i) => (
+                <motion.div key={opt.label}
+                  className={`flex items-center gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-colors ${selected === i ? 'border-primary bg-primary/5' : 'border-foreground/20 bg-muted/20'}`}
+                  animate={{ scale: selected === i ? 1.02 : 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
+                  {/* Animated Radio */}
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selected === i ? 'border-primary' : 'border-foreground/30'}`}>
+                    <motion.div
+                      className="w-2.5 h-2.5 rounded-full bg-primary"
+                      animate={{ scale: selected === i ? 1 : 0, opacity: selected === i ? 1 : 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                    />
+                  </div>
+                  <span className={`font-bold text-sm flex-1 ${selected === i ? 'text-foreground' : 'text-muted-foreground'}`}>{opt.label}</span>
+                  {selected === i && (
+                    <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-xs font-black text-primary">✓</motion.span>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Live voter count */}
+            <div className="mt-6 pt-4 border-t-2 border-foreground/10 flex items-center gap-2">
+              <Users size={14} className="text-muted-foreground" />
+              <span className="text-sm font-black text-muted-foreground">
+                <motion.span key={total} initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-foreground">
+                  {total}
+                </motion.span> votes cast
+              </span>
+              <span className="ml-auto text-xs font-black text-muted-foreground">Updates every 1.8s</span>
+            </div>
+          </motion.div>
+
+          {/* RIGHT: Live analytics bars */}
+          <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+            className="bg-background border-2 border-foreground rounded-3xl shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] p-8 flex flex-col">
+            <div className="flex items-center gap-2 mb-6">
+              <Activity size={18} className="text-primary" />
+              <h3 className="font-black text-lg">Live Analytics</h3>
+              <span className="ml-auto text-xs font-black text-muted-foreground bg-muted px-2 py-1 rounded-lg">Auto-updating</span>
+            </div>
+
+            {/* Animated bars */}
+            <div className="space-y-5 flex-1">
+              {DEMO_OPTIONS.map((opt, i) => {
+                const pct = total > 0 ? Math.round((votes[i] / total) * 100) : 0;
+                const isWinner = votes[i] === maxVotes;
+                return (
+                  <div key={opt.label}>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <div className="flex items-center gap-2">
+                        {isWinner && <Trophy size={14} className="text-amber-500" />}
+                        <span className={`text-sm font-black ${isWinner ? 'text-foreground' : 'text-muted-foreground'}`}>{opt.label}</span>
+                      </div>
+                      <motion.span
+                        key={pct}
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm font-black tabular-nums"
+                      >
+                        {pct}%
+                      </motion.span>
+                    </div>
+                    <div className="h-4 bg-muted rounded-full border border-foreground/10 overflow-hidden">
+                      <motion.div
+                        className={`h-full ${opt.color} rounded-full`}
+                        animate={{ width: `${pct}%` }}
+                        transition={{ type: 'spring', stiffness: 60, damping: 15 }}
+                      />
+                    </div>
+                    <div className="text-xs text-muted-foreground font-bold mt-1">{votes[i]} votes</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pie chart mini */}
+            <div className="mt-6 pt-4 border-t-2 border-foreground/10">
+              <div className="h-[120px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={DEMO_OPTIONS.map((o, i) => ({ name: o.label, value: votes[i] }))}
+                      dataKey="value" cx="50%" cy="50%" innerRadius={30} outerRadius={55} paddingAngle={3}
+                      isAnimationActive={true} animationDuration={400}>
+                      {DEMO_OPTIONS.map((o, idx) => <Cell key={idx} fill={['#14b8a6','#f59e0b','#8b5cf6','#f43f5e'][idx]} />)}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </motion.div>
+
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --- MICRO ANIMATION COMPONENTS ---
+
+function StepCreateAnim() {
+  return (
+    <div className="w-full h-32 bg-muted/30 rounded-2xl border-2 border-foreground/5 overflow-hidden relative p-4 font-sans">
+      {/* Mock Header */}
+      <div className="flex gap-1 mb-3">
+        <div className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+        <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+      </div>
+      
+      <div className="space-y-2">
+        {/* Question Typing */}
+        <div className="h-6 bg-background border border-foreground/10 rounded-lg flex items-center px-2 overflow-hidden">
+          <motion.div 
+            initial={{ width: 0 }} 
+            animate={{ width: "100%" }} 
+            transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
+            className="flex items-center gap-1.5"
+          >
+            <div className="h-2 w-20 bg-foreground/20 rounded" />
+          </motion.div>
+        </div>
+
+        {/* Options */}
+        <div className="flex gap-2">
+          <motion.div 
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: [0, 1, 1], opacity: [0, 1, 1] }}
+            transition={{ duration: 4, repeat: Infinity, times: [0, 0.2, 1] }}
+            className="flex-1 h-5 bg-primary/10 border border-primary/20 rounded-md flex items-center px-2"
+          >
+            <div className="h-1 w-8 bg-primary/30 rounded" />
+          </motion.div>
+          <motion.div 
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: [0, 1, 1], opacity: [0, 1, 1] }}
+            transition={{ duration: 4, repeat: Infinity, times: [0, 0.4, 1] }}
+            className="flex-1 h-5 bg-background border border-foreground/10 rounded-md flex items-center px-2"
+          >
+            <div className="h-1 w-8 bg-foreground/10 rounded" />
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Floating Mouse & Click */}
+      <motion.div 
+        animate={{ 
+          x: [80, 100, 80], 
+          y: [40, 20, 40],
+          scale: [1, 0.9, 1] 
+        }} 
+        transition={{ duration: 4, repeat: Infinity }}
+        className="absolute bottom-4 right-8 z-20 text-primary drop-shadow-md"
+      >
+        <MousePointer2 size={18} fill="currentColor" />
+        <motion.div 
+          animate={{ scale: [0, 2, 0], opacity: [0, 0.5, 0] }}
+          transition={{ duration: 4, repeat: Infinity, times: [0, 0.5, 0.6] }}
+          className="absolute inset-0 bg-primary rounded-full"
+        />
+      </motion.div>
+
+      {/* Pulsing button at end */}
+      <motion.div 
+        animate={{ scale: [1, 1.05, 1], backgroundColor: ['#14b8a6', '#0d9488', '#14b8a6'] }}
+        transition={{ duration: 2, repeat: Infinity }}
+        className="absolute bottom-3 left-4 right-4 h-6 rounded-lg flex items-center justify-center text-[8px] font-black text-white uppercase tracking-tighter"
+      >
+        CREATE POLL
+      </motion.div>
+    </div>
+  );
+}
+
+function StepShareAnim() {
+  return (
+    <div className="w-full h-32 bg-muted/30 rounded-2xl border-2 border-foreground/5 overflow-hidden relative p-4 flex flex-col justify-center gap-4">
+      {/* Link Bar */}
+      <div className="relative z-10 bg-background border-2 border-foreground/10 rounded-xl p-2.5 flex items-center gap-3 shadow-sm">
+        <div className="w-4 h-4 bg-primary/10 rounded flex items-center justify-center">
+          <Globe size={10} className="text-primary" />
+        </div>
+        <div className="flex-1 h-2 bg-foreground/5 rounded-full overflow-hidden">
+          <motion.div 
+            animate={{ x: [-100, 200] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            className="w-20 h-full bg-primary/20"
+          />
+        </div>
+        <motion.div 
+          whileTap={{ scale: 0.9 }}
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="px-2 py-1 bg-primary rounded-md text-[8px] font-black text-white"
+        >
+          COPY
+        </motion.div>
+      </div>
+
+      {/* Flying planes & icons */}
+      <div className="flex justify-center gap-6 relative">
+        {[Share2, MessageSquare, Send].map((Icon, i) => (
+          <motion.div
+            key={i}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: [20, 0, 20], opacity: [0, 1, 0] }}
+            transition={{ duration: 2, repeat: Infinity, delay: i * 0.4 }}
+            className="w-8 h-8 bg-background border border-foreground/10 rounded-full flex items-center justify-center shadow-sm"
+          >
+            <Icon size={14} className="text-primary" />
+          </motion.div>
+        ))}
+        
+        {/* The Paper Plane */}
+        <motion.div 
+          initial={{ x: -50, y: 0, rotate: 0, opacity: 0 }}
+          animate={{ 
+            x: [0, 150], 
+            y: [0, -40, -20], 
+            rotate: [0, -10, 0],
+            opacity: [0, 1, 0]
+          }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute left-0 top-0 text-primary"
+        >
+          <Send size={18} fill="currentColor" />
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+function StepAnalyzeAnim() {
+  const [votes, setVotes] = useState([20, 35, 15, 30]);
+  
+  useEffect(() => {
+    const t = setInterval(() => {
+      setVotes(prev => prev.map(v => Math.max(10, Math.min(90, v + (Math.random() - 0.5) * 20))));
+    }, 1500);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div className="w-full h-32 bg-muted/30 rounded-2xl border-2 border-foreground/5 overflow-hidden relative p-4 flex flex-col">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-1.5">
+          <motion.div 
+            animate={{ opacity: [1, 0.4, 1] }} 
+            transition={{ duration: 1, repeat: Infinity }}
+            className="w-1.5 h-1.5 rounded-full bg-red-500" 
+          />
+          <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Live Updates</span>
+        </div>
+        <div className="flex -space-x-1">
+          {[1,2,3].map(i => (
+            <motion.div 
+              key={i}
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+              className="w-4 h-4 rounded-full border border-background bg-muted flex items-center justify-center overflow-hidden"
+            >
+              <Users size={8} />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 flex items-end gap-2 justify-center px-4">
+        {votes.map((v, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center gap-1">
+            <motion.div 
+              animate={{ height: `${v}%` }}
+              transition={{ type: 'spring', stiffness: 100, damping: 10 }}
+              className={`w-full rounded-t-md relative ${i === 1 ? 'bg-primary shadow-[0_0_10px_rgba(20,184,166,0.3)]' : 'bg-foreground/20'}`}
+              style={{ height: '20%' }}
+            >
+              {i === 1 && (
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-4 left-1/2 -translate-x-1/2 text-amber-500"
+                >
+                  <Trophy size={10} fill="currentColor" />
+                </motion.div>
+              )}
+            </motion.div>
+          </div>
+        ))}
+      </div>
+
+      {/* Floating Avatars flying in */}
+      <motion.div 
+        initial={{ x: 150, opacity: 0 }}
+        animate={{ x: [-20, 80], opacity: [0, 1, 0] }}
+        transition={{ duration: 2, repeat: Infinity }}
+        className="absolute top-1/2 left-0"
+      >
+        <div className="w-3 h-3 bg-primary rounded-full border border-background shadow-sm" />
+      </motion.div>
     </div>
   );
 }
@@ -201,27 +571,75 @@ export const HomePage: React.FC = () => {
 
       {/* HOW IT WORKS */}
       <section id="how-it-works" className="py-24 px-6 bg-muted/20 border-y-2 border-foreground/10">
-        <div className="max-w-5xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+        <div className="max-w-6xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-24">
             <span className="text-xs font-black uppercase tracking-[0.3em] text-primary">Simple Process</span>
             <h2 className="text-5xl font-black tracking-tight mt-2">How It Works</h2>
+            <p className="text-muted-foreground font-medium mt-4 max-w-lg mx-auto">Get your poll live in less than 60 seconds with our streamlined workflow.</p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
-              { step: '01', icon: Rocket, title: 'Create', desc: 'Design your poll with unlimited questions and custom options. Set expiry, auth mode, and more.' },
-              { step: '02', icon: Share2, title: 'Share', desc: 'Copy the unique link and share it via WhatsApp, email, or social media. Anyone can vote instantly.' },
-              { step: '03', icon: BarChart3, title: 'Analyze', desc: 'Watch votes roll in live with animated pie charts, bar graphs, and real-time vote counts.' },
+              { 
+                step: '01', 
+                icon: Rocket, 
+                title: 'Create', 
+                color: 'text-amber-500', 
+                bg: 'bg-amber-500/10', 
+                border: 'border-amber-500/30', 
+                desc: 'Design your poll with unlimited questions and custom options.',
+                anim: <StepCreateAnim />
+              },
+              { 
+                step: '02', 
+                icon: Share2, 
+                title: 'Share', 
+                color: 'text-teal-500', 
+                bg: 'bg-teal-500/10', 
+                border: 'border-teal-500/30', 
+                desc: 'Copy the unique link and share via WhatsApp or social media.',
+                anim: <StepShareAnim />
+              },
+              { 
+                step: '03', 
+                icon: BarChart3, 
+                title: 'Analyze', 
+                color: 'text-violet-500', 
+                bg: 'bg-violet-500/10', 
+                border: 'border-violet-500/30', 
+                desc: 'Watch votes roll in live with real-time counts and charts.',
+                anim: <StepAnalyzeAnim />
+              },
             ].map((item, i) => (
-              <motion.div key={item.step} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15 }}
-                className="relative p-8 bg-background border-2 border-foreground rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] text-center">
-                <div className="absolute -top-4 -left-4 w-10 h-10 bg-primary text-primary-foreground rounded-xl border-2 border-foreground flex items-center justify-center font-black text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                  {item.step}
+              <motion.div key={item.step} className="relative flex flex-col items-center text-center"
+                initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                transition={{ delay: i * 0.2, duration: 0.6 }}>
+
+                {/* Step Icon & Number */}
+                <div className="relative mb-8">
+                  <div className={`relative w-20 h-20 ${item.bg} border-2 border-foreground rounded-[2rem] flex items-center justify-center shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.1)] group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-none transition-all`}>
+                    <item.icon size={36} className={item.color} />
+                  </div>
+                  <div className="absolute -top-3 -right-3 w-9 h-9 bg-primary text-primary-foreground rounded-xl border-2 border-foreground flex items-center justify-center font-black text-xs shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                    {item.step}
+                  </div>
                 </div>
-                <div className="w-16 h-16 bg-primary/10 rounded-2xl border-2 border-foreground/10 flex items-center justify-center mx-auto mb-4">
-                  <item.icon size={32} className="text-primary" />
-                </div>
+
                 <h3 className="text-2xl font-black mb-3">{item.title}</h3>
-                <p className="text-muted-foreground font-medium leading-relaxed">{item.desc}</p>
+                
+                {/* Animation Window */}
+                <div className="mb-6 w-full p-2 bg-background border-2 border-foreground rounded-[2.5rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] overflow-hidden">
+                  {item.anim}
+                </div>
+
+                <p className="text-muted-foreground font-medium leading-relaxed text-sm max-w-[240px]">{item.desc}</p>
+                
+                {/* Visual Arrow for desktop */}
+                {i < 2 && (
+                  <div className="hidden md:block absolute top-10 -right-8 z-0 text-foreground/20">
+                    <ArrowRight size={32} strokeWidth={3} />
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>
@@ -229,65 +647,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* LIVE DEMO SHOWCASE */}
-      <section className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <span className="text-xs font-black uppercase tracking-[0.3em] text-primary">See It In Action</span>
-            <h2 className="text-5xl font-black tracking-tight mt-2">Beautiful Analytics Dashboard</h2>
-            <p className="text-muted-foreground font-medium mt-4 max-w-lg mx-auto">Every poll comes with a live analytics dashboard powered by animated charts.</p>
-          </motion.div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            {/* Animated Pie Chart Demo */}
-            <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-              className="bg-background border-2 border-foreground rounded-3xl shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] p-8">
-              <div className="flex items-center gap-2 mb-6">
-                <Activity size={20} className="text-primary" />
-                <h3 className="font-black text-xl">Live Vote Distribution</h3>
-                <span className="ml-auto flex items-center gap-1 text-xs font-black text-green-500">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> LIVE
-                </span>
-              </div>
-              <div className="h-[250px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={4} animationBegin={400} animationDuration={1500}>
-                      {pieData.map((_, idx) => <Cell key={idx} fill={PIE_COLORS[idx]} />)}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex justify-center gap-6 mt-4">
-                {pieData.map((d, i) => (
-                  <div key={d.name} className="flex items-center gap-2 text-sm font-bold">
-                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: PIE_COLORS[i] }} />
-                    {d.name}: {d.value}%
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Feature list */}
-            <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="space-y-5">
-              {[
-                { title: 'Animated Pie Charts', desc: 'Vote share visualized with smooth Recharts animations' },
-                { title: 'Live Progress Bars', desc: 'Bars grow in real-time as votes are submitted' },
-                { title: 'Winner Highlight', desc: 'Top option is automatically detected and highlighted with a Trophy icon' },
-                { title: 'Response Timeline', desc: 'Bar graph showing when votes arrived over time' },
-                { title: 'Publish Results', desc: 'Share a public read-only results page with one click' },
-              ].map((item, i) => (
-                <motion.div key={item.title} initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                  className="flex gap-4 p-5 bg-background border-2 border-foreground rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]">
-                  <CheckCircle2 size={22} className="text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-black">{item.title}</h4>
-                    <p className="text-sm text-muted-foreground font-medium">{item.desc}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      <LiveDemoSection />
 
       {/* FAQ */}
       <section id="faq" className="py-24 px-6 bg-muted/20 border-y-2 border-foreground/10">
