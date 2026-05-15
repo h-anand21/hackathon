@@ -28,13 +28,15 @@ Built with a focus on **speed, security, and scalability**, it leverages the pow
 
 ## 🚀 Key Features
 
-- ⚡ **Real-time Synchronization:** Live voting progress updates via `Socket.IO` with zero latency and no page refreshes.
+- 📉 **Real-time Vote Flux:** Segmented, alternating-color visualizations for heartbeat-style activity tracking.
+- 👥 **Live Room Tracking:** Instant monitoring of active users in every poll room via `Socket.IO`.
+- ⚡ **Real-time Synchronization:** Live voting progress updates with zero latency and no page refreshes.
 - 🔒 **Secure Authentication:** Integrated with `Clerk` for seamless user management and social logins.
-- 🕒 **Microsecond Precision:** Strict poll expiry enforcement ensures votes are only counted within the designated window.
-- 🗳️ **Flexible Voting Modes:** Support for both authenticated (1 vote per user) and anonymous (IP-based tracking) voting.
-- 📊 **Dynamic Data Visualization:** High-quality charts and progress bars built with `Recharts` and `Framer Motion`.
-- 🛡️ **Type Safety & Validation:** End-to-end type safety using TypeScript and runtime schema validation with `Zod`.
-- 📱 **Fully Responsive:** A premium dark-mode UI that works beautifully on desktops, tablets, and mobile devices.
+- 🕒 **Microsecond Precision:** Strict poll expiry enforcement ensures votes are only counted within the window.
+- 🗳️ **Flexible Voting Modes:** Support for authenticated and anonymous (IP-based) voting.
+- 📊 **Dynamic Data Visualization:** High-fidelity charts and interactive dashboards built with `Recharts`.
+- 🛡️ **Type Safety & Validation:** End-to-end type safety using TypeScript and `Zod` validation.
+- 📱 **Fully Responsive:** A premium dark-mode UI optimized for all device sizes.
 
 ---
 

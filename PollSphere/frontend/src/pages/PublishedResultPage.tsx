@@ -7,21 +7,28 @@ import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Users, BarChart3, AlertCircle, TrendingUp, Trophy, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, AreaChart, Area, LabelList } from 'recharts';
 
 export const PublishedResultPage: React.FC = () => {
   const { shareId } = useParams({ strict: false });
-  const [data, setData] = useState<any>(null);
+   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activeUsers, setActiveUsers] = useState(0);
 
   useEffect(() => {
     if (!shareId) return;
     getPublicResults(shareId)
       .then(res => {
-        if (res.success) setData(res);
+        if (res.success) {
+          setData(res);
+        } else {
+          setError(res.error || "Results are not public or not found");
+        }
       })
-      .catch(err => setError(err.response?.data?.error || "Results are not public or not found"))
+      .catch(err => {
+        setError(err.response?.data?.error || "Results are not public or not found");
+      })
       .finally(() => setLoading(false));
 
     socket.connect();
@@ -30,20 +37,25 @@ export const PublishedResultPage: React.FC = () => {
       setData((prev: any) => ({ ...prev, analytics: updatedAnalytics }));
     });
 
+    socket.on('room_count_update', ({ count }) => {
+      setActiveUsers(count);
+    });
+
     return () => {
       socket.emit('leave_poll_room', shareId);
       socket.off('poll_updated');
+      socket.off('room_count_update');
       socket.disconnect();
     };
   }, [shareId]);
 
   if (loading) return <div className="p-20 text-center text-muted-foreground animate-pulse font-black text-xl">Loading Final Insights...</div>;
-  if (error) return (
+  if (error || !data) return (
     <div className="max-w-2xl mx-auto py-20 px-6 text-center">
       <Card className="border-2 border-destructive p-10 rounded-2xl">
         <AlertCircle size={48} className="text-destructive mx-auto mb-4" />
         <h2 className="text-2xl font-black mb-2 text-destructive">Results Unavailable</h2>
-        <p className="text-muted-foreground mb-6 font-bold">{error}</p>
+        <p className="text-muted-foreground mb-6 font-bold">{error || "Data unavailable"}</p>
         <Link to="/"><Button variant="outline">Back to Home</Button></Link>
       </Card>
     </div>
@@ -83,8 +95,9 @@ export const PublishedResultPage: React.FC = () => {
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Votes</span>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-xl border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-            <BarChart3 size={18} className="text-accent" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Visual Analytics</span>
+            <TrendingUp size={18} className="text-accent" />
+            <span className="font-black text-xl">{analytics.timeline?.reduce((p: any, c: any) => (p.count > c.count ? p : c), { count: 0 }).count || 0}</span>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Peak Flow</span>
           </div>
         </div>
       </motion.div>
@@ -130,24 +143,95 @@ export const PublishedResultPage: React.FC = () => {
                     <p className="text-[10px] font-black uppercase tracking-widest mb-1">Top Option</p>
                     <p className="text-xs font-black truncate">{analytics.mostVotedOption?.text || "N/A"}</p>
                   </div>
-                  <div className="p-5 rounded-2xl border-2 border-foreground bg-accent/5 text-center">
-                    <Activity size={20} className="text-accent mx-auto mb-2" />
-                    <p className="text-[10px] font-black uppercase tracking-widest mb-1">Engagement</p>
-                    <p className="text-xs font-black">High</p>
+                   <div className="p-5 rounded-2xl border-2 border-foreground bg-accent/5 text-center">
+                    <Users size={20} className="text-accent mx-auto mb-2" />
+                    <p className="text-[10px] font-black uppercase tracking-widest mb-1">Live Now</p>
+                    <p className="text-xl font-black">{activeUsers}</p>
                   </div>
                 </div>
                 {/* Global Activity Timeline */}
-                <div className="flex-1 p-5 rounded-2xl border-2 border-foreground bg-muted/30 flex flex-col min-h-[140px]">
+                 <div className="flex-1 p-5 rounded-2xl border-2 border-foreground bg-muted/30 flex flex-col min-h-[180px]">
                    <span className="text-[10px] font-black uppercase tracking-widest mb-4 opacity-50">Global Vote Activity</span>
-                   <div className="flex-1 flex items-end gap-1.5">
-                      {analytics.timeline?.map((t: any, i: number) => (
-                        <motion.div 
-                          key={i}
-                          initial={{ height: 0 }}
-                          whileInView={{ height: `${Math.max((t.count / analytics.totalResponses) * 100, 10)}%` }}
-                          className="flex-1 bg-primary/40 rounded-t-md hover:bg-primary transition-colors"
-                        />
-                      ))}
+                   <div className="flex-1">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={analytics.timeline || []} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="colorPrimaryPub" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+                            </linearGradient>
+                            <linearGradient id="colorAccentPub" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+
+                          {(analytics.timeline || []).length === 0 && (
+                            <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="fill-muted-foreground font-black text-[10px] uppercase tracking-widest">
+                              No activity recorded yet
+                            </text>
+                          )}
+
+                          {(analytics.timeline || []).length === 1 && (
+                            <Area 
+                              data={analytics.timeline}
+                              type="monotone" 
+                              dataKey="count" 
+                              stroke="var(--primary)" 
+                              strokeWidth={3}
+                              fill="url(#colorPrimaryPub)"
+                              dot={{ r: 4, strokeWidth: 2, fill: "white" }}
+                            >
+                              <LabelList 
+                                dataKey="count" 
+                                position="top" 
+                                offset={10}
+                                style={{ fontSize: '10px', fontWeight: '900', fill: 'var(--foreground)' }} 
+                              />
+                            </Area>
+                          )}
+
+                          {(analytics.timeline || []).length > 1 && (analytics.timeline || []).map((_: any, i: number, arr: any[]) => {
+                            if (i === arr.length - 1) return null;
+                            const segmentData = arr.map((d, idx) => (idx === i || idx === i + 1 ? d : { ...d, count: null }));
+                            const isEven = i % 2 === 0;
+                            return (
+                              <Area 
+                                key={i}
+                                data={segmentData}
+                                type="monotone" 
+                                dataKey="count" 
+                                stroke={isEven ? "var(--primary)" : "var(--accent)"} 
+                                strokeWidth={3}
+                                fill={isEven ? "url(#colorPrimaryPub)" : "url(#colorAccentPub)"}
+                                dot={{ r: 4, strokeWidth: 2, fill: "white" }}
+                                activeDot={{ r: 6, strokeWidth: 0 }}
+                                isAnimationActive={false}
+                              >
+                                {i === arr.length - 2 && (
+                                  <LabelList 
+                                    dataKey="count" 
+                                    position="top" 
+                                    offset={10}
+                                    style={{ fontSize: '10px', fontWeight: '900', fill: 'var(--foreground)' }} 
+                                  />
+                                )}
+                              </Area>
+                            );
+                          })}
+
+                          <RechartsTooltip 
+                             cursor={{ stroke: 'var(--foreground)', strokeWidth: 1, strokeDasharray: '4 4' }}
+                             contentStyle={{ 
+                                borderRadius: '12px', 
+                                border: '2px solid black', 
+                                fontWeight: '900',
+                                fontSize: '10px',
+                                background: 'white'
+                             }}
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
                    </div>
                 </div>
               </div>

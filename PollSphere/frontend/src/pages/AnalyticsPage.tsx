@@ -9,60 +9,71 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge';
 import { Users, Rocket, AlertCircle, Share2, Activity, TrendingUp, MousePointer2, Trophy, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
 import { toast } from 'sonner';
 
 export const AnalyticsPage: React.FC = () => {
   const { pollId } = useParams({ strict: false });
   const { isLoaded, userId } = useAuth();
   
-  const [data, setData] = useState<any>(null);
+   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activeUsers, setActiveUsers] = useState(0);
   
   const fetchAnalytics = () => {
     if (!pollId) return;
     getPollAnalytics(pollId)
       .then(res => {
-        if (res.success) setData(res);
+        if (res.success) {
+          setData(res);
+        } else {
+          setError(res.error || "Failed to load analytics");
+        }
       })
-      .catch(err => setError(err.response?.data?.error || "Failed to load analytics"))
+      .catch(err => {
+        const msg = err.response?.data?.error || "Failed to load analytics";
+        setError(msg);
+      })
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
+    if (!isLoaded || !userId || !pollId) return;
+
     fetchAnalytics();
 
-    if (pollId) {
-      socket.connect();
-      socket.emit('join_poll_room', pollId);
+    socket.connect();
+    socket.emit('join_poll_room', pollId);
 
-      socket.on('poll_updated', (updatedAnalytics) => {
-        setData((prev: any) => ({
-          ...prev,
-          analytics: updatedAnalytics
-        }));
-      });
-    }
+    socket.on('poll_updated', (updatedAnalytics) => {
+      setData((prev: any) => ({
+        ...prev,
+        analytics: updatedAnalytics
+      }));
+    });
+
+    socket.on('room_count_update', ({ count }) => {
+      setActiveUsers(count);
+    });
 
     return () => {
-      if (pollId) {
-        socket.emit('leave_poll_room', pollId);
-        socket.off('poll_updated');
-        socket.disconnect();
-      }
+      socket.emit('leave_poll_room', pollId);
+      socket.off('poll_updated');
+      socket.off('room_count_update');
+      socket.disconnect();
     };
-  }, [pollId]);
+  }, [pollId, isLoaded, userId]);
 
   if (!isLoaded || !userId) return <div className="p-20 text-center text-muted-foreground font-bold">Please log in to view analytics.</div>;
   if (loading) return <div className="p-20 text-center text-muted-foreground animate-pulse font-bold">Gathering insights...</div>;
   
-  if (error) return (
+  if (error || !data) return (
     <div className="max-w-2xl mx-auto py-20 px-6 text-center">
       <Card className="border-2 border-destructive p-10 rounded-2xl">
         <AlertCircle size={48} className="text-destructive mx-auto mb-4" />
         <h2 className="text-2xl font-black mb-2 text-destructive">Analytics Error</h2>
-        <p className="text-muted-foreground mb-6 font-bold">{error}</p>
+        <p className="text-muted-foreground mb-6 font-bold">{error || "Data unavailable"}</p>
         <Button variant="outline" onClick={() => window.location.reload()}>Retry</Button>
       </Card>
     </div>
@@ -127,8 +138,7 @@ export const AnalyticsPage: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card className="border-2 border-foreground bg-primary/5 p-6 flex items-center gap-6 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
             <div className="p-4 bg-primary text-primary-foreground rounded-xl border-2 border-foreground">
@@ -150,6 +160,19 @@ export const AnalyticsPage: React.FC = () => {
               <p className="text-xl font-black flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                 Monitoring
+              </p>
+            </div>
+          </Card>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <Card className="border-2 border-foreground bg-accent/5 p-6 flex items-center gap-6 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+            <div className="p-4 bg-accent text-accent-foreground rounded-xl border-2 border-foreground">
+              <TrendingUp size={32} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Peak Performance</p>
+              <p className="text-xl font-black">
+                {analytics.timeline?.reduce((p: any, c: any) => (p.count > c.count ? p : c), { count: 0 }).count || 0} Votes/min
               </p>
             </div>
           </Card>
@@ -194,22 +217,93 @@ export const AnalyticsPage: React.FC = () => {
                     <p className="text-xs font-black truncate">{analytics.mostVotedOption?.text || "N/A"}</p>
                   </div>
                   <div className="p-5 rounded-2xl border-2 border-foreground bg-accent/5 text-center">
-                    <Clock size={20} className="text-accent mx-auto mb-2" />
-                    <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-muted-foreground">Last Update</p>
-                    <p className="text-xs font-black">Just now</p>
+                    <Users size={20} className="text-accent mx-auto mb-2" />
+                    <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-muted-foreground">Active Now</p>
+                    <p className="text-xl font-black">{activeUsers}</p>
                   </div>
                 </div>
-                <div className="flex-1 p-5 rounded-2xl border-2 border-foreground bg-muted/30 flex flex-col min-h-[140px]">
+                 <div className="flex-1 p-5 rounded-2xl border-2 border-foreground bg-muted/30 flex flex-col min-h-[180px]">
                    <span className="text-[10px] font-black uppercase tracking-widest mb-4 opacity-50">Real-time Vote Flux</span>
-                   <div className="flex-1 flex items-end gap-1.5">
-                      {analytics.timeline?.map((t: any, i: number) => (
-                        <motion.div 
-                          key={i}
-                          initial={{ height: 0 }}
-                          animate={{ height: `${Math.max((t.count / analytics.totalResponses) * 100, 10)}%` }}
-                          className="flex-1 bg-primary/40 rounded-t-md hover:bg-primary transition-colors"
-                        />
-                      ))}
+                   <div className="flex-1">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={analytics.timeline || []} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="colorPrimary" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+                            </linearGradient>
+                            <linearGradient id="colorAccent" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          
+                          {(analytics.timeline || []).length === 0 && (
+                            <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="fill-muted-foreground font-black text-[10px] uppercase tracking-widest">
+                              No activity recorded yet
+                            </text>
+                          )}
+
+                          {(analytics.timeline || []).length === 1 && (
+                            <Area 
+                              data={analytics.timeline}
+                              type="monotone" 
+                              dataKey="count" 
+                              stroke="var(--primary)" 
+                              strokeWidth={3}
+                              fill="url(#colorPrimary)"
+                              dot={{ r: 4, strokeWidth: 2, fill: "white" }}
+                            >
+                              <LabelList 
+                                dataKey="count" 
+                                position="top" 
+                                offset={10}
+                                style={{ fontSize: '10px', fontWeight: '900', fill: 'var(--foreground)' }} 
+                              />
+                            </Area>
+                          )}
+
+                          {(analytics.timeline || []).length > 1 && (analytics.timeline || []).map((_: any, i: number, arr: any[]) => {
+                            if (i === arr.length - 1) return null;
+                            const segmentData = arr.map((d, idx) => (idx === i || idx === i + 1 ? d : { ...d, count: null }));
+                            const isEven = i % 2 === 0;
+                            return (
+                              <Area 
+                                key={i}
+                                data={segmentData}
+                                type="monotone" 
+                                dataKey="count" 
+                                stroke={isEven ? "var(--primary)" : "var(--accent)"} 
+                                strokeWidth={3}
+                                fill={isEven ? "url(#colorPrimary)" : "url(#colorAccent)"}
+                                dot={{ r: 4, strokeWidth: 2, fill: "white" }}
+                                activeDot={{ r: 6, strokeWidth: 0 }}
+                                isAnimationActive={false}
+                              >
+                                {i === arr.length - 2 && (
+                                  <LabelList 
+                                    dataKey="count" 
+                                    position="top" 
+                                    offset={10}
+                                    style={{ fontSize: '10px', fontWeight: '900', fill: 'var(--foreground)' }} 
+                                  />
+                                )}
+                              </Area>
+                            );
+                          })}
+
+                          <RechartsTooltip 
+                             cursor={{ stroke: 'var(--foreground)', strokeWidth: 1, strokeDasharray: '4 4' }}
+                             contentStyle={{ 
+                                borderRadius: '12px', 
+                                border: '2px solid black', 
+                                fontWeight: '900',
+                                fontSize: '10px',
+                                background: 'white'
+                             }}
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
                    </div>
                 </div>
               </div>

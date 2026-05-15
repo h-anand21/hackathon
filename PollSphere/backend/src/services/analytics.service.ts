@@ -3,7 +3,7 @@ import { Response } from '../models/response.model';
 import { Question } from '../models/question.model';
 import { Option } from '../models/option.model';
 
-export const getPollAnalytics = async (pollId: string) => {
+export const getPollAnalytics = async (pollId: string, timelineLimit: number = 10) => {
   // 1. Total Responses
   const totalResponses = await Response.countDocuments({ pollId });
 
@@ -57,16 +57,19 @@ export const getPollAnalytics = async (pollId: string) => {
     {
       $group: {
         _id: {
-          hour: { $hour: { date: '$createdAt', timezone: 'Asia/Kolkata' } },
-          day: { $dayOfMonth: { date: '$createdAt', timezone: 'Asia/Kolkata' } }
+          hour: { $hour: '$createdAt' },
+          day: { $dayOfMonth: '$createdAt' }
         },
         count: { $sum: 1 },
         timestamp: { $first: '$createdAt' }
       }
     },
-    { $sort: { timestamp: 1 } },
-    { $limit: 10 }
+    { $sort: { timestamp: -1 } },
+    { $limit: timelineLimit }
   ]);
+
+  // Reverse timeline to show in chronological order
+  const orderedTimeline = timeline.reverse();
 
   // Find most voted option across all questions
   let mostVotedOption = { text: "N/A", count: 0 };
@@ -81,7 +84,7 @@ export const getPollAnalytics = async (pollId: string) => {
   return {
     totalResponses,
     questions: formattedData,
-    timeline,
+    timeline: orderedTimeline,
     mostVotedOption
   };
 };

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { getPublicPoll, submitVote } from '../api/response.api';
+import { socket } from '../socket/socket';
 import { Button } from '../components/ui/Button';
 import { useAuth, SignInButton } from '@clerk/clerk-react';
 
@@ -25,6 +26,11 @@ export const PollPage: React.FC = () => {
 
   useEffect(() => {
     if (!shareId) return;
+
+    // Connect to socket room IMMEDIATELY when poll page is opened
+    // This ensures the creator sees live viewer count before anyone votes
+    socket.connect();
+    socket.emit('join_poll_room', shareId);
     
     getPublicPoll(shareId)
       .then(res => {
@@ -46,6 +52,12 @@ export const PollPage: React.FC = () => {
         }
       })
       .finally(() => setLoading(false));
+
+    return () => {
+      // Leave room when user navigates away or closes the tab
+      socket.emit('leave_poll_room', shareId);
+      socket.disconnect();
+    };
   }, [shareId]);
 
   if (loading) return <div className="p-20 text-center text-muted-foreground animate-pulse font-bold">Loading poll information...</div>;
