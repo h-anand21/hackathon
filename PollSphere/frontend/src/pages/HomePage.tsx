@@ -1643,21 +1643,6 @@ function StepAnalyzeAnim() {
 }
 
 export const HomePage: React.FC = () => {
-  // Hero card — dynamic live votes
-  const [heroVotes, setHeroVotes] = useState([45, 30, 25]);
-
-  useEffect(() => {
-    const t = setInterval(() => {
-      const next = Math.floor(Math.random() * 3);
-      setHeroVotes(prev => {
-        const updated = [...prev];
-        updated[next] += 1;
-        return updated;
-      });
-    }, 1000);
-    return () => clearInterval(t);
-  }, []);
-
   return (
     <div className="overflow-x-hidden">
 
