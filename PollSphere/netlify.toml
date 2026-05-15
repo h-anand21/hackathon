@@ -1,13 +1,9 @@
 [build]
-  # The directory where the frontend lives
-  base = "PollSphere/frontend"
+  # Running from root with explicit prefix to ensure dependencies are installed
+  command = "npm install --prefix PollSphere/frontend && npm run build --prefix PollSphere/frontend"
   
-  # The build command to run inside the base directory
-  command = "npm run build"
-  
-  # The directory to publish (relative to base)
-  publish = "dist"
+  # Pointing to the dist folder relative to the repo root
+  publish = "PollSphere/frontend/dist"
 
 [build.environment]
-  # Ensuring a modern Node version
   NODE_VERSION = "20"
