@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from '@tanstack/react-router';
-import { BarChart3, Github, Twitter, Linkedin, Mail, Zap } from 'lucide-react';
+import { BarChart3, Code2, Send, Link2, Mail, Zap } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
@@ -20,13 +20,13 @@ export const Footer: React.FC = () => {
             </p>
             <div className="flex items-center gap-3">
               <a href="https://github.com/h-anand21/hackathon" target="_blank" rel="noreferrer" className="p-2.5 bg-background/10 hover:bg-background/20 rounded-xl border border-background/20 transition-all hover:scale-110">
-                <Github size={18} className="text-background" />
+                <Code2 size={18} className="text-background" />
               </a>
               <a href="#" className="p-2.5 bg-background/10 hover:bg-background/20 rounded-xl border border-background/20 transition-all hover:scale-110">
-                <Twitter size={18} className="text-background" />
+                <Send size={18} className="text-background" />
               </a>
               <a href="#" className="p-2.5 bg-background/10 hover:bg-background/20 rounded-xl border border-background/20 transition-all hover:scale-110">
-                <Linkedin size={18} className="text-background" />
+                <Link2 size={18} className="text-background" />
               </a>
               <a href="mailto:hello@pollsphere.app" className="p-2.5 bg-background/10 hover:bg-background/20 rounded-xl border border-background/20 transition-all hover:scale-110">
                 <Mail size={18} className="text-background" />
