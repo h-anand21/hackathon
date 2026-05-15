@@ -1,13 +1,38 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { SignInButton, SignedIn, SignedOut } from '@clerk/clerk-react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import {
-  Zap, Users, BarChart3, Shield, Share2, Trophy, Clock, Moon,
-  ChevronDown, ChevronUp, ArrowRight, Rocket,
-  Activity, Star, Globe, Send, MousePointer2, MessageSquare,
-  Lock, Unlock
+  Zap,
+  Activity,
+  Users,
+  BarChart3,
+  Shield,
+  Lock,
+  MousePointer2,
+  Send,
+  Globe,
+  Trophy,
+  MessageSquare,
+  Share2,
+  ArrowRight,
+  ChevronDown,
+  CheckCircle2,
+  PieChart as PieChartIcon,
+  Timer,
+  Layout,
+  Trash2,
+  Edit3,
+  ExternalLink,
+  MessageCircle,
+  Hash,
+  Clock,
+  Rocket,
+  ChevronUp,
+  Moon,
+  Unlock,
+  Star
 } from 'lucide-react';
 
 // --- Feature Mini Animations ---
@@ -561,16 +586,663 @@ const roadmap = [
 ];
 
 // --- Constants ---
+// --- CTA Micro Animation ---
+function CtaMicroJourney() {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setStep((prev) => (prev + 1) % 3);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="w-full max-w-[480px] h-64 mx-auto bg-background border-2 border-foreground rounded-[2rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] dark:shadow-[10px_10px_0px_0px_rgba(255,255,255,0.1)] overflow-hidden relative group">
+      <AnimatePresence mode="wait">
+        {step === 0 && (
+          <motion.div 
+            key="step1"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="w-full h-full flex flex-col justify-center p-8 text-left"
+          >
+            <div className="text-xs font-black text-primary uppercase mb-3 flex items-center gap-2">
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              Step 1: Create Poll
+            </div>
+            <div className="space-y-3">
+              <div className="h-10 bg-muted rounded-xl border-2 border-foreground/10 flex items-center px-4 text-xs font-bold shadow-inner italic">
+                "What should we name the new baby?"
+              </div>
+              <div className="flex gap-2">
+                <motion.div initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="flex-1 h-8 bg-emerald-500/10 rounded-lg border border-emerald-500/20 flex items-center px-3 text-[10px] font-black">Option A: Leo</motion.div>
+                <motion.div initial={{ x: 10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.8 }} className="flex-1 h-8 bg-blue-500/10 rounded-lg border border-blue-500/20 flex items-center px-3 text-[10px] font-black">Option B: Max</motion.div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {step === 1 && (
+          <motion.div 
+            key="step2"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 1.5 }}
+            className="w-full h-full flex flex-col justify-center items-center p-8 bg-slate-900 overflow-hidden relative"
+          >
+            <div className="absolute top-4 left-6 text-[10px] font-black text-emerald-400 uppercase tracking-widest z-20">Step 2: Launching</div>
+            
+            {/* Rocket Smoke Particles */}
+            <motion.div 
+              animate={{ opacity: [0, 0.5, 0], scale: [1, 2], y: [20, 40] }}
+              transition={{ repeat: Infinity, duration: 0.5 }}
+              className="absolute bottom-10 w-20 h-20 bg-white/20 blur-xl rounded-full"
+            />
+
+            <motion.div 
+              animate={{ y: [-5, 5, -5], rotate: [2, -2, 2] }}
+              transition={{ repeat: Infinity, duration: 0.3 }}
+              className="relative z-10"
+            >
+              <div className="text-6xl">🚀</div>
+            </motion.div>
+            
+            <motion.div 
+              animate={{ opacity: [1, 0.5, 1] }}
+              className="mt-6 px-6 py-2 bg-emerald-500 text-white rounded-xl font-black text-sm shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+            >
+              GOING LIVE...
+            </motion.div>
+          </motion.div>
+        )}
+
+        {step === 2 && (
+          <motion.div 
+            key="step3"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 30 }}
+            className="w-full h-full flex items-center p-8 gap-6"
+          >
+            <div className="flex-1">
+              <div className="text-xs font-black text-violet-500 uppercase mb-4">Step 3: Results</div>
+              <div className="space-y-3">
+                {[80, 45, 65].map((w, i) => (
+                  <div key={i} className="h-4 bg-muted rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${w}%` }}
+                      transition={{ type: "spring", delay: 0.5 + (i * 0.2) }}
+                      className={`h-full ${['bg-emerald-500', 'bg-blue-500', 'bg-violet-500'][i]}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+              className="w-24 h-24 rounded-full border-8 border-violet-500/20 border-t-violet-500 flex items-center justify-center"
+            >
+              <div className="text-[10px] font-black">742 Votes</div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Navigation Indicators */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+        {[0, 1, 2].map((i) => (
+          <motion.div 
+            key={i} 
+            animate={{ width: step === i ? 24 : 8 }}
+            className={`h-2 rounded-full transition-all duration-500 ${step === i ? 'bg-primary' : 'bg-foreground/10'}`} 
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// --- HERO LIVE SHOWCASE (5s Cycle) ---
+function HeroLiveShowcase() {
+  const [scene, setScene] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setScene((prev) => (prev + 1) % 8);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="bg-background border-2 border-foreground rounded-[2.5rem] shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] dark:shadow-[20px_20px_0px_0px_rgba(255,255,255,0.1)] p-8 h-[450px] relative overflow-hidden group">
+      <AnimatePresence mode="wait">
+        {/* Scene 0: Active High-Speed Voting - Live Battle Mode */}
+        {scene === 0 && (
+          <motion.div key="v0" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="h-full flex flex-col">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="px-2 py-0.5 bg-rose-500 text-white text-[8px] font-black rounded uppercase animate-pulse">Live Battle</div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">High Traffic Poll #482</span>
+            </div>
+            <h3 className="text-2xl font-black mb-6 leading-tight">What's your favorite<br />frontend framework?</h3>
+            <div className="space-y-4">
+              {[ 
+                { l: 'React', p: 45, c: 'bg-teal-400' }, 
+                { l: 'Next.js', p: 32, c: 'bg-amber-400' },
+                { l: 'Vue.js', p: 15, c: 'bg-violet-400' },
+                { l: 'Svelte', p: 8, c: 'bg-rose-400' }
+              ].map((o, i) => (
+                <div key={i} className="relative">
+                  <div className="flex justify-between text-[11px] font-black mb-1">
+                    <span>{o.l}</span>
+                    <motion.span 
+                      animate={{ 
+                        scale: [1, 1.1, 1],
+                        color: [null, '#14b8a6', null]
+                      }} 
+                      transition={{ 
+                        repeat: Infinity, 
+                        duration: 1.5, 
+                        delay: i * 0.3 
+                      }}
+                    >
+                      {o.p}%
+                    </motion.span>
+                  </div>
+                  <div className="h-3 bg-muted rounded-full overflow-hidden border border-foreground/5 shadow-inner">
+                    <motion.div 
+                      initial={{ width: 0 }} 
+                      animate={{ 
+                        width: [`${o.p}%`, `${o.p + 2}%`, `${o.p - 1}%`, `${o.p}%`] 
+                      }} 
+                      transition={{ 
+                        initial: { duration: 0.8 },
+                        width: { 
+                          repeat: Infinity, 
+                          duration: 3, 
+                          ease: "easeInOut",
+                          delay: 0.8
+                        }
+                      }}
+                      className={`h-full ${o.c} relative`} 
+                    >
+                      {/* Internal Sheen/Glow */}
+                      <motion.div 
+                        animate={{ x: ['-100%', '200%'] }} 
+                        transition={{ repeat: Infinity, duration: 2, delay: i * 0.5 }} 
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" 
+                      />
+                    </motion.div>
+                  </div>
+                  {i === 0 && (
+                    <motion.div 
+                      animate={{ scale: [1, 1.3, 1] }} 
+                      transition={{ repeat: Infinity, duration: 1 }} 
+                      className="absolute -right-4 top-0 text-xs"
+                    >🔥</motion.div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="mt-auto flex justify-around">
+              {[1,2,3,4,5,6,7,8,9,10].map(i => (
+                <motion.div 
+                  key={i} 
+                  animate={{ 
+                    y: [0, -250], 
+                    x: [0, (i % 2 === 0 ? 30 : -30)],
+                    opacity: [0, 1, 0], 
+                    scale: [0.5, 1.2, 0.5] 
+                  }} 
+                  transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.1 }} 
+                  className="text-primary font-black text-[10px]"
+                >+1</motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Scene 1: How to Create a Poll - Interactive Flow */}
+        {scene === 1 && (
+          <motion.div key="v1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col items-center justify-center">
+             <div className="w-full max-w-[340px] bg-muted/20 border-2 border-foreground/5 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden">
+                {/* Simulated Cursor */}
+                <motion.div 
+                  animate={{ 
+                    x: [100, 150, 120, 250], 
+                    y: [100, 40, 150, 240],
+                    scale: [1, 0.9, 1] 
+                  }} 
+                  transition={{ duration: 4, repeat: Infinity }}
+                  className="absolute z-30 pointer-events-none"
+                >
+                  <MousePointer2 size={24} className="text-primary fill-primary" />
+                </motion.div>
+
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-2 h-2 rounded-full bg-rose-500" />
+                  <div className="w-2 h-2 rounded-full bg-amber-500" />
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                </div>
+
+                {/* Step 1: Input Question */}
+                <div className="mb-4">
+                   <div className="text-[10px] font-black text-muted-foreground uppercase mb-1">Question</div>
+                   <div className="h-10 bg-background border-2 border-foreground/10 rounded-xl flex items-center px-3 text-xs font-bold text-foreground/60 italic overflow-hidden">
+                      <motion.span
+                        animate={{ 
+                          textContent: ["", "What's the best drink?", "What's the best drink?"] 
+                        }}
+                        transition={{ duration: 2.5, repeat: Infinity }}
+                      >
+                        What's the best drink?
+                      </motion.span>
+                      <motion.div animate={{ opacity: [1, 0] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-0.5 h-4 bg-primary ml-1" />
+                   </div>
+                </div>
+
+                {/* Step 2: Options */}
+                <div className="space-y-2 mb-6">
+                   <div className="text-[10px] font-black text-muted-foreground uppercase mb-1">Options</div>
+                   <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1 }} className="h-8 bg-background border border-foreground/5 rounded-lg flex items-center px-3 text-[10px] font-bold">☕ Coffee</motion.div>
+                   <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.5 }} className="h-8 bg-background border border-foreground/5 rounded-lg flex items-center px-3 text-[10px] font-bold">🍵 Green Tea</motion.div>
+                </div>
+
+                {/* Step 3: Create Button */}
+                <motion.div 
+                  animate={{ 
+                    backgroundColor: [null, '#14b8a6', null],
+                    scale: [1, 0.95, 1] 
+                  }}
+                  transition={{ delay: 3, duration: 0.5, repeat: Infinity, repeatDelay: 3.5 }}
+                  className="w-full h-10 bg-foreground text-background rounded-xl font-black text-[10px] uppercase flex items-center justify-center gap-2"
+                >
+                  Create Live Poll <Send size={12} />
+                </motion.div>
+
+                {/* Step 4: Success Overlay */}
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ 
+                    opacity: [0, 1, 1, 0],
+                    scale: [0.8, 1, 1, 0.8]
+                  }}
+                  transition={{ delay: 3.2, duration: 1.5, repeat: Infinity, repeatDelay: 2.5 }}
+                  className="absolute inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center z-20"
+                >
+                  <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mb-3 text-white">
+                    <CheckCircle2 size={32} />
+                  </div>
+                  <div className="text-xs font-black uppercase tracking-widest text-emerald-500">Poll Created!</div>
+                </motion.div>
+             </div>
+             <div className="mt-6 text-xs font-black text-muted-foreground uppercase tracking-[0.2em] italic">Go from Idea to Live in 30s</div>
+          </motion.div>
+        )}
+
+        {/* Scene 2: Advanced Analytics Dashboard - Redesigned */}
+        {scene === 2 && (
+          <motion.div key="v2" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.1 }} className="h-full flex flex-col relative">
+             {/* Background Data Grid Overlay */}
+             <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+             
+             <div className="flex items-center gap-2 mb-6 relative z-10">
+              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                <BarChart3 size={16} className="text-primary" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black uppercase tracking-widest text-foreground">Advanced Insights</span>
+                <span className="text-[8px] font-bold text-muted-foreground">Analyzing 1,240 responses</span>
+              </div>
+            </div>
+
+            <div className="flex-1 grid grid-cols-5 gap-6 relative z-10">
+              {/* Left: Big Circular Stat */}
+              <div className="col-span-2 bg-muted/20 rounded-[2rem] border-2 border-foreground/5 flex flex-col items-center justify-center p-4 relative overflow-hidden group">
+                <div className="relative w-28 h-28 flex items-center justify-center">
+                  {/* Rotating Segments */}
+                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute inset-0 rounded-full border-[6px] border-primary/10 border-t-primary border-r-emerald-500/40" />
+                  <motion.div animate={{ rotate: -360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="absolute inset-2 rounded-full border-[4px] border-violet-500/10 border-b-violet-500/40" />
+                  
+                  <div className="text-center">
+                    <div className="text-[8px] font-black uppercase text-muted-foreground mb-[-2px]">Winner</div>
+                    <div className="text-xl font-black italic text-primary">React</div>
+                    <div className="text-[9px] font-black text-foreground/60 leading-none">58%</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Detailed Bars */}
+              <div className="col-span-3 space-y-3 flex flex-col justify-center">
+                {[ 
+                  { l: 'React', p: 70, c: 'bg-primary' }, 
+                  { l: 'Next.js', p: 45, c: 'bg-emerald-500' }, 
+                  { l: 'Vue.js', p: 25, c: 'bg-violet-500' } 
+                ].map((stat, i) => (
+                  <div key={i} className="bg-muted/30 p-2.5 rounded-xl border border-foreground/5 flex items-center gap-3">
+                    <div className={`w-1.5 h-6 rounded-full ${stat.c}`} />
+                    <div className="flex-1">
+                      <div className="flex justify-between text-[9px] font-black mb-1">
+                        <span>{stat.l}</span>
+                        <span className="text-muted-foreground">{stat.p}%</span>
+                      </div>
+                      <div className="h-1.5 bg-foreground/5 rounded-full overflow-hidden">
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${stat.p}%` }} className={`h-full ${stat.c}`} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center gap-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest bg-muted/10 p-2 rounded-lg border border-foreground/5">
+              <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live Metrics</div>
+              <span>·</span>
+              <div className="flex items-center gap-1.5"><Users size={10} /> Global Data</div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Scene 3: Poll Expiry Countdown */}
+        {scene === 3 && (
+          <motion.div key="v3" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="h-full flex flex-col items-center justify-center text-center">
+            <div className="w-24 h-24 rounded-full border-4 border-rose-500 flex items-center justify-center mb-6 relative">
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="absolute inset-1 border-t-4 border-rose-500 rounded-full opacity-50" />
+              <Clock size={40} className="text-rose-500" />
+            </div>
+            <h3 className="text-2xl font-black mb-2">Expiring Soon</h3>
+            <div className="text-4xl font-black tabular-nums text-rose-500">00:03</div>
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 2.5 }} className="mt-6 px-6 py-2 bg-rose-500 text-white rounded-xl font-black text-sm">POLL CLOSED 🔒</motion.div>
+          </motion.div>
+        )}
+
+        {/* Scene 4: Live Voter Feed */}
+        {scene === 4 && (
+          <motion.div key="v4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="h-full flex flex-col">
+            <div className="flex items-center gap-2 mb-6">
+              <Activity size={16} className="text-emerald-500" />
+              <span className="text-xs font-black uppercase tracking-widest text-foreground">Live Voter Feed</span>
+            </div>
+            <div className="space-y-3">
+              {['New York, US', 'London, UK', 'Tokyo, JP'].map((loc, i) => (
+                <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.2 }} className="p-3 bg-muted/40 rounded-xl border border-foreground/5 flex justify-between items-center">
+                  <div className="flex flex-col"><span className="text-[10px] font-black">User #{842+i}</span><span className="text-[8px] font-bold text-muted-foreground">{loc}</span></div>
+                  <div className="text-[9px] font-black text-primary">Voted ✓</div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Scene 5: Social Sharing Pulse */}
+        {scene === 5 && (
+          <motion.div key="v5" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.2 }} className="h-full flex flex-col items-center justify-center text-center">
+             <div className="relative w-full max-w-[300px] h-48">
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute inset-0 m-auto w-16 h-16 bg-primary rounded-2xl flex items-center justify-center z-10 shadow-xl">
+                  <Share2 size={32} className="text-white" />
+                </motion.div>
+                {/* Social Icons Flying Out */}
+                {[MessageSquare, Hash, Globe, MessageCircle].map((Icon, i) => (
+                  <motion.div 
+                    key={i}
+                    animate={{ 
+                      x: [(i === 0 || i === 3 ? -100 : 100)], 
+                      y: [(i < 2 ? -60 : 60)],
+                      opacity: [0, 1, 1],
+                      scale: [0.5, 1, 1]
+                    }}
+                    transition={{ repeat: Infinity, duration: 3, delay: i * 0.5 }}
+                    className="absolute inset-0 m-auto w-12 h-12 bg-background border-2 border-foreground/10 rounded-xl flex items-center justify-center shadow-lg"
+                  >
+                    <Icon size={24} className="text-primary" />
+                  </motion.div>
+                ))}
+             </div>
+             <h3 className="text-xl font-black mt-4">One-Click Sharing</h3>
+             <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-1">Connect with Slack, Discord & more</p>
+          </motion.div>
+        )}
+
+        {/* Scene 6: Security Radar */}
+        {scene === 6 && (
+          <motion.div key="v6" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="h-full flex flex-col items-center justify-center">
+            <div className="relative w-40 h-40 rounded-full border-2 border-rose-500/20 flex items-center justify-center">
+              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} className="absolute inset-0 bg-gradient-to-r from-rose-500/10 to-transparent" />
+              <Shield size={64} className="text-rose-500" />
+            </div>
+            <div className="mt-6 bg-rose-500 text-white px-4 py-2 rounded-xl text-xs font-black shadow-xl">BOTS DETECTED: 0</div>
+          </motion.div>
+        )}
+
+        {/* Scene 7: Viral Poll - Real-time Voting Increase */}
+        {scene === 7 && (
+          <motion.div key="v7" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col items-center justify-center bg-slate-950 rounded-[2rem] p-8 relative overflow-hidden">
+            <div className="z-10 w-full max-w-[320px]">
+              <div className="flex flex-col items-center mb-8">
+                 <div className="px-3 py-1 bg-rose-500 text-white text-[10px] font-black rounded-full uppercase animate-pulse mb-3">Viral Activity</div>
+                 <h3 className="text-xl font-black text-white text-center italic leading-tight">"Is PollSphere the fastest<br />polling platform?"</h3>
+              </div>
+
+              {/* Massive Counter */}
+              <div className="flex flex-col items-center mb-8 bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+                <span className="text-[10px] font-black text-primary/80 uppercase tracking-[0.3em] mb-1 text-center">Live Total Votes</span>
+                <div className="text-5xl font-black italic text-white flex items-center">
+                  <motion.span
+                    animate={{ 
+                      textContent: [12401, 12408, 12415, 12422, 12435, 12440] 
+                    }}
+                    transition={{ 
+                      duration: 4, 
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                    className="tabular-nums"
+                  >
+                    12401
+                  </motion.span>
+                </div>
+              </div>
+
+              {/* Increasing Bars */}
+              <div className="space-y-4">
+                {[ 
+                  { l: 'YES, ABSOLUTELY!', p: 85, c: 'bg-primary' }, 
+                  { l: 'YES!', p: 15, c: 'bg-white/20' } 
+                ].map((o, i) => (
+                  <div key={i} className="relative">
+                    <div className="flex justify-between text-[10px] font-black text-white/80 mb-1 uppercase italic">
+                      <span>{o.l}</span>
+                      <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.5 }}>{o.p}%</motion.span>
+                    </div>
+                    <div className="h-3 bg-white/10 rounded-full overflow-hidden border border-white/5">
+                      <motion.div 
+                        initial={{ width: `${o.p-5}%` }} 
+                        animate={{ width: `${o.p}%` }} 
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                        className={`h-full ${o.c}`} 
+                      />
+                    </div>
+                    {i === 0 && (
+                      <div className="absolute -top-6 right-0 flex gap-1">
+                        {[1,2,3,4].map(p => (
+                          <motion.span
+                            key={p}
+                            animate={{ y: [0, -40], x: [0, (p%2==0?20:-20)], opacity: [0, 1, 0] }}
+                            transition={{ repeat: Infinity, duration: 1, delay: p * 0.2 }}
+                            className="text-primary font-black text-[10px]"
+                          >+1</motion.span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Background Streamer Particles */}
+            {[...Array(15)].map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{ 
+                  y: [-20, 450], 
+                  opacity: [0, 0.2, 0],
+                  x: Math.random() * 400 - 200
+                }}
+                transition={{ repeat: Infinity, duration: 3, delay: i * 0.2 }}
+                className="absolute w-0.5 h-10 bg-primary/30"
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Navigation Indicators */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="w-6 h-1 bg-foreground/10 rounded-full overflow-hidden">
+            <motion.div 
+              animate={{ width: scene === i ? '100%' : '0%' }}
+              transition={{ duration: 5, ease: "linear" }}
+              className="h-full bg-primary"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// --- FAQ Micro Animations ---
+function FaqMicroAnim({ index }: { index: number }) {
+  const animations = [
+    // 0: Free
+    <div className="flex items-center justify-center gap-6 py-6 px-8 bg-emerald-500/5 rounded-2xl border-2 border-emerald-500/20 mb-4 overflow-hidden relative">
+      <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="text-center">
+        <div className="text-4xl font-black text-emerald-500">$0</div>
+        <div className="text-[10px] font-black uppercase tracking-widest text-emerald-600/60 mt-1">Total Cost</div>
+      </motion.div>
+      <div className="h-12 w-px bg-foreground/10" />
+      <motion.div animate={{ rotate: [0, 5, -5, 0] }} transition={{ repeat: Infinity, duration: 4 }} className="bg-amber-400 text-background px-3 py-1 rounded-full text-[10px] font-black shadow-lg">FREE FOREVER</motion.div>
+    </div>,
+
+    // 1: Questions
+    <div className="flex flex-col items-center justify-center py-6 px-8 bg-blue-500/5 rounded-2xl border-2 border-blue-500/20 mb-4">
+      <div className="flex gap-2 mb-3">
+        {[1, 2, 3].map(i => (
+          <motion.div key={i} animate={{ y: [0, -5, 0] }} transition={{ delay: i * 0.2, repeat: Infinity }} className="w-10 h-10 bg-background border-2 border-blue-500/30 rounded-xl flex items-center justify-center font-black text-blue-500 shadow-sm">Q{i}</motion.div>
+        ))}
+        <div className="w-10 h-10 border-2 border-dashed border-muted-foreground/30 rounded-xl flex items-center justify-center text-muted-foreground/50 font-black">...</div>
+      </div>
+      <div className="text-[10px] font-black uppercase tracking-widest text-blue-600/60">No Question Limits</div>
+    </div>,
+
+    // 2: Real-time
+    <div className="flex items-center justify-center gap-6 py-6 px-8 bg-violet-500/5 rounded-2xl border-2 border-violet-500/20 mb-4 overflow-hidden">
+      <div className="relative">
+        <motion.div animate={{ scale: [1, 2], opacity: [0.5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="absolute -inset-4 border-2 border-violet-500 rounded-full" />
+        <Zap size={32} className="text-violet-500 relative z-10" />
+      </div>
+      <motion.div animate={{ opacity: [1, 0.5, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="flex items-center gap-2 bg-rose-500 text-white px-3 py-1 rounded-md">
+        <div className="w-2 h-2 bg-white rounded-full" />
+        <span className="text-[10px] font-black tracking-tighter">LIVE UPDATES</span>
+      </motion.div>
+    </div>,
+
+    // 3: Auth
+    <div className="flex items-center justify-center gap-6 py-6 px-8 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20 mb-4">
+      <div className="text-center">
+        <Users size={28} className="text-muted-foreground mx-auto mb-1" />
+        <div className="text-[8px] font-black opacity-40">PUBLIC</div>
+      </div>
+      <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-rose-500">
+        <ArrowRight size={20} strokeWidth={3} />
+      </motion.div>
+      <div className="text-center">
+        <div className="relative inline-block">
+          <Users size={28} className="text-emerald-500 mx-auto mb-1" />
+          <Lock size={12} className="absolute -top-1 -right-1 text-emerald-600 bg-background rounded-full" />
+        </div>
+        <div className="text-[8px] font-black text-emerald-600">AUTH ONLY</div>
+      </div>
+    </div>,
+
+    // 4: Expiry
+    <div className="flex items-center justify-center gap-6 py-6 px-8 bg-amber-500/5 rounded-2xl border-2 border-amber-500/20 mb-4">
+      <div className="text-center">
+        <Clock size={32} className="text-amber-500 mx-auto mb-1" />
+        <div className="text-[10px] font-black text-amber-600/60 uppercase">Auto-Close</div>
+      </div>
+      <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="bg-muted px-4 py-2 rounded-xl border border-foreground/10">
+        <div className="text-xs font-black font-mono">00:59:59</div>
+      </motion.div>
+    </div>,
+
+    // 5: Security
+    <div className="flex items-center justify-center gap-6 py-6 px-8 bg-teal-500/5 rounded-2xl border-2 border-teal-500/20 mb-4">
+      <motion.div animate={{ rotateY: 360 }} transition={{ repeat: Infinity, duration: 4 }} className="text-teal-500">
+        <Shield size={40} />
+      </motion.div>
+      <div>
+        <div className="flex items-center gap-2 text-emerald-500 font-black text-xs">
+          <div className="w-4 h-4 bg-emerald-500 text-white rounded-full flex items-center justify-center text-[8px]">✓</div>
+          SECURE
+        </div>
+        <div className="text-[9px] font-bold text-muted-foreground mt-1 tracking-tight">End-to-End Encrypted</div>
+      </div>
+    </div>,
+
+    // 6: Scale
+    <div className="flex flex-col items-center justify-center py-6 px-8 bg-indigo-500/5 rounded-2xl border-2 border-indigo-500/20 mb-4 overflow-hidden relative">
+      <div className="flex items-end gap-1 mb-2">
+        {[10, 15, 25, 40, 20, 30].map((h, i) => (
+          <motion.div key={i} animate={{ height: [h, h+10, h] }} transition={{ repeat: Infinity, duration: 2, delay: i * 0.1 }} className="w-3 bg-indigo-500 rounded-t-sm" />
+        ))}
+      </div>
+      <motion.div animate={{ opacity: [0.6, 1, 0.6] }} className="text-lg font-black text-indigo-600">10,000+ VOTES</motion.div>
+      <div className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mt-1">High Traffic Capacity</div>
+    </div>
+  ];
+
+  return animations[index] || null;
+}
+
 // FAQ Item
-function FaqItem({ q, a }: { q: string; a: string }) {
+function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-2 border-foreground rounded-2xl overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]">
-      <button onClick={() => setOpen(!open)} className="w-full flex justify-between items-center p-6 text-left font-black text-lg hover:bg-muted/50 transition-colors">
-        {q}
-        {open ? <ChevronUp size={20} className="text-primary shrink-0" /> : <ChevronDown size={20} className="text-muted-foreground shrink-0" />}
+    <div className={`border-2 border-foreground rounded-2xl overflow-hidden transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] ${open ? 'bg-muted/30' : 'bg-background'}`}>
+      <button 
+        onClick={() => setOpen(!open)} 
+        className="w-full flex justify-between items-center p-6 text-left font-black text-lg hover:bg-muted/50 transition-colors"
+      >
+        <span className="pr-4">{q}</span>
+        <motion.div
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="shrink-0 text-primary"
+        >
+          <ChevronDown size={24} strokeWidth={3} />
+        </motion.div>
       </button>
-      {open && <div className="px-6 pb-6 text-muted-foreground font-medium leading-relaxed border-t-2 border-foreground/10 pt-4">{a}</div>}
+      
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <div className="px-6 pb-6 text-muted-foreground font-medium leading-relaxed border-t-2 border-foreground/10 pt-4">
+              <FaqMicroAnim index={index} />
+              {a}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -704,11 +1376,11 @@ function LiveDemoSection() {
                         {pct}%
                       </motion.span>
                     </div>
-                    <div className="h-4 bg-muted rounded-full border border-foreground/10 overflow-hidden">
+                    <div className="h-4 bg-muted rounded-full border border-foreground/10 overflow-hidden relative shadow-inner">
                       <motion.div
                         className={`h-full ${opt.color} rounded-full`}
                         animate={{ width: `${pct}%` }}
-                        transition={{ type: 'spring', stiffness: 60, damping: 15 }}
+                        transition={{ duration: 1.5, ease: "easeInOut" }}
                       />
                     </div>
                     <div className="text-xs text-muted-foreground font-bold mt-1">{votes[i]} votes</div>
@@ -717,19 +1389,45 @@ function LiveDemoSection() {
               })}
             </div>
 
-            {/* Pie chart mini */}
-            <div className="mt-6 pt-4 border-t-2 border-foreground/10">
-              <div className="h-[120px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={DEMO_OPTIONS.map((o, i) => ({ name: o.label, value: votes[i] }))}
-                      dataKey="value" cx="50%" cy="50%" innerRadius={30} outerRadius={55} paddingAngle={3}
-                      isAnimationActive={true} animationDuration={400}>
-                      {DEMO_OPTIONS.map((_, idx) => <Cell key={idx} fill={['#14b8a6','#f59e0b','#8b5cf6','#f43f5e'][idx]} />)}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
+            <div className="mt-8 pt-6 border-t-2 border-foreground/10 h-[150px] w-full flex items-center justify-center relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  {/* Background Track Pie */}
+                  <Pie
+                    data={[{ value: 100 }]}
+                    dataKey="value"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={65}
+                    stroke="none"
+                    fill="currentColor"
+                    className="text-muted/20"
+                    isAnimationActive={false}
+                  />
+                  {/* Main Data Pie */}
+                  <Pie
+                    data={DEMO_OPTIONS.map((o, i) => ({ name: o.label, value: votes[i] }))}
+                    dataKey="value" 
+                    cx="50%" 
+                    cy="50%" 
+                    innerRadius={40} 
+                    outerRadius={65} 
+                    paddingAngle={2}
+                    stroke="none"
+                    isAnimationActive={true} 
+                    animationDuration={1500}
+                    animationBegin={0}
+                    animationEasing="ease-in-out"
+                  >
+                    {DEMO_OPTIONS.map((_, idx) => (
+                      <Cell key={`cell-${idx}`} fill={['#14b8a6','#f59e0b','#8b5cf6','#f43f5e'][idx]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="text-[10px] font-black uppercase text-muted-foreground">Live Feed</div>
               </div>
             </div>
           </motion.div>
@@ -1017,108 +1715,9 @@ export const HomePage: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Right — Mock Poll Card with Micro Animations */}
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
-            whileHover={{ y: -4 }} className="cursor-default">
-            <div className="bg-background border-2 border-foreground rounded-3xl shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] dark:shadow-[16px_16px_0px_0px_rgba(255,255,255,0.1)] p-8 relative overflow-hidden">
-              
-              {/* Ambient glow background */}
-              <motion.div
-                animate={{ opacity: [0.03, 0.08, 0.03], scale: [1, 1.1, 1] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -top-10 -right-10 w-40 h-40 bg-primary rounded-full blur-3xl pointer-events-none"
-              />
-
-              <div className="flex items-center gap-2 mb-4 relative z-10">
-                {/* Animated traffic light dots */}
-                <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0 }} className="w-3 h-3 rounded-full bg-rose-500 block" />
-                <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.3 }} className="w-3 h-3 rounded-full bg-amber-500 block" />
-                <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.6 }} className="w-3 h-3 rounded-full bg-green-500 block" />
-                <span className="ml-2 text-xs font-black uppercase tracking-widest text-muted-foreground">Live Poll</span>
-                {/* Live badge */}
-                <motion.span
-                  animate={{ opacity: [1, 0.4, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                  className="ml-auto flex items-center gap-1 text-[10px] font-black text-green-500"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                  LIVE
-                </motion.span>
-              </div>
-
-              <h3 className="text-xl font-black mb-6 relative z-10">What's your favourite dev stack?</h3>
-              
-              {[
-                { label: 'React + Node.js', color: 'bg-teal-500', glow: 'rgba(20,184,166,0.4)' },
-                { label: 'Next.js + Prisma', color: 'bg-amber-500', glow: 'rgba(245,158,11,0.4)' },
-                { label: 'Vue + Django',    color: 'bg-violet-500', glow: 'rgba(139,92,246,0.4)' },
-              ].map((opt, i) => {
-                const pct = Math.round((heroVotes[i] / heroTotal) * 100);
-                return (
-                  <motion.div key={opt.label} className="mb-4 relative z-10" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.15 }}>
-                    <div className="flex justify-between text-sm font-black mb-1.5">
-                      <span>{opt.label}</span>
-                      <motion.span
-                        key={pct}
-                        initial={{ scale: 1.3, color: '#14b8a6' }}
-                        animate={{ scale: 1, color: 'var(--foreground)' }}
-                        transition={{ duration: 0.4 }}
-                      >{pct}%</motion.span>
-                    </div>
-                    <div className="h-4 bg-muted rounded-full border border-foreground/10 overflow-hidden relative">
-                      <motion.div
-                        className={`h-full ${opt.color} rounded-full relative overflow-hidden`}
-                        animate={{ width: `${pct}%` }}
-                        transition={{ type: 'spring', stiffness: 80, damping: 20 }}
-                        style={{ boxShadow: `0 0 12px ${opt.glow}` }}
-                      >
-                        {/* Shimmer sweep */}
-                        <motion.div
-                          animate={{ x: ['-100%', '300%'] }}
-                          transition={{ duration: 2, repeat: Infinity, delay: i * 0.3, ease: 'linear' }}
-                          className="absolute inset-0 w-12 bg-white/30 skew-x-12"
-                        />
-                      </motion.div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-
-              {/* Animated voter count */}
-              <div className="mt-6 flex items-center gap-2 text-xs font-black text-muted-foreground relative z-10">
-                <motion.span
-                  animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="w-2 h-2 rounded-full bg-green-500 inline-block"
-                />
-                <motion.span
-                  key={heroTotal}
-                  initial={{ y: -8, opacity: 0, color: '#14b8a6' }}
-                  animate={{ y: 0, opacity: 1, color: '#6b7280' }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {heroTotal} live voters
-                </motion.span>
-                <span>·</span>
-                <motion.span
-                  animate={{ color: ['#6b7280', '#14b8a6', '#6b7280'] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >Updates in real-time</motion.span>
-              </div>
-
-              {/* Floating vote particles */}
-              {[...Array(3)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ y: 20, x: 20 + i * 40, opacity: 0 }}
-                  animate={{ y: [-10, -50, -80], opacity: [0, 1, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.7, ease: 'easeOut' }}
-                  className="absolute bottom-8 text-[10px] font-black text-primary pointer-events-none"
-                >
-                  +1
-                </motion.div>
-              ))}
-            </div>
+          {/* Right — Dynamic Hero Showcase Window */}
+          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
+            <HeroLiveShowcase />
           </motion.div>
         </div>
       </section>
@@ -1261,7 +1860,7 @@ export const HomePage: React.FC = () => {
           <div className="space-y-4">
             {faqs.map((faq, i) => (
               <motion.div key={faq.q} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}>
-                <FaqItem q={faq.q} a={faq.a} />
+                <FaqItem q={faq.q} a={faq.a} index={i} />
               </motion.div>
             ))}
           </div>
@@ -1314,33 +1913,84 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA BANNER */}
-      <section className="py-24 px-6 bg-muted/30 border-t-2 border-foreground/10">
-        <div className="max-w-4xl mx-auto">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
-            className="bg-background border-2 border-foreground rounded-3xl shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] p-16 text-center">
-            <div className="flex justify-center mb-6">
-              {[...Array(5)].map((_, i) => <Star key={i} size={24} className="text-amber-400 fill-amber-400" />)}
+      {/* CTA BANNER - SLIM & WIDE VERSION */}
+      <section className="py-12 px-6 bg-muted/30 border-t-2 border-foreground/10 overflow-hidden relative">
+        {/* Background Blobs for depth */}
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], x: [0, 50, 0], y: [0, 30, 0] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute top-1/4 -left-20 w-80 h-80 bg-primary/10 rounded-full blur-[100px] pointer-events-none"
+        />
+        <motion.div 
+          animate={{ scale: [1.2, 1, 1.2], x: [0, -50, 0], y: [0, -30, 0] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+          className="absolute bottom-1/4 -right-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none"
+        />
+
+        <div className="max-w-6xl mx-auto relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }} 
+            whileInView={{ opacity: 1, y: 0 }} 
+            viewport={{ once: true }}
+            className="bg-background border-2 border-foreground rounded-[2rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] py-10 px-8 sm:px-16 text-center relative overflow-hidden"
+          >
+            <div className="flex flex-col md:flex-row items-center justify-between gap-10">
+              
+              {/* Left Side: Message */}
+              <div className="text-left flex-1">
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={20} className="text-amber-400 fill-amber-400" />
+                  ))}
+                </div>
+                <h2 className="text-4xl sm:text-5xl font-black tracking-tighter mb-4 leading-none">
+                  Ready to Launch Your<br />
+                  <motion.span 
+                    animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                    className="bg-gradient-to-r from-primary via-emerald-500 to-primary bg-[length:200%_auto] text-transparent bg-clip-text"
+                  >
+                    First Poll?
+                  </motion.span>
+                </h2>
+                <p className="text-muted-foreground font-medium text-lg mb-6 max-w-md">
+                  Free forever. No credit card required. Just powerful polling for everyone.
+                </p>
+                
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <motion.button 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="inline-flex items-center gap-3 px-8 py-4 bg-primary text-primary-foreground font-black text-lg rounded-xl border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
+                    >
+                      Get Started Free <ArrowRight size={20} />
+                    </motion.button>
+                  </SignInButton>
+                </SignedOut>
+                <SignedIn>
+                  <Link to="/create-poll" search={{ pollId: undefined }}>
+                    <motion.button 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="inline-flex items-center gap-3 px-8 py-4 bg-primary text-primary-foreground font-black text-lg rounded-xl border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
+                    >
+                      Create a Poll Now <ArrowRight size={20} />
+                    </motion.button>
+                  </Link>
+                </SignedIn>
+              </div>
+
+              {/* Right Side: Micro Animation */}
+              <div className="w-full md:w-auto shrink-0">
+                <CtaMicroJourney />
+                <div className="flex items-center justify-center gap-4 text-muted-foreground font-bold text-[10px] uppercase tracking-widest mt-2">
+                  <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" /> No Card</div>
+                  <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" /> Instant</div>
+                </div>
+              </div>
+
             </div>
-            <span className="text-xs font-black uppercase tracking-[0.3em] text-primary">Start Today</span>
-            <h2 className="text-5xl sm:text-6xl font-black tracking-tight mt-3 mb-4">
-              Ready to Launch Your<br /><span className="text-primary">First Poll?</span>
-            </h2>
-            <p className="text-muted-foreground font-medium text-xl mb-10">Free forever. No credit card. Just powerful polling.</p>
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="inline-flex items-center gap-3 px-12 py-5 bg-primary text-primary-foreground font-black text-xl rounded-2xl border-2 border-foreground shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all">
-                  Get Started Free <ArrowRight size={24} />
-                </button>
-              </SignInButton>
-            </SignedOut>
-            <SignedIn>
-              <Link to="/create-poll" search={{ pollId: undefined }}>
-                <button className="inline-flex items-center gap-3 px-12 py-5 bg-primary text-primary-foreground font-black text-xl rounded-2xl border-2 border-foreground shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all">
-                  Create a Poll Now <ArrowRight size={24} />
-                </button>
-              </Link>
-            </SignedIn>
           </motion.div>
         </div>
       </section>
