@@ -331,30 +331,34 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* CTA BANNER */}
-      <section className="py-24 px-6 bg-foreground text-background">
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="max-w-3xl mx-auto text-center">
-          <div className="flex justify-center mb-6">
-            {[...Array(5)].map((_, i) => <Star key={i} size={24} className="text-amber-400 fill-amber-400" />)}
-          </div>
-          <h2 className="text-5xl sm:text-6xl font-black tracking-tight mb-6 text-background">
-            Ready to Launch Your First Poll?
-          </h2>
-          <p className="text-background/60 font-medium text-xl mb-10">Free forever. No credit card. Just powerful polling.</p>
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button className="inline-flex items-center gap-3 px-12 py-5 bg-primary text-primary-foreground font-black text-xl rounded-2xl border-2 border-background/30 shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all">
-                Get Started Free <ArrowRight size={24} />
-              </button>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <Link to="/create-poll">
-              <button className="inline-flex items-center gap-3 px-12 py-5 bg-primary text-primary-foreground font-black text-xl rounded-2xl border-2 border-background/30 shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all">
-                Create a Poll Now <ArrowRight size={24} />
-              </button>
-            </Link>
-          </SignedIn>
-        </motion.div>
+      <section className="py-24 px-6 bg-muted/30 border-t-2 border-foreground/10">
+        <div className="max-w-4xl mx-auto">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+            className="bg-background border-2 border-foreground rounded-3xl shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] p-16 text-center">
+            <div className="flex justify-center mb-6">
+              {[...Array(5)].map((_, i) => <Star key={i} size={24} className="text-amber-400 fill-amber-400" />)}
+            </div>
+            <span className="text-xs font-black uppercase tracking-[0.3em] text-primary">Start Today</span>
+            <h2 className="text-5xl sm:text-6xl font-black tracking-tight mt-3 mb-4">
+              Ready to Launch Your<br /><span className="text-primary">First Poll?</span>
+            </h2>
+            <p className="text-muted-foreground font-medium text-xl mb-10">Free forever. No credit card. Just powerful polling.</p>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="inline-flex items-center gap-3 px-12 py-5 bg-primary text-primary-foreground font-black text-xl rounded-2xl border-2 border-foreground shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all">
+                  Get Started Free <ArrowRight size={24} />
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <Link to="/create-poll">
+                <button className="inline-flex items-center gap-3 px-12 py-5 bg-primary text-primary-foreground font-black text-xl rounded-2xl border-2 border-foreground shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all">
+                  Create a Poll Now <ArrowRight size={24} />
+                </button>
+              </Link>
+            </SignedIn>
+          </motion.div>
+        </div>
       </section>
 
     </div>
