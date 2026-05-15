@@ -19,17 +19,10 @@ import {
   ArrowRight,
   ChevronDown,
   CheckCircle2,
-  PieChart as PieChartIcon,
-  Timer,
-  Layout,
-  Trash2,
-  Edit3,
-  ExternalLink,
   MessageCircle,
   Hash,
   Clock,
   Rocket,
-  ChevronUp,
   Moon,
   Unlock,
   Star
@@ -759,7 +752,6 @@ function HeroLiveShowcase() {
                         width: [`${o.p}%`, `${o.p + 2}%`, `${o.p - 1}%`, `${o.p}%`] 
                       }} 
                       transition={{ 
-                        initial: { duration: 0.8 },
                         width: { 
                           repeat: Infinity, 
                           duration: 3, 
@@ -833,10 +825,9 @@ function HeroLiveShowcase() {
                    <div className="text-[10px] font-black text-muted-foreground uppercase mb-1">Question</div>
                    <div className="h-10 bg-background border-2 border-foreground/10 rounded-xl flex items-center px-3 text-xs font-bold text-foreground/60 italic overflow-hidden">
                       <motion.span
-                        animate={{ 
-                          textContent: ["", "What's the best drink?", "What's the best drink?"] 
-                        }}
-                        transition={{ duration: 2.5, repeat: Infinity }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1 }}
                       >
                         What's the best drink?
                       </motion.span>
@@ -1031,17 +1022,11 @@ function HeroLiveShowcase() {
                 <span className="text-[10px] font-black text-primary/80 uppercase tracking-[0.3em] mb-1 text-center">Live Total Votes</span>
                 <div className="text-5xl font-black italic text-white flex items-center">
                   <motion.span
-                    animate={{ 
-                      textContent: [12401, 12408, 12415, 12422, 12435, 12440] 
-                    }}
-                    transition={{ 
-                      duration: 4, 
-                      repeat: Infinity,
-                      ease: "linear"
-                    }}
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
                     className="tabular-nums"
                   >
-                    12401
+                    12,440
                   </motion.span>
                 </div>
               </div>
@@ -1660,7 +1645,6 @@ function StepAnalyzeAnim() {
 export const HomePage: React.FC = () => {
   // Hero card — dynamic live votes
   const [heroVotes, setHeroVotes] = useState([45, 30, 25]);
-  const heroTotal = heroVotes.reduce((a, b) => a + b, 0);
 
   useEffect(() => {
     const t = setInterval(() => {
