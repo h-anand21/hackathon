@@ -13,7 +13,7 @@ const rootRoute = createRootRoute({
   component: () => (
     <div className="min-h-screen bg-background text-foreground font-sans antialiased flex flex-col">
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 pt-20">
         <Outlet />
       </main>
       <Footer />

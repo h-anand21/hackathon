@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
 import { ThemeToggle } from '../ThemeToggle';
-import { BarChart3, Menu, X, Plus } from 'lucide-react';
+import { BarChart3, Menu, X } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -22,11 +22,10 @@ export const Navbar: React.FC = () => {
     { label: 'Roadmap', href: '#roadmap' },
   ];
 
-  // App nav links (logged in)
+  // App nav links (logged in) — Home & My Polls only
   const appLinks = [
     { label: 'Home', to: '/' },
     { label: 'My Polls', to: '/my-polls' },
-    { label: 'Create Poll', to: '/create-poll' },
   ];
 
   return (
@@ -99,11 +98,6 @@ export const Navbar: React.FC = () => {
 
           {/* Logged IN */}
           <SignedIn>
-            <Link to="/create-poll">
-              <button className="flex items-center gap-2 text-sm font-black px-5 py-2 rounded-xl border-2 border-foreground bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]">
-                <Plus size={16} /> Create Poll
-              </button>
-            </Link>
             <UserButton
               afterSignOutUrl="/"
               appearance={{
