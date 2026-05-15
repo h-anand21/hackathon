@@ -60,7 +60,7 @@ export const Footer: React.FC = () => {
             <h4 className="font-black uppercase tracking-widest text-muted-foreground text-xs mb-5">Quick Links</h4>
             <ul className="space-y-3">
               <li>
-                <Link to="/create-poll" className="font-bold text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/create-poll" search={{ pollId: undefined }} className="font-bold text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Create a Poll
                 </Link>
               </li>

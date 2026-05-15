@@ -71,7 +71,7 @@ export const MyPollsPage: React.FC = () => {
           <h1 className="text-4xl font-black text-foreground tracking-tight">My Polls</h1>
           <p className="text-muted-foreground mt-1 text-lg">Manage and track your active polling campaigns.</p>
         </div>
-        <Link to="/create-poll">
+        <Link to="/create-poll" search={{ pollId: undefined }}>
           <Button variant="accent" size="lg" className="rounded-2xl border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] flex items-center gap-2">
             <Plus size={20} />
             Create New Poll

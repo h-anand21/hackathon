@@ -29,7 +29,7 @@ const indexRoute = createRoute({
 const createPollRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/create-poll',
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): { pollId?: string } => {
     return {
       pollId: (search.pollId as string) || undefined,
     };

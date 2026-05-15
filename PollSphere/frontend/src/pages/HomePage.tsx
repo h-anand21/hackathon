@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import {
   Zap, Users, BarChart3, Shield, Share2, Trophy, Clock, Moon,
   ChevronDown, ChevronUp, ArrowRight, Rocket,
-  Activity, Star, Globe, Send, MousePointer2, MessageSquare, Plus
+  Activity, Star, Globe, Send, MousePointer2, MessageSquare
 } from 'lucide-react';
 
 // --- Data ---
@@ -705,7 +705,7 @@ export const HomePage: React.FC = () => {
               </SignInButton>
             </SignedOut>
             <SignedIn>
-              <Link to="/create-poll">
+              <Link to="/create-poll" search={{ pollId: undefined }}>
                 <button className="inline-flex items-center gap-3 px-12 py-5 bg-primary text-primary-foreground font-black text-xl rounded-2xl border-2 border-foreground shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all">
                   Create a Poll Now <ArrowRight size={24} />
                 </button>
