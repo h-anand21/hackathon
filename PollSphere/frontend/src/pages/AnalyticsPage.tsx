@@ -7,9 +7,9 @@ import { Button } from '../components/ui/Button';
 import { socket } from '../socket/socket';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { Users, Rocket, AlertCircle, Share2, Activity, TrendingUp, MousePointer2, Trophy, Clock } from 'lucide-react';
+import { Users, Rocket, AlertCircle, Share2, Activity, TrendingUp, MousePointer2, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, AreaChart, Area, LabelList } from 'recharts';
 import { toast } from 'sonner';
 
 export const AnalyticsPage: React.FC = () => {
