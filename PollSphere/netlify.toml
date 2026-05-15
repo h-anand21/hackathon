@@ -1,0 +1,13 @@
+[build]
+  # The directory where the frontend lives
+  base = "PollSphere/frontend"
+  
+  # The build command to run inside the base directory
+  command = "npm run build"
+  
+  # The directory to publish (relative to base)
+  publish = "dist"
+
+[build.environment]
+  # Ensuring a modern Node version
+  NODE_VERSION = "20"
