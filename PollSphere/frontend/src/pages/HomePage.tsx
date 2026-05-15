@@ -1374,30 +1374,30 @@ function LiveDemoSection() {
               })}
             </div>
 
-            <div className="mt-8 pt-6 border-t-2 border-foreground/10 h-[150px] w-full flex items-center justify-center relative">
+            <div className="mt-4 pt-4 border-t-2 border-foreground/10 h-[130px] w-full flex items-center justify-center relative">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  {/* Background Track Pie */}
+                  {/* Background Track Pie - Smaller */}
                   <Pie
                     data={[{ value: 100 }]}
                     dataKey="value"
                     cx="50%"
                     cy="50%"
-                    innerRadius={40}
-                    outerRadius={65}
+                    innerRadius={32}
+                    outerRadius={52}
                     stroke="none"
                     fill="currentColor"
                     className="text-muted/20"
                     isAnimationActive={false}
                   />
-                  {/* Main Data Pie */}
+                  {/* Main Data Pie - Smaller */}
                   <Pie
                     data={DEMO_OPTIONS.map((o, i) => ({ name: o.label, value: votes[i] }))}
                     dataKey="value" 
                     cx="50%" 
                     cy="50%" 
-                    innerRadius={40} 
-                    outerRadius={65} 
+                    innerRadius={32} 
+                    outerRadius={52} 
                     paddingAngle={2}
                     stroke="none"
                     isAnimationActive={true} 
@@ -1412,7 +1412,7 @@ function LiveDemoSection() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="text-[10px] font-black uppercase text-muted-foreground">Live Feed</div>
+                <div className="text-[8px] font-black uppercase text-muted-foreground">Live Feed</div>
               </div>
             </div>
           </motion.div>
