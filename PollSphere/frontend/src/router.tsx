@@ -1,4 +1,3 @@
-import React from 'react';
 import { createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
 import { CreatePollPage } from './pages/CreatePollPage';
 import { PollPage } from './pages/PollPage';
@@ -30,6 +29,11 @@ const indexRoute = createRoute({
 const createPollRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/create-poll',
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      pollId: (search.pollId as string) || undefined,
+    };
+  },
   component: CreatePollPage,
 });
 

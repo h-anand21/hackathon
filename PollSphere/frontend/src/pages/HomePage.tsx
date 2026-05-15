@@ -5,8 +5,8 @@ import { motion, useInView } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import {
   Zap, Users, BarChart3, Shield, Share2, Trophy, Clock, Moon,
-  ChevronDown, ChevronUp, ArrowRight, CheckCircle2, Rocket,
-  Activity, Star, Globe, Plus, Send, MousePointer2, MessageSquare
+  ChevronDown, ChevronUp, ArrowRight, Rocket,
+  Activity, Star, Globe, Send, MousePointer2, MessageSquare, Plus
 } from 'lucide-react';
 
 // --- Data ---
@@ -40,18 +40,12 @@ const roadmap = [
   { label: 'Mobile App (React Native)', status: 'future' },
 ];
 
-const pieData = [
-  { name: 'Option A', value: 45 },
-  { name: 'Option B', value: 30 },
-  { name: 'Option C', value: 25 },
-];
-const PIE_COLORS = ['#14b8a6', '#f59e0b', '#6366f1'];
-
+// --- Constants ---
 const stats = [
-  { value: 500, suffix: '+', label: 'Polls Created' },
-  { value: 10000, suffix: '+', label: 'Votes Cast' },
-  { value: 99, suffix: '.9%', label: 'Uptime' },
-  { value: 0, suffix: 'ms', label: 'Avg Latency' },
+  { label: 'Active Polls', value: 1250, suffix: '+', icon: Activity },
+  { label: 'Total Votes', value: 85400, suffix: '+', icon: Users },
+  { label: 'Happy Users', value: 500, suffix: '+', icon: Star },
+  { label: 'Countries', value: 45, suffix: '', icon: Globe },
 ];
 
 // Animated counter
@@ -238,7 +232,7 @@ function LiveDemoSection() {
                       data={DEMO_OPTIONS.map((o, i) => ({ name: o.label, value: votes[i] }))}
                       dataKey="value" cx="50%" cy="50%" innerRadius={30} outerRadius={55} paddingAngle={3}
                       isAnimationActive={true} animationDuration={400}>
-                      {DEMO_OPTIONS.map((o, idx) => <Cell key={idx} fill={['#14b8a6','#f59e0b','#8b5cf6','#f43f5e'][idx]} />)}
+                      {DEMO_OPTIONS.map((_, idx) => <Cell key={idx} fill={['#14b8a6','#f59e0b','#8b5cf6','#f43f5e'][idx]} />)}
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
