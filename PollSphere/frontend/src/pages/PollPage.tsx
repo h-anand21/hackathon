@@ -188,7 +188,7 @@ export const PollPage: React.FC = () => {
               return (
                 <div 
                   key={q._id} 
-                  ref={el => questionRefs.current[q._id] = el}
+                  ref={el => { questionRefs.current[q._id] = el; }}
                   className={cn(
                     "space-y-6 p-6 rounded-3xl transition-all duration-300 border-2 border-transparent",
                     isMissing && "bg-destructive/5 border-destructive/50 shadow-[0_0_20px_rgba(var(--destructive-rgb),0.1)]"

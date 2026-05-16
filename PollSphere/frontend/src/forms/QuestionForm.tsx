@@ -26,8 +26,8 @@ interface Props {
 }
 
 export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading, initialData }) => {
-  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<any>({
-    resolver: zodResolver(questionSchema) as any,
+  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<QuestionFormValues>({
+    resolver: zodResolver(questionSchema),
     defaultValues: {
       text: initialData?.text || '',
       isMandatory: initialData?.isMandatory ?? true,

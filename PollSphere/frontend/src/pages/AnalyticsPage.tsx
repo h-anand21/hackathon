@@ -188,7 +188,7 @@ export const AnalyticsPage: React.FC = () => {
           <CardContent className="p-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               <div className="space-y-6">
-                {analytics.questions.map((q: any, idx: number) => {
+                {analytics.questions.map((q: any) => {
                   return (
                     <div key={q.questionId} className="space-y-2">
                       <div className="flex justify-between items-end px-1">
