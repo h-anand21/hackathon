@@ -10,8 +10,8 @@ import { AlertCircle, Plus, Trash2, HelpCircle } from 'lucide-react';
 
 const questionSchema = z.object({
   text: z.string().min(5, "Question must be at least 5 characters"),
-  isMandatory: z.boolean().default(true),
-  allowMultiple: z.boolean().default(false),
+  isMandatory: z.boolean(),
+  allowMultiple: z.boolean(),
   options: z.array(
     z.object({ value: z.string().min(1, "Option cannot be empty") })
   ).min(2, "At least 2 options are required")
