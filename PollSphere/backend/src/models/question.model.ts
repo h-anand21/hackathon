@@ -4,13 +4,15 @@ export interface IQuestion extends Document {
   pollId: mongoose.Types.ObjectId;
   text: string;
   isMandatory: boolean;
+  allowMultiple: boolean;
 }
 
 const questionSchema = new Schema<IQuestion>(
   {
     pollId: { type: Schema.Types.ObjectId, ref: 'Poll', required: true, index: true },
     text: { type: String, required: true },
-    isMandatory: { type: Boolean, default: true }
+    isMandatory: { type: Boolean, default: true },
+    allowMultiple: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

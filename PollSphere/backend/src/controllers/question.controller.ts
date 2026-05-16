@@ -16,13 +16,14 @@ export const createQuestion = async (req: Request, res: Response): Promise<void>
     }
 
     // req.body is validated by Zod
-    const { text, isMandatory, options } = req.body;
+    const { text, isMandatory, allowMultiple, options } = req.body;
 
     // 2. Create the Question
     const question = await Question.create({
       pollId,
       text,
-      isMandatory
+      isMandatory,
+      allowMultiple
     });
 
     // 3. Create the Options linked to the newly created Question

@@ -11,9 +11,27 @@ export const getPollAnalytics = async (pollId: string, timelineLimit: number = 1
   const optionStats = await Response.aggregate([
     { $match: { pollId: new mongoose.Types.ObjectId(pollId) } },
     { $unwind: '$answers' },
+    {
+      $addFields: {
+        allOptionIds: {
+          $cond: {
+            if: { $isArray: '$answers.optionIds' },
+            then: '$answers.optionIds',
+            else: { 
+              $cond: { 
+                if: { $ifNull: ['$answers.optionId', false] }, 
+                then: ['$answers.optionId'], 
+                else: [] 
+              } 
+            }
+          }
+        }
+      }
+    },
+    { $unwind: '$allOptionIds' },
     { 
       $group: {
-        _id: '$answers.optionId',
+        _id: '$allOptionIds',
         count: { $sum: 1 }
       }
     }

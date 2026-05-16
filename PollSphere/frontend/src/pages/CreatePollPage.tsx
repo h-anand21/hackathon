@@ -107,6 +107,7 @@ export const CreatePollPage: React.FC = () => {
       setEditingQuestion({
         text: q.text,
         isMandatory: q.isMandatory,
+        allowMultiple: q.allowMultiple,
         options: q.options?.map((opt: any) => opt.text || opt.value) || []
       });
       // Scroll to form
@@ -192,6 +193,11 @@ export const CreatePollPage: React.FC = () => {
                     </p>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2 pl-12">
+                    {q.allowMultiple && (
+                      <Badge className="bg-primary/20 text-primary border-primary/30 font-black text-[10px] uppercase tracking-wider">
+                        Multi-Select
+                      </Badge>
+                    )}
                     {q.options?.map((opt: any, oIdx: number) => (
                       <Badge key={oIdx} variant="outline" className="border-2 border-foreground bg-muted font-bold">
                         {opt.value || opt.text}

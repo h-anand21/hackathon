@@ -13,6 +13,7 @@ export interface Question {
   _id?: string;
   text: string;
   isMandatory: boolean;
+  allowMultiple: boolean;
   options: Option[];
 }
 
@@ -36,5 +37,6 @@ export interface CreatePollPayload {
 export interface CreateQuestionPayload {
   text: string;
   isMandatory: boolean;
+  allowMultiple: boolean;
   options: string[];
 }

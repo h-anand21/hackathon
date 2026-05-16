@@ -116,21 +116,32 @@ export const PublishedResultPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               <div className="space-y-6">
                 {analytics.questions.map((q: any, idx: number) => {
-                  const maxOption = q.options.reduce((p: any, c: any) => (parseFloat(p.percentage) > parseFloat(c.percentage)) ? p : c, q.options[0]);
                   return (
                     <div key={q.questionId} className="space-y-2">
-                      <div className="flex justify-between text-[10px] font-black uppercase tracking-tighter text-muted-foreground">
-                        <span>Q{idx+1}: {q.text}</span>
-                        <span>{maxOption.percentage}%</span>
+                      <div className="flex justify-between items-end px-1">
+                        <span className="text-sm font-black text-foreground/90">{q.text}</span>
+                        <div className="flex gap-1.5">
+                          {q.options.map((opt: any, oIdx: number) => (
+                            <span key={opt.optionId} className="text-[9px] font-black" style={{ color: chartColors[oIdx % chartColors.length] }}>
+                              {opt.voteCount > 0 && `${opt.percentage}%`}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                      <div className="h-3 w-full bg-muted rounded-full overflow-hidden border-2 border-foreground/5">
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${maxOption.percentage}%` }}
-                          transition={{ duration: 1, ease: "easeOut" }}
-                          className="h-full" 
-                          style={{ backgroundColor: chartColors[idx % chartColors.length] }}
-                        />
+
+                      <div className="h-4 w-full bg-muted rounded-full overflow-hidden border-2 border-foreground/5 flex shadow-inner group">
+                        {q.options.map((opt: any, oIdx: number) => (
+                          <motion.div 
+                            key={opt.optionId}
+                            initial={{ width: 0 }}
+                            whileInView={{ width: `${opt.percentage}%` }}
+                            transition={{ duration: 1.5, ease: "circOut", delay: oIdx * 0.1 }}
+                            className="h-full relative border-r border-foreground/5 last:border-0" 
+                            style={{ backgroundColor: chartColors[oIdx % chartColors.length] }}
+                          >
+                             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" title={`${opt.text}: ${opt.percentage}%`} />
+                          </motion.div>
+                        ))}
                       </div>
                     </div>
                   );

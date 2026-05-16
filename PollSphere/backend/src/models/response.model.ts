@@ -2,7 +2,8 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 interface IAnswer {
   questionId: mongoose.Types.ObjectId;
-  optionId: mongoose.Types.ObjectId;
+  optionId?: mongoose.Types.ObjectId; // Used for single-select
+  optionIds?: mongoose.Types.ObjectId[]; // Used for multi-select
 }
 
 export interface IResponse extends Document {
@@ -19,7 +20,8 @@ const responseSchema = new Schema<IResponse>(
     ipAddress: { type: String },
     answers: [{
       questionId: { type: Schema.Types.ObjectId, ref: 'Question', required: true },
-      optionId: { type: Schema.Types.ObjectId, ref: 'Option', required: true }
+      optionId: { type: Schema.Types.ObjectId, ref: 'Option' },
+      optionIds: [{ type: Schema.Types.ObjectId, ref: 'Option' }]
     }]
   }, 
   { timestamps: true }

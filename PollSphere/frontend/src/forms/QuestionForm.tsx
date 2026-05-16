@@ -11,6 +11,7 @@ import { AlertCircle, Plus, Trash2, HelpCircle } from 'lucide-react';
 const questionSchema = z.object({
   text: z.string().min(5, "Question must be at least 5 characters"),
   isMandatory: z.boolean().default(true),
+  allowMultiple: z.boolean().default(false),
   options: z.array(
     z.object({ value: z.string().min(1, "Option cannot be empty") })
   ).min(2, "At least 2 options are required")
@@ -19,9 +20,9 @@ const questionSchema = z.object({
 type QuestionFormValues = z.infer<typeof questionSchema>;
 
 interface Props {
-  onSubmit: (data: { text: string; isMandatory: boolean; options: string[] }) => void;
+  onSubmit: (data: { text: string; isMandatory: boolean; allowMultiple: boolean; options: string[] }) => void;
   isLoading: boolean;
-  initialData?: { text: string; isMandatory: boolean; options: string[] } | null;
+  initialData?: { text: string; isMandatory: boolean; allowMultiple: boolean; options: string[] } | null;
 }
 
 export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading, initialData }) => {
@@ -30,6 +31,7 @@ export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading, initialData
     defaultValues: {
       text: initialData?.text || '',
       isMandatory: initialData?.isMandatory ?? true,
+      allowMultiple: initialData?.allowMultiple ?? false,
       options: initialData?.options?.map(val => ({ value: val })) || [{ value: '' }, { value: '' }]
     }
   });
@@ -40,6 +42,7 @@ export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading, initialData
       reset({
         text: initialData.text,
         isMandatory: initialData.isMandatory,
+        allowMultiple: initialData.allowMultiple,
         options: initialData.options.map(val => ({ value: val }))
       });
     }
@@ -50,13 +53,14 @@ export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading, initialData
     name: "options"
   });
 
-  const submitHandler = (data: QuestionFormValues) => {
+  const submitHandler = (data: any) => {
     onSubmit({
       text: data.text,
       isMandatory: data.isMandatory,
-      options: data.options.map(opt => opt.value)
+      allowMultiple: data.allowMultiple,
+      options: data.options.map((opt: any) => opt.value)
     });
-    reset({ text: '', isMandatory: true, options: [{ value: '' }, { value: '' }] }); 
+    reset({ text: '', isMandatory: true, allowMultiple: false, options: [{ value: '' }, { value: '' }] }); 
   };
 
   return (
@@ -80,14 +84,26 @@ export const QuestionForm: React.FC<Props> = ({ onSubmit, isLoading, initialData
             )}
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl border border-border">
-            <input 
-              type="checkbox" 
-              {...register('isMandatory')} 
-              id="isMandatory" 
-              className="h-5 w-5 rounded border-2 border-foreground bg-background text-primary focus:ring-primary transition-all cursor-pointer" 
-            />
-            <Label htmlFor="isMandatory" className="mb-0 cursor-pointer text-sm">Make this question mandatory</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl border border-border">
+              <input 
+                type="checkbox" 
+                {...register('isMandatory')} 
+                id="isMandatory" 
+                className="h-5 w-5 rounded border-2 border-foreground bg-background text-primary focus:ring-primary transition-all cursor-pointer" 
+              />
+              <Label htmlFor="isMandatory" className="mb-0 cursor-pointer text-sm">Make this question mandatory</Label>
+            </div>
+
+            <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl border-2 border-primary/20">
+              <input 
+                type="checkbox" 
+                {...register('allowMultiple')} 
+                id="allowMultiple" 
+                className="h-5 w-5 rounded border-2 border-primary bg-background text-primary focus:ring-primary transition-all cursor-pointer" 
+              />
+              <Label htmlFor="allowMultiple" className="mb-0 cursor-pointer text-sm font-bold text-primary">Allow multiple selections</Label>
+            </div>
           </div>
 
           <div className="space-y-4">

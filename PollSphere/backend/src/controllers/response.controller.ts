@@ -123,13 +123,18 @@ export const submitResponse = async (
     const answeredQuestionIds = answers.map((a: any) => a.questionId);
 
     for (const q of questions) {
-      if (!answeredQuestionIds.includes(q._id.toString())) {
-        res
-          .status(400)
-          .json({
-            success: false,
-            error: `Mandatory question missing: ${q.text}`,
-          });
+      const answer = answers.find((a: any) => a.questionId === q._id.toString());
+      
+      const isAnswered = answer && (
+        (answer.optionId) || 
+        (Array.isArray(answer.optionIds) && answer.optionIds.length > 0)
+      );
+
+      if (!isAnswered) {
+        res.status(400).json({
+          success: false,
+          error: `Mandatory question missing or has no selection: ${q.text}`,
+        });
         return;
       }
     }
