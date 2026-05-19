@@ -15,12 +15,12 @@ export const getPollAnalytics = async (pollId: string, timelineLimit: number = 1
       $addFields: {
         allOptionIds: {
           $cond: {
-            if: { $isArray: '$answers.optionIds' },
-            then: '$answers.optionIds',
+            if: { $ifNull: ['$answers.optionId', false] },
+            then: ['$answers.optionId'],
             else: { 
               $cond: { 
-                if: { $ifNull: ['$answers.optionId', false] }, 
-                then: ['$answers.optionId'], 
+                if: { $isArray: '$answers.optionIds' }, 
+                then: '$answers.optionIds', 
                 else: [] 
               } 
             }
