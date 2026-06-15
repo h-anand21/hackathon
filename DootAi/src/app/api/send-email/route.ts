@@ -25,11 +25,14 @@ export async function POST(request: NextRequest) {
       .replace(/\//g, '_')
       .replace(/=+$/, '');
 
-    // Get the tenant instance
-    const tenant = await corsair.manage.tenants.get(userId);
-    if (!tenant) {
+    // Get the tenant instance to check if it exists
+    const tenantMeta = await corsair.manage.tenants.get(userId).catch(() => null);
+    if (!tenantMeta) {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
+
+    // Get the plugin-enabled tenant client
+    const tenant = corsair.withTenant(userId);
 
     // Send the message using Gmail plugin API
     await tenant.gmail.api.messages.send({

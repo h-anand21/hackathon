@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: any;
+  prisma: PrismaClient | undefined;
   prismaLocal: PrismaClient | undefined;
   prismaNeon: PrismaClient | undefined;
 };
@@ -48,20 +48,21 @@ const createProxy = () => {
     get(target, prop, receiver) {
       // If it's a model property (e.g. user, task, etc.)
       if (typeof prop === 'string' && prop in target && !prop.startsWith('$')) {
-        const localModel = (target as any)[prop];
-        const neonModel = prismaNeon ? (prismaNeon as any)[prop] : null;
+        const localModel = (target as unknown as Record<string, unknown>)[prop];
+        const neonModel = prismaNeon ? (prismaNeon as unknown as Record<string, unknown>)[prop] : null;
 
-        return new Proxy(localModel, {
+        return new Proxy(localModel as object, {
           get(modelTarget, method, modelReceiver) {
-            const originalMethod = modelTarget[method];
+            const originalMethod = (modelTarget as Record<string, unknown>)[method as string];
             if (typeof originalMethod === 'function') {
-              return async function (...args: any[]) {
+              const typedMethod = originalMethod as (...args: unknown[]) => Promise<unknown>;
+              return async function (...args: unknown[]) {
                 if (writeMethods.has(method as string) && neonModel) {
                   console.log(`[Dual-Write] Replicating ${String(prop)}.${String(method)} to both Local and Neon DBs`);
                   try {
                     const [localResult] = await Promise.all([
-                      originalMethod.apply(modelTarget, args),
-                      neonModel[method].apply(neonModel, args).catch((err: any) => {
+                      typedMethod.bind(modelTarget)(...args),
+                      (neonModel as Record<string, (...args: unknown[]) => Promise<unknown>>)[method as string](...args).catch((err: unknown) => {
                         console.error(`[Dual-Write Error] Failed to write to Neon for ${String(prop)}.${String(method)}:`, err);
                       }),
                     ]);
@@ -70,7 +71,7 @@ const createProxy = () => {
                     throw error;
                   }
                 }
-                return originalMethod.apply(modelTarget, args);
+                return typedMethod.bind(modelTarget)(...args);
               };
             }
             return Reflect.get(modelTarget, method, modelReceiver);

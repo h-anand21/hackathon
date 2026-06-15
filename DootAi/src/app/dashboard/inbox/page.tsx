@@ -100,6 +100,49 @@ export default function InboxPage() {
     }
   }, []);
 
+  // Background Auto-Sync (polls Gmail every 60 seconds)
+  useEffect(() => {
+    if (!user) return;
+
+    // Run an initial sync in the background 5 seconds after load
+    const initialSyncTimeout = setTimeout(() => {
+      console.log("[Auto-Sync] Running initial background email sync...");
+      fetch("/api/corsair/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.uid })
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          fetchEmails(user.uid);
+        }
+      })
+      .catch((err) => console.error("Background auto-sync failed:", err));
+    }, 5000);
+
+    const interval = setInterval(() => {
+      console.log("[Auto-Sync] Running background email sync...");
+      fetch("/api/corsair/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.uid })
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          fetchEmails(user.uid);
+        }
+      })
+      .catch((err) => console.error("Background auto-sync failed:", err));
+    }, 60000);
+
+    return () => {
+      clearTimeout(initialSyncTimeout);
+      clearInterval(interval);
+    };
+  }, [user]);
+
   // Filter emails based on search & tab
   const filteredEmails = emails.filter((email) => {
     const matchesSearch =

@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     console.log('[Webhook] Received webhook from Corsair:', JSON.stringify(body, null, 2));
 
-    let result;
+    let result: any;
     if (body.isMock) {
       // Find the user to link as tenant
       const user = await prisma.user.findFirst({
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (entity) {
-          const data = (entity.data as any) || {};
+          const data = (entity.data as unknown as Record<string, string | undefined>) || {};
           const subject = data.subject || 'No Subject';
           const sender = data.from || 'Unknown Sender';
           const bodyText = data.body || '';
@@ -157,10 +157,11 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, result });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Webhook] Error processing webhook:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }

@@ -3,6 +3,9 @@ import { prisma } from './db';
 const rawKey = process.env.GEMINI_API_KEY || '';
 const GEMINI_API_KEY = rawKey.replace(/['"]/g, '').trim();
 
+const rawOpenAIKey = process.env.OPENAI_API_KEY || '';
+const OPENAI_API_KEY = rawOpenAIKey.replace(/['"]/g, '').trim();
+
 export interface ClassifiedEmail {
   priority: 'HIGH' | 'MEDIUM' | 'LOW';
   category: string;
@@ -10,22 +13,15 @@ export interface ClassifiedEmail {
 }
 
 /**
- * Calls Gemini API to classify the email content into a priority, category, and summary.
+ * Calls Gemini API to classify the email content, with a fallback to OpenAI (gpt-4o-mini).
  */
 export async function classifyAndSummarizeEmail(
   subject: string,
   sender: string,
   body: string
 ): Promise<ClassifiedEmail> {
-  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your-gemini-api-key') {
-    console.warn('[AI Warning] GEMINI_API_KEY is not configured in .env. Falling back to mock classification and summary.');
-    // Return default fallback if API key is not configured
-    return {
-      priority: 'MEDIUM',
-      category: 'Personal',
-      summary: `Email from ${sender} with subject "${subject}".`
-    };
-  }
+  const isGeminiConfigured = GEMINI_API_KEY && GEMINI_API_KEY !== 'your-gemini-api-key' && GEMINI_API_KEY !== '';
+  const isOpenAIConfigured = OPENAI_API_KEY && OPENAI_API_KEY !== 'your-openai-api-key' && OPENAI_API_KEY !== '';
 
   const prompt = `
     You are an AI assistant designed to classify incoming emails for an inbox app called DootAI MailOS.
@@ -47,71 +43,152 @@ export async function classifyAndSummarizeEmail(
     }
   `;
 
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
-      }
-    );
+  // 1. Try Gemini
+  if (isGeminiConfigured) {
+    try {
+      console.log('[AI] Classifying email using Gemini...');
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        }
+      );
 
-    const data = await response.json();
-    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    
-    // Clean up any markdown blocks if the model ignored the instructions
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    
-    const parsed = JSON.parse(text);
-    return {
-      priority: parsed.priority || 'MEDIUM',
-      category: parsed.category || 'Personal',
-      summary: parsed.summary || 'No summary available.'
-    };
-  } catch (error) {
-    console.error('Failed to classify email with Gemini:', error);
-    return {
-      priority: 'MEDIUM',
-      category: 'Personal',
-      summary: `Email from ${sender} with subject "${subject}".`
-    };
+      if (response.ok) {
+        const data = await response.json();
+        let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(text);
+        return {
+          priority: parsed.priority || 'MEDIUM',
+          category: parsed.category || 'Personal',
+          summary: parsed.summary || 'No summary available.'
+        };
+      } else {
+        console.warn(`[AI Warning] Gemini classification failed (Status: ${response.status}). Trying OpenAI fallback...`);
+      }
+    } catch (error) {
+      console.error('[AI Error] Gemini classification threw error:', error);
+    }
   }
+
+  // 2. Try OpenAI Fallback
+  if (isOpenAIConfigured) {
+    try {
+      console.log('[AI Fallback] Classifying email using OpenAI (gpt-4o-mini)...');
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }],
+          response_format: { type: 'json_object' }
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const text = (data.choices?.[0]?.message?.content || '').trim();
+        const parsed = JSON.parse(text);
+        return {
+          priority: parsed.priority || 'MEDIUM',
+          category: parsed.category || 'Personal',
+          summary: parsed.summary || 'No summary available.'
+        };
+      } else {
+        console.warn(`[AI Warning] OpenAI classification failed (Status: ${response.status}).`);
+      }
+    } catch (error) {
+      console.error('[AI Error] OpenAI classification threw error:', error);
+    }
+  }
+
+  // 3. Absolute Fallback
+  console.warn('[AI Warning] Both Gemini and OpenAI failed or are not configured. Returning mock details.');
+  return {
+    priority: 'MEDIUM',
+    category: 'Personal',
+    summary: `Email from ${sender} with subject "${subject}".`
+  };
 }
 
 /**
- * Generates a 768-dimensional embedding vector using Gemini's text-embedding-004 model.
+ * Generates a 768-dimensional embedding vector, trying Gemini first and falling back to OpenAI (text-embedding-3-small).
  */
 export async function getGeminiEmbedding(text: string): Promise<number[]> {
-  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your-gemini-api-key') {
-    console.warn('[AI Warning] GEMINI_API_KEY is not configured in .env. Generating a random 768-dimensional embedding vector.');
-    // Return a dummy 768-dimensional vector if no API key is set
-    return new Array(768).fill(0).map(() => Math.random());
-  }
+  const isGeminiConfigured = GEMINI_API_KEY && GEMINI_API_KEY !== 'your-gemini-api-key' && GEMINI_API_KEY !== '';
+  const isOpenAIConfigured = OPENAI_API_KEY && OPENAI_API_KEY !== 'your-openai-api-key' && OPENAI_API_KEY !== '';
 
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'models/text-embedding-004',
-          content: {
-            parts: [{ text }]
-          }
-        })
+  // 1. Try Gemini
+  if (isGeminiConfigured) {
+    try {
+      console.log('[AI] Generating embedding using Gemini (text-embedding-004)...');
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'models/text-embedding-004',
+            content: {
+              parts: [{ text }]
+            }
+          })
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.embedding?.values) {
+          return data.embedding.values;
+        }
       }
-    );
-
-    const data = await response.json();
-    return data.embedding?.values || [];
-  } catch (error) {
-    console.error('Failed to generate embedding:', error);
-    return new Array(768).fill(0).map(() => Math.random());
+      console.warn(`[AI Warning] Gemini embedding failed (Status: ${response.status}). Trying OpenAI fallback...`);
+    } catch (error) {
+      console.error('[AI Error] Gemini embedding threw error:', error);
+    }
   }
+
+  // 2. Try OpenAI Fallback (text-embedding-3-small, 768 dimensions)
+  if (isOpenAIConfigured) {
+    try {
+      console.log('[AI Fallback] Generating embedding using OpenAI (text-embedding-3-small)...');
+      const response = await fetch('https://api.openai.com/v1/embeddings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'text-embedding-3-small',
+          input: text,
+          dimensions: 768
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const vector = data.data?.[0]?.embedding;
+        if (vector && vector.length === 768) {
+          return vector;
+        }
+      }
+      console.warn(`[AI Warning] OpenAI embedding failed (Status: ${response.status}).`);
+    } catch (error) {
+      console.error('[AI Error] OpenAI embedding threw error:', error);
+    }
+  }
+
+  // 3. Absolute Fallback
+  console.warn('[AI Warning] Both Gemini and OpenAI embedding generation failed or are not configured. Returning random vector.');
+  return new Array(768).fill(0).map(() => Math.random());
 }
 
 /**

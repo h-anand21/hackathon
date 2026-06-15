@@ -34,39 +34,52 @@ export async function POST(request: NextRequest) {
       reply = `You have 1 high-priority email scroll waiting in your bento box:\n\n1. "Urgent: Schedule review for Japanese Sketchbook Design System" from Aarav Patel. \n\nShould I draft a reply or schedule the review for you?`;
     }
     else {
-      // 2. Call Gemini API if key is configured and not default template string
-      const geminiKey = process.env.GEMINI_API_KEY;
-      const isKeyConfigured = geminiKey && geminiKey !== 'your-gemini-api-key' && geminiKey.trim() !== '';
+      // 2. Call Gemini API or OpenAI Fallback if key is configured
+      const geminiKey = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.replace(/['"]/g, '').trim() : '';
+      const openaiKey = process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.replace(/['"]/g, '').trim() : '';
 
-      if (isKeyConfigured) {
+      const isGeminiConfigured = geminiKey && geminiKey !== 'your-gemini-api-key' && geminiKey !== '';
+      const isOpenAIConfigured = openaiKey && openaiKey !== 'your-openai-api-key' && openaiKey !== '';
+
+      let emailContext = "";
+      try {
+        const queryEmbedding = await getGeminiEmbedding(message);
+        const embeddingString = `[${queryEmbedding.join(',')}]`;
+        
+        const matches: any[] = await prisma.$queryRawUnsafe(`
+          SELECT 
+            p."subject", 
+            p."sender", 
+            p."summary",
+            p."received_at" as "receivedAt"
+          FROM "EmailEmbedding" e
+          INNER JOIN "PriorityEmail" p ON e."entity_id" = p."entity_id"
+          WHERE p."user_id" = $1
+          ORDER BY e."embedding" <=> $2::vector
+          LIMIT 3
+        `, userId, embeddingString);
+
+        if (matches && matches.length > 0) {
+          emailContext = "Here is some relevant context from the user's emails:\n" + 
+            matches.map((m, idx) => `${idx + 1}. From: ${m.sender} | Subject: ${m.subject} | Summary: ${m.summary} | Date: ${m.receivedAt}`).join("\n");
+        }
+      } catch (err) {
+        console.error("Failed to retrieve semantic search context for chat:", err);
+      }
+
+      const promptText = `You are "Doot", an AI mail assistant in a workspace named "DootAI MailOS". 
+        The workspace has a premium, hand-drawn watercolor Japanese sketchbook theme.
+        Respond in Hinglish (Hindi + English) with cute emoji accents (🌸, 🍱, 🍙, ⛩). 
+        Keep the response brief, focused on email/calendar, and help the user organize their day.
+        
+        ${emailContext}
+        
+        User query: "${message}"`;
+
+      // 1. Try Gemini
+      if (isGeminiConfigured) {
         try {
-          // Perform semantic search to get relevant context
-          let emailContext = "";
-          try {
-            const queryEmbedding = await getGeminiEmbedding(message);
-            const embeddingString = `[${queryEmbedding.join(',')}]`;
-            
-            const matches: any[] = await prisma.$queryRawUnsafe(`
-              SELECT 
-                p."subject", 
-                p."sender", 
-                p."summary",
-                p."received_at" as "receivedAt"
-              FROM "EmailEmbedding" e
-              INNER JOIN "PriorityEmail" p ON e."entity_id" = p."entity_id"
-              WHERE p."user_id" = $1
-              ORDER BY e."embedding" <=> $2::vector
-              LIMIT 3
-            `, userId, embeddingString);
-
-            if (matches && matches.length > 0) {
-              emailContext = "Here is some relevant context from the user's emails:\n" + 
-                matches.map((m, idx) => `${idx + 1}. From: ${m.sender} | Subject: ${m.subject} | Summary: ${m.summary} | Date: ${m.receivedAt}`).join("\n");
-            }
-          } catch (err) {
-            console.error("Failed to retrieve semantic search context for chat:", err);
-          }
-
+          console.log('[Chat] Generating response using Gemini...');
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
             {
@@ -75,27 +88,50 @@ export async function POST(request: NextRequest) {
               body: JSON.stringify({
                 contents: [{
                   parts: [{
-                    text: `You are "Doot", an AI mail assistant in a workspace named "DootAI MailOS". 
-                    The workspace has a premium, hand-drawn watercolor Japanese sketchbook theme.
-                    Respond in Hinglish (Hindi + English) with cute emoji accents (🌸, 🍱, 🍙, ⛩). 
-                    Keep the response brief, focused on email/calendar, and help the user organize their day.
-                    
-                    ${emailContext}
-                    
-                    User query: "${message}"`
+                    text: promptText
                   }]
                 }]
               })
             }
           );
-          const data = await response.json();
-          reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          if (response.ok) {
+            const data = await response.json();
+            reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          } else {
+            console.warn(`[Chat Warning] Gemini chat failed (Status: ${response.status}). Trying OpenAI fallback...`);
+          }
         } catch (err) {
-          console.error("Gemini API call failed, using fallback:", err);
+          console.error("Gemini API call failed, trying OpenAI fallback:", err);
         }
       }
 
-      // 3. Fallback Hinglish response from Doot if Gemini is not configured or failed
+      // 2. Try OpenAI Fallback
+      if (!reply && isOpenAIConfigured) {
+        try {
+          console.log('[Chat Fallback] Generating response using OpenAI (gpt-4o-mini)...');
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${openaiKey}`
+            },
+            body: JSON.stringify({
+              model: 'gpt-4o-mini',
+              messages: [{ role: 'user', content: promptText }]
+            })
+          });
+          if (response.ok) {
+            const data = await response.json();
+            reply = data.choices?.[0]?.message?.content || "";
+          } else {
+            console.warn(`[Chat Warning] OpenAI chat failed (Status: ${response.status}).`);
+          }
+        } catch (err) {
+          console.error("OpenAI API call failed:", err);
+        }
+      }
+
+      // 3. Fallback Hinglish response from Doot if both failed
       if (!reply) {
         reply = `Konnichiwa! Mujhe aapka message mila: "${message}". \n\nMai aapke inbox aur calendar ko manage karne ke liye ready hoon. Aap mujhe Google calendar event schedule karne ya email draft karne ke liye bol sakte hain! 🌸`;
       }
@@ -121,8 +157,9 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, reply });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in AI Chat route:', error);
-    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: 'Internal server error', details: errorMessage }, { status: 500 });
   }
 }

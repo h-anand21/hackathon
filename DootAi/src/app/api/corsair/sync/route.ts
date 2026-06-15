@@ -85,7 +85,6 @@ export async function POST(request: NextRequest) {
                         subject,
                         sender,
                         snippet: snippetText,
-                        body: bodyText,
                         priority: aiResult.priority,
                         category: aiResult.category,
                         summary: aiResult.summary,

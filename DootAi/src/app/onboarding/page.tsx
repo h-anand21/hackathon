@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { auth, googleProvider } from "@/lib/firebase";
 import { signInWithPopup, User as FirebaseUser, signOut } from "firebase/auth";
@@ -18,7 +18,7 @@ import {
   Sun
 } from "lucide-react";
 
-export default function OnboardingPage() {
+function OnboardingPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -668,5 +668,20 @@ export default function OnboardingPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#fbf8f3] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-10 h-10 animate-spin text-[#3c6382] mx-auto" />
+          <p className="font-handwriting text-xl text-[#2b2725]/70">Opening DootAI notebook...</p>
+        </div>
+      </div>
+    }>
+      <OnboardingPageContent />
+    </Suspense>
   );
 }
