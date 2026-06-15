@@ -27,7 +27,9 @@ export async function POST(request: NextRequest) {
     const gmailAccount = await prisma.corsairAccount.findFirst({
       where: {
         tenantId: userId,
-        integrationId: 'gmail',
+        integration: {
+          name: 'gmail',
+        },
       },
     });
 
@@ -69,7 +71,9 @@ export async function POST(request: NextRequest) {
     const calendarAccount = await prisma.corsairAccount.findFirst({
       where: {
         tenantId: userId,
-        integrationId: 'googlecalendar',
+        integration: {
+          name: 'googlecalendar',
+        },
       },
     });
 

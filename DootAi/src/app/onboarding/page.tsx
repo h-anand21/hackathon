@@ -63,14 +63,18 @@ export default function OnboardingPage() {
 
   // Monitor Firebase Auth State
   useEffect(() => {
+    console.log("DootAI Auth: Initializing onAuthStateChanged listener...");
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      console.log("DootAI Auth: onAuthStateChanged fired. Current user:", currentUser ? currentUser.email : "Null (Not logged in)");
       setUser(currentUser);
       setLoadingAuth(false);
       
       if (currentUser) {
-        // Fetch active connections status
+        console.log("DootAI Auth: Fetching connections for tenant:", currentUser.uid);
         fetchConnectionsStatus(currentUser.uid);
       }
+    }, (error) => {
+      console.error("DootAI Auth: onAuthStateChanged error:", error);
     });
     return () => unsubscribe();
   }, []);

@@ -14,7 +14,9 @@ export async function GET(request: NextRequest) {
     const accounts = await prisma.corsairAccount.findMany({
       where: {
         tenantId: userId,
-        integrationId: 'googlecalendar',
+        integration: {
+          name: 'googlecalendar',
+        },
       },
     });
 
