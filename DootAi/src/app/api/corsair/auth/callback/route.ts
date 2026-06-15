@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     // The callback succeeded, meaning the tokens are saved.
     // Now redirect the user to the onboarding steps.
     const frontendUrl = new URL('/onboarding', request.url);
-    frontendUrl.searchParams.set('step', '3'); // Move to background sync step
+    frontendUrl.searchParams.set('step', '2'); // Stay on connection screen to allow multiple links
     frontendUrl.searchParams.set('tenantId', result.tenantId);
     frontendUrl.searchParams.set('plugin', result.plugin);
 

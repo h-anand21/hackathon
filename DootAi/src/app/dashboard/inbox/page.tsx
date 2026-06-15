@@ -36,6 +36,7 @@ export default function InboxPage() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"ALL" | "HIGH" | "MEDIUM" | "LOW">("ALL");
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
@@ -68,6 +69,27 @@ export default function InboxPage() {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Manual Sync trigger
+  const handleManualSync = async () => {
+    if (!user) return;
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/corsair/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.uid })
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchEmails(user.uid);
+      }
+    } catch (e) {
+      console.error("Error running manual inbox sync:", e);
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -211,16 +233,30 @@ export default function InboxPage() {
         
         {/* Left pane: Email List */}
         <div className="flex-1 lg:max-w-md flex flex-col min-h-0 bg-white sketch-border sketch-shadow">
-          {/* Search Bar */}
-          <div className="p-4 border-b border-[#e6dfd3] flex items-center bg-[#fbf8f3]">
-            <Search className="w-4 h-4 text-[#2b2725]/40 mr-2" />
-            <input
-              type="text"
-              placeholder="Search scroll..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-transparent border-none text-sm focus:outline-none placeholder-[#2b2725]/30 font-sans"
-            />
+          {/* Search Bar & Sync */}
+          <div className="p-4 border-b border-[#e6dfd3] flex items-center justify-between bg-[#fbf8f3]">
+            <div className="flex items-center flex-1">
+              <Search className="w-4 h-4 text-[#2b2725]/40 mr-2" />
+              <input
+                type="text"
+                placeholder="Search scroll..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-transparent border-none text-sm focus:outline-none placeholder-[#2b2725]/30 font-sans"
+              />
+            </div>
+            <button
+              onClick={handleManualSync}
+              disabled={syncing}
+              className="ml-2 px-2.5 py-1.5 bg-[#3c6382]/10 hover:bg-[#3c6382]/20 text-[#3c6382] font-mono font-bold text-[10px] uppercase rounded sketch-border-sm flex items-center space-x-1 cursor-pointer transition-all disabled:opacity-50"
+              title="Sync latest emails from Gmail"
+            >
+              {syncing ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <span>Sync</span>
+              )}
+            </button>
           </div>
 
           {/* Tabs */}

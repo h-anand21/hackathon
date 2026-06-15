@@ -7,6 +7,7 @@ const { Pool } = pg;
 import fs from 'fs';
 import path from 'path';
 import { createCorsairOrm } from 'corsair/orm';
+import { initializeIntegrationDEK } from 'corsair/core';
 
 try {
   const envPath = path.resolve(process.cwd(), '.env');
@@ -25,22 +26,36 @@ try {
   });
 
   const symbols = Object.getOwnPropertySymbols(corsair);
-  console.log('Symbols on corsair:', symbols.map(s => s.toString()));
+  const internalSymbol = symbols.find(s => s.toString().includes('internal'));
+  const dbWrapper = corsair[internalSymbol].database;
   
-  const internalSymbol = symbols.find(s => s.toString().toLowerCase().includes('internal'));
-  const internalConfig = corsair[internalSymbol];
-  console.log('internalConfig database properties:', Object.keys(internalConfig.database));
+  const orm = createCorsairOrm(dbWrapper);
   
-  const orm = createCorsairOrm(internalConfig.database);
-  console.log('orm integrations check:', Object.keys(orm.integrations));
+  // Upsert integrations
+  let gmailIntegration = await orm.integrations.findByName('gmail');
+  if (!gmailIntegration) {
+    gmailIntegration = await orm.integrations.create({ name: 'gmail', config: {} });
+  }
+  if (!gmailIntegration.dek) {
+    await initializeIntegrationDEK(dbWrapper, 'gmail', 'ohQ9OjjjKV9fzrm09W0+vKr/X4YQtzXH3mSaALuFu3o=');
+    console.log('Gmail DEK initialized successfully!');
+  }
+
+  let calendarIntegration = await orm.integrations.findByName('googlecalendar');
+  if (!calendarIntegration) {
+    calendarIntegration = await orm.integrations.create({ name: 'googlecalendar', config: {} });
+  }
+  if (!calendarIntegration.dek) {
+    await initializeIntegrationDEK(dbWrapper, 'googlecalendar', 'ohQ9OjjjKV9fzrm09W0+vKr/X4YQtzXH3mSaALuFu3o=');
+    console.log('Calendar DEK initialized successfully!');
+  }
+
+  // Verify set_client_id works
+  await corsair.keys.gmail.set_client_id('test-client-id');
+  console.log('Verification: set_client_id succeeded! Current client id:', await corsair.keys.gmail.get_client_id());
 
   const tenant = await corsair.manage.tenants.create({ id: 'test-user-id' });
-  console.log('tenant own properties:', Object.getOwnPropertyNames(tenant));
-  console.log('tenant prototype methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(tenant)));
-  console.log('tenant.accounts own properties:', Object.getOwnPropertyNames(tenant.accounts));
-  if (tenant.connectedPlugins) {
-    console.log('tenant.connectedPlugins own properties:', Object.getOwnPropertyNames(tenant.connectedPlugins));
-  }
+  console.log('Tenant created successfully:', tenant.id);
 } catch (err) {
   console.error(err);
 }

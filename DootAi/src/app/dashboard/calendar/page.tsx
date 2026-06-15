@@ -27,6 +27,7 @@ export default function CalendarPage() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -39,6 +40,27 @@ export default function CalendarPage() {
   const [eventDateStr, setEventDateStr] = useState("");
   const [eventLocation, setEventLocation] = useState("");
   const [savingEvent, setSavingEvent] = useState(false);
+
+  // Manual Sync trigger
+  const handleManualSync = async () => {
+    if (!user) return;
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/corsair/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.uid })
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchEvents(user.uid);
+      }
+    } catch (e) {
+      console.error("Error running manual calendar sync:", e);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   // Fetch events
   const fetchEvents = async (uid: string) => {
@@ -186,13 +208,27 @@ export default function CalendarPage() {
             Synced via Corsair Google Calendar connector.
           </p>
         </div>
-        <button
-          onClick={() => setIsAddingEvent(true)}
-          className="px-4 py-2 bg-[#b83227] text-white text-xs font-bold sketch-border sketch-shadow-hover hover:scale-105 flex items-center space-x-1.5 cursor-pointer transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Event</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={handleManualSync}
+            disabled={syncing}
+            className="px-3 py-2 bg-[#fbf8f3] hover:bg-[#e6dfd3]/20 text-[#2b2725]/70 text-xs font-mono font-bold uppercase sketch-border-sm flex items-center space-x-1.5 cursor-pointer transition-all disabled:opacity-50"
+            title="Sync latest events from Google Calendar"
+          >
+            {syncing ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <span>Sync Now</span>
+            )}
+          </button>
+          <button
+            onClick={() => setIsAddingEvent(true)}
+            className="px-4 py-2 bg-[#b83227] text-white text-xs font-bold sketch-border sketch-shadow-hover hover:scale-105 flex items-center space-x-1.5 cursor-pointer transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Event</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Grid & Sidepane Layout */}

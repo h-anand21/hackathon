@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     let tenant = null;
     try {
-      tenant = await corsair.manage.tenants.get({ id: tenantId });
+      tenant = await corsair.manage.tenants.get(tenantId);
     } catch (e) {
       // If it doesn't exist, we'll return an empty list
     }

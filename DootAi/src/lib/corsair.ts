@@ -3,6 +3,7 @@ import { createCorsair } from 'corsair';
 import { gmail } from '@corsair-dev/gmail';
 import { googlecalendar } from '@corsair-dev/googlecalendar';
 import { createCorsairOrm } from 'corsair/orm';
+import { initializeIntegrationDEK } from 'corsair/core';
 
 // Share the underlying PG Pool between Corsair and Prisma
 const pool = new Pool({
@@ -27,8 +28,24 @@ export async function ensureCorsairConfigured() {
   const dbWrapper = internalSymbol ? (corsair as any)[internalSymbol]?.database : undefined;
 
   const orm = createCorsairOrm(dbWrapper);
-  await orm.integrations.upsertByName('gmail', { config: {} });
-  await orm.integrations.upsertByName('googlecalendar', { config: {} });
+  
+  // Upsert Gmail integration & initialize its DEK if missing
+  let gmailIntegration = await orm.integrations.findByName('gmail');
+  if (!gmailIntegration) {
+    gmailIntegration = await orm.integrations.create({ name: 'gmail', config: {} });
+  }
+  if (!gmailIntegration.dek) {
+    await initializeIntegrationDEK(dbWrapper, 'gmail', process.env.CORSAIR_KEK!);
+  }
+
+  // Upsert Calendar integration & initialize its DEK if missing
+  let calendarIntegration = await orm.integrations.findByName('googlecalendar');
+  if (!calendarIntegration) {
+    calendarIntegration = await orm.integrations.create({ name: 'googlecalendar', config: {} });
+  }
+  if (!calendarIntegration.dek) {
+    await initializeIntegrationDEK(dbWrapper, 'googlecalendar', process.env.CORSAIR_KEK!);
+  }
 
   const clientId = process.env.GOOGLE_CLIENT_ID!;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET!;

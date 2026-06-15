@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
                     User query: "${message}"`
                   }]
                 }]
-              }
+              })
             }
           );
           const data = await response.json();

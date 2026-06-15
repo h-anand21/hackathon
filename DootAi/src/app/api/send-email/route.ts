@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       .replace(/=+$/, '');
 
     // Get the tenant instance
-    const tenant = await corsair.manage.tenants.get({ id: userId });
+    const tenant = await corsair.manage.tenants.get(userId);
     if (!tenant) {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }

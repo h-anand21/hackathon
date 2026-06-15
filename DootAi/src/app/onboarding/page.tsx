@@ -132,15 +132,26 @@ export default function OnboardingPage() {
     window.location.href = `/api/corsair/auth/connect?pluginId=${pluginId}&tenantId=${user.uid}`;
   };
 
-  // Handle Sync Progress Simulation (Step 3)
+  // Handle Sync Progress Simulation & Real Backend Sync (Step 3)
   useEffect(() => {
     if (step === 3 && !isSyncing) {
       setIsSyncing(true);
       setSyncProgress(0);
       
+      // Trigger actual sync of Gmail and Calendar from Corsair
+      if (user) {
+        fetch("/api/corsair/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user.uid })
+        }).catch(err => {
+          console.error("Real sync failed in onboarding:", err);
+        });
+      }
+      
       const statusSteps = [
         { progress: 10, text: "Contacting Google Mail & Calendar APIs..." },
-        { progress: 25, text: "Retrieving latest 50 inbox messages..." },
+        { progress: 25, text: "Retrieving latest 15 inbox messages..." },
         { progress: 45, text: "Parsing calendar events & upcoming schedules..." },
         { progress: 65, text: "Running AI prioritizer on unread emails..." },
         { progress: 85, text: "Generating pgvector semantic index embeddings..." },
@@ -166,7 +177,7 @@ export default function OnboardingPage() {
 
       return () => clearInterval(interval);
     }
-  }, [step]);
+  }, [step, user]);
 
   // Step 4: Save preferences and go to step 5
   const savePreferences = async () => {

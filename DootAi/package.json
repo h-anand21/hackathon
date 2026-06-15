@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test-db": "node test-db.js"
   },
   "dependencies": {
     "@corsair-dev/gmail": "^0.1.4",
