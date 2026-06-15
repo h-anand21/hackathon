@@ -1,26 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Outfit:wght@300;400;500;600;700&family=Yomogi&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fbf8f3;
+  --foreground: #2b2725;
+  --charcoal: #2b2725;
+  --hanko-red: #b83227;
+  --washi-blue: #3c6382;
+  --washi-green: #388e3c;
+  --washi-yellow: #f5b041;
+  --paper-line: #e6dfd3;
+  --font-sans: 'Outfit', sans-serif;
+  --font-handwriting: 'Yomogi', 'Caveat', cursive;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-sans);
+  --font-handwriting: var(--font-handwriting);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Notebook Grid Pattern */
+.notebook-grid {
+  background-color: #fbf8f3;
+  background-image: 
+    linear-gradient(90deg, transparent 79px, #ab47bc 79px, #ab47bc 81px, transparent 81px),
+    linear-gradient(#eee 1px, transparent 1px);
+  background-size: 100% 24px;
+}
+
+.notebook-grid-small {
+  background-color: #fbf8f3;
+  background-image: 
+    linear-gradient(var(--paper-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Hand-drawn sketchy border */
+.sketch-border {
+  border: 2px solid var(--charcoal);
+  border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+}
+
+.sketch-border-sm {
+  border: 1.5px solid var(--charcoal);
+  border-radius: 120px 10px 110px 10px/10px 110px 10px 120px;
+}
+
+.sketch-border-thick {
+  border: 3.5px solid var(--charcoal);
+  border-radius: 255px 25px 225px 25px/25px 225px 25px 255px;
+}
+
+/* Pencil shadow effect */
+.sketch-shadow {
+  box-shadow: 4px 4px 0px 0px rgba(43, 39, 37, 0.15);
+}
+
+.sketch-shadow-hover:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px rgba(43, 39, 37, 0.25);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Washi Tape styling */
+.washi-tape {
+  background-color: var(--washi-yellow);
+  opacity: 0.85;
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+  transform: rotate(-3deg);
+  border-left: 2px dashed rgba(255,255,255,0.5);
+  border-right: 2px dashed rgba(255,255,255,0.5);
+}
+
+.washi-tape-blue {
+  background-color: var(--washi-blue);
+  color: white;
+}
+
+.washi-tape-green {
+  background-color: var(--washi-green);
+  color: white;
+}
+
+/* Hanko Seal / Stamp */
+.hanko-stamp {
+  font-family: var(--font-handwriting);
+  border: 3px double var(--hanko-red);
+  color: var(--hanko-red);
+  text-transform: uppercase;
+  font-weight: bold;
+  transform: rotate(-8deg);
+  opacity: 0.88;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 4px rgba(184, 50, 39, 0.15);
+}
+
+/* Spiral Binder Rings Sidebar */
+.spiral-binder {
+  background: linear-gradient(90deg, #d5d0c5 0%, #e8e3d8 30%, #f1ebe0 70%, #d5d0c5 100%);
+  border-right: 2px solid var(--charcoal);
+  box-shadow: inset -5px 0 10px rgba(0,0,0,0.05);
+}
+
+.spiral-ring {
+  width: 32px;
+  height: 12px;
+  background: linear-gradient(180deg, #7f8c8d 0%, #bdc3c7 40%, #ecf0f1 70%, #95a5a6 100%);
+  border: 1.5px solid var(--charcoal);
+  border-radius: 6px;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.15);
+}
+
+/* Custom rough stroke divider */
+.rough-divider {
+  height: 3px;
+  background-color: var(--charcoal);
+  border-radius: 50% / 10%;
+}
+
+/* Custom Scrollbar styled for notebook */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--paper-line);
+  border: 2px solid var(--background);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--charcoal);
 }
