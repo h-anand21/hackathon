@@ -1,0 +1,140 @@
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+// ==========================================
+// Corsair Core Tables (Persisted Integrations Cache)
+// ==========================================
+
+model CorsairIntegration {
+  id        String           @id
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+  name      String
+  config    Json             @default("{}")
+  dek       String?
+  accounts  CorsairAccount[]
+
+  @@map("corsair_integrations")
+}
+
+model CorsairAccount {
+  id            String             @id
+  createdAt     DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  tenantId      String             @map("tenant_id")
+  integrationId String             @map("integration_id")
+  config        Json               @default("{}")
+  dek           String?
+  integration   CorsairIntegration @relation(fields: [integrationId], references: [id])
+  entities      CorsairEntity[]
+  events        CorsairEvent[]
+
+  @@map("corsair_accounts")
+}
+
+model CorsairEntity {
+  id         String         @id
+  createdAt  DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+  accountId  String         @map("account_id")
+  entityId   String         @map("entity_id")
+  entityType String         @map("entity_type")
+  version    String
+  data       Json           @default("{}")
+  account    CorsairAccount @relation(fields: [accountId], references: [id])
+
+  @@map("corsair_entities")
+}
+
+model CorsairEvent {
+  id        String         @id
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+  accountId String         @map("account_id")
+  eventType String         @map("event_type")
+  payload   Json           @default("{}")
+  status    String?
+  account   CorsairAccount @relation(fields: [accountId], references: [id])
+
+  @@map("corsair_events")
+}
+
+// ==========================================
+// DootAI Core App Tables
+// ==========================================
+
+model User {
+  id           String        @id // Syncs with Firebase auth UID
+  email        String        @unique
+  name         String?
+  photoUrl     String?
+  preferences  Json          @default("{}") // AI features enabled, general configs
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  
+  emails       PriorityEmail[]
+  tasks        Task[]
+  chatSessions ChatSession[]
+}
+
+model PriorityEmail {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  entityId   String   @unique @map("entity_id") // References CorsairEntity ID
+  subject    String
+  sender     String
+  snippet    String?
+  priority   String   // HIGH, MEDIUM, LOW
+  category   String   // Urgent, Important, Personal, Promotional, Spam
+  summary    String?  @db.Text
+  receivedAt DateTime @map("received_at")
+  
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailEmbedding {
+  id        String                 @id @default(cuid())
+  entityId  String                 @unique @map("entity_id") // References CorsairEntity ID
+  content   String                 @db.Text
+  embedding Unsupported("vector")? // Custom vector type (pgvector)
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  title     String
+  completed Boolean  @default(false)
+  priority  String   @default("Medium") // High, Medium, Low
+  emailId   String?  @map("email_id")   // Optional link back to email
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ChatSession {
+  id        String        @id @default(cuid())
+  userId    String        @map("user_id")
+  createdAt DateTime      @default(now()) @map("created_at")
+  
+  messages  ChatMessage[]
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String      @map("session_id")
+  role      String      // user, assistant
+  content   String      @db.Text
+  createdAt DateTime    @default(now()) @map("created_at")
+  
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
