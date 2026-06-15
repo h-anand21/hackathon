@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getGeminiEmbedding } from '@/lib/ai';
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,6 +40,33 @@ export async function POST(request: NextRequest) {
 
       if (isKeyConfigured) {
         try {
+          // Perform semantic search to get relevant context
+          let emailContext = "";
+          try {
+            const queryEmbedding = await getGeminiEmbedding(message);
+            const embeddingString = `[${queryEmbedding.join(',')}]`;
+            
+            const matches: any[] = await prisma.$queryRawUnsafe(`
+              SELECT 
+                p."subject", 
+                p."sender", 
+                p."summary",
+                p."received_at" as "receivedAt"
+              FROM "EmailEmbedding" e
+              INNER JOIN "PriorityEmail" p ON e."entity_id" = p."entity_id"
+              WHERE p."user_id" = $1
+              ORDER BY e."embedding" <=> $2::vector
+              LIMIT 3
+            `, userId, embeddingString);
+
+            if (matches && matches.length > 0) {
+              emailContext = "Here is some relevant context from the user's emails:\n" + 
+                matches.map((m, idx) => `${idx + 1}. From: ${m.sender} | Subject: ${m.subject} | Summary: ${m.summary} | Date: ${m.receivedAt}`).join("\n");
+            }
+          } catch (err) {
+            console.error("Failed to retrieve semantic search context for chat:", err);
+          }
+
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
             {
@@ -51,6 +79,8 @@ export async function POST(request: NextRequest) {
                     The workspace has a premium, hand-drawn watercolor Japanese sketchbook theme.
                     Respond in Hinglish (Hindi + English) with cute emoji accents (🌸, 🍱, 🍙, ⛩). 
                     Keep the response brief, focused on email/calendar, and help the user organize their day.
+                    
+                    ${emailContext}
                     
                     User query: "${message}"`
                   }]

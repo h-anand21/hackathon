@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { corsair, ensureCorsairConfigured } from '@/lib/corsair';
 import { prisma } from '@/lib/db';
+import { classifyAndSummarizeEmail, getGeminiEmbedding, saveEmailEmbedding } from '@/lib/ai';
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,8 +54,52 @@ export async function POST(request: NextRequest) {
                     id: msg.id,
                     userId: 'me',
                   });
+
+                  // Perform AI classification & embedding generation for the synced message
+                  const entity = await prisma.corsairEntity.findUnique({
+                    where: { id: msg.id },
+                  });
+
+                  if (entity) {
+                    const data = (entity.data as any) || {};
+                    const subject = data.subject || 'No Subject';
+                    const sender = data.from || 'Unknown Sender';
+                    const bodyText = data.body || '';
+                    const snippetText = data.snippet || '';
+                    const receivedAt = data.createdAt || entity.createdAt;
+
+                    // Call Gemini AI for classification and summarization
+                    const aiResult = await classifyAndSummarizeEmail(subject, sender, bodyText || snippetText);
+
+                    // Save the classification to the PriorityEmail table
+                    await prisma.priorityEmail.upsert({
+                      where: { entityId: entity.id },
+                      update: {
+                        priority: aiResult.priority,
+                        category: aiResult.category,
+                        summary: aiResult.summary,
+                      },
+                      create: {
+                        userId,
+                        entityId: entity.id,
+                        subject,
+                        sender,
+                        snippet: snippetText,
+                        body: bodyText,
+                        priority: aiResult.priority,
+                        category: aiResult.category,
+                        summary: aiResult.summary,
+                        receivedAt: new Date(receivedAt),
+                      },
+                    });
+
+                    // Generate and save embedding for semantic search
+                    const embeddingText = `From: ${sender}\nSubject: ${subject}\n\n${bodyText || snippetText}`;
+                    const embedding = await getGeminiEmbedding(embeddingText);
+                    await saveEmailEmbedding(entity.id, embeddingText, embedding);
+                  }
                 } catch (getErr) {
-                  console.error(`Failed to fetch details for message ${msg.id}:`, getErr);
+                  console.error(`Failed to fetch/classify details for message ${msg.id}:`, getErr);
                 }
               }
             })

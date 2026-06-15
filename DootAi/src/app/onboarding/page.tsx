@@ -64,7 +64,16 @@ export default function OnboardingPage() {
   // Monitor Firebase Auth State
   useEffect(() => {
     console.log("DootAI Auth: Initializing onAuthStateChanged listener...");
+    
+    // Fallback timeout: If Firebase auth iframe hangs (due to third-party cookie blocking on tunnels like ngrok),
+    // we bypass the stuck loading screen after 3 seconds so the user can interact with the page.
+    const fallbackTimeout = setTimeout(() => {
+      console.warn("DootAI Auth: Auth state listener timed out. Bypassing stuck loading screen...");
+      setLoadingAuth(false);
+    }, 3000);
+
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      clearTimeout(fallbackTimeout);
       console.log("DootAI Auth: onAuthStateChanged fired. Current user:", currentUser ? currentUser.email : "Null (Not logged in)");
       setUser(currentUser);
       setLoadingAuth(false);
@@ -74,9 +83,15 @@ export default function OnboardingPage() {
         fetchConnectionsStatus(currentUser.uid);
       }
     }, (error) => {
+      clearTimeout(fallbackTimeout);
       console.error("DootAI Auth: onAuthStateChanged error:", error);
+      setLoadingAuth(false);
     });
-    return () => unsubscribe();
+
+    return () => {
+      clearTimeout(fallbackTimeout);
+      unsubscribe();
+    };
   }, []);
 
   // Fetch connection status from API
