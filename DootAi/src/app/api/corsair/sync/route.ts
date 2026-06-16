@@ -24,10 +24,11 @@ export async function POST(request: NextRequest) {
     let calendarCount = 0;
     let calendarError = null;
 
-    // 1. Sync Gmail
+    // 1. Sync Gmail (exclude mock accounts)
     const gmailAccount = await prisma.corsairAccount.findFirst({
       where: {
         tenantId: userId,
+        id: { not: 'mock-account-id' },
         integration: {
           name: 'gmail',
         },
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
           
           // Parallel fetch of details for each message to cache subject, snippet, body, etc.
           await Promise.all(
-            messagesList.messages.map(async (msg: any) => {
+            messagesList.messages.map(async (msg: { id?: string }) => {
               if (msg.id) {
                 try {
                   await tenant.gmail.api.messages.get({
@@ -56,12 +57,15 @@ export async function POST(request: NextRequest) {
                   });
 
                   // Perform AI classification & embedding generation for the synced message
-                  const entity = await prisma.corsairEntity.findUnique({
-                    where: { id: msg.id },
+                  const entity = await prisma.corsairEntity.findFirst({
+                    where: {
+                      entityId: msg.id,
+                      entityType: 'messages',
+                    },
                   });
 
                   if (entity) {
-                    const data = (entity.data as any) || {};
+                    const data = (entity.data as unknown as Record<string, string | undefined>) || {};
                     const subject = data.subject || 'No Subject';
                     const sender = data.from || 'Unknown Sender';
                     const bodyText = data.body || '';
@@ -105,9 +109,9 @@ export async function POST(request: NextRequest) {
           );
         }
         gmailSynced = true;
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error syncing Gmail in sync route:', err);
-        gmailError = err.message || String(err);
+        gmailError = err instanceof Error ? err.message : String(err);
       }
     }
 
@@ -132,9 +136,9 @@ export async function POST(request: NextRequest) {
           calendarCount = eventsList.items.length;
         }
         calendarSynced = true;
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error syncing Calendar in sync route:', err);
-        calendarError = err.message || String(err);
+        calendarError = err instanceof Error ? err.message : String(err);
       }
     }
 
@@ -153,10 +157,11 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in sync endpoint:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }

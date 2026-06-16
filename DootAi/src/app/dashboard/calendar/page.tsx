@@ -66,7 +66,9 @@ export default function CalendarPage() {
   const fetchEvents = async (uid: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/calendar?userId=${uid}`);
+      const res = await fetch(`/api/calendar?userId=${uid}&t=${Date.now()}`, {
+        cache: 'no-store'
+      });
       const data = await res.json();
       if (data.success) {
         setEvents(data.events);

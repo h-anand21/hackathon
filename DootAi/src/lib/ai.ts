@@ -199,13 +199,18 @@ export async function saveEmailEmbedding(entityId: string, content: string, embe
     const id = 'emb_' + Math.random().toString(36).substring(2, 15);
     const embeddingString = `[${embedding.join(',')}]`;
 
-    // We use a raw SQL query with cast because Prisma doesn't natively support Unsupported("vector") inserts easily
-    await prisma.$executeRaw`
-      INSERT INTO "EmailEmbedding" ("id", "entity_id", "content", "embedding")
-      VALUES (${id}, ${entityId}, ${content}, cast(${embeddingString} as vector))
-      ON CONFLICT ("entity_id") DO UPDATE
-      SET "content" = ${content}, "embedding" = cast(${embeddingString} as vector)
-    `;
+    // We use a raw SQL query with cast because Prisma doesn't natively support Unsupported("vector") inserts easily.
+    // Using $executeRawUnsafe avoids serialization bugs in the Prisma query engine with custom PG extension types.
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "EmailEmbedding" ("id", "entity_id", "content", "embedding")
+       VALUES ($1, $2, $3, cast($4 as vector))
+       ON CONFLICT ("entity_id") DO UPDATE
+       SET "content" = $3, "embedding" = cast($4 as vector)`,
+      id,
+      entityId,
+      content,
+      embeddingString
+    );
     console.log(`Saved embedding for entity ${entityId} to both databases successfully.`);
   } catch (error) {
     console.error('Failed to save email embedding:', error);

@@ -57,7 +57,9 @@ export default function InboxPage() {
   const fetchEmails = async (uid: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/inbox?userId=${uid}`);
+      const res = await fetch(`/api/inbox?userId=${uid}&t=${Date.now()}`, {
+        cache: 'no-store'
+      });
       const data = await res.json();
       if (data.success) {
         setEmails(data.emails);
@@ -94,54 +96,14 @@ export default function InboxPage() {
   };
 
   useEffect(() => {
-    setUser(auth.currentUser);
-    if (auth.currentUser) {
-      fetchEmails(auth.currentUser.uid);
-    }
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        fetchEmails(currentUser.uid);
+      }
+    });
+    return () => unsubscribe();
   }, []);
-
-  // Background Auto-Sync (polls Gmail every 60 seconds)
-  useEffect(() => {
-    if (!user) return;
-
-    // Run an initial sync in the background 5 seconds after load
-    const initialSyncTimeout = setTimeout(() => {
-      console.log("[Auto-Sync] Running initial background email sync...");
-      fetch("/api/corsair/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.uid })
-      })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          fetchEmails(user.uid);
-        }
-      })
-      .catch((err) => console.error("Background auto-sync failed:", err));
-    }, 5000);
-
-    const interval = setInterval(() => {
-      console.log("[Auto-Sync] Running background email sync...");
-      fetch("/api/corsair/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.uid })
-      })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          fetchEmails(user.uid);
-        }
-      })
-      .catch((err) => console.error("Background auto-sync failed:", err));
-    }, 60000);
-
-    return () => {
-      clearTimeout(initialSyncTimeout);
-      clearInterval(interval);
-    };
-  }, [user]);
 
   // Filter emails based on search & tab
   const filteredEmails = emails.filter((email) => {
@@ -251,6 +213,18 @@ export default function InboxPage() {
     setIsComposing(true);
   };
 
+  const formatTime = (dateStr: any) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? "" : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatDateTime = (dateStr: any) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? "" : d.toLocaleString();
+  };
+
   const getPriorityBadgeColor = (priority: string) => {
     switch (priority) {
       case "HIGH":
@@ -351,10 +325,10 @@ export default function InboxPage() {
                   >
                     <div className="flex justify-between items-start mb-1">
                       <span className="font-bold text-xs truncate max-w-[160px]">
-                        {email.sender.split(" <")[0]}
+                        {(email.sender || "Unknown Sender").split(" <")[0]}
                       </span>
                       <span className="text-[9px] font-mono text-[#2b2725]/40 whitespace-nowrap">
-                        {new Date(email.receivedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {formatTime(email.receivedAt)}
                       </span>
                     </div>
                     <h4 className="font-handwriting font-bold text-sm text-[#2b2725] leading-tight mb-1 truncate">
@@ -402,7 +376,7 @@ export default function InboxPage() {
                       <p className="mt-0.5">To: {selectedEmail.to}</p>
                     </div>
                     <span className="font-mono">
-                      {new Date(selectedEmail.receivedAt).toLocaleString()}
+                      {formatDateTime(selectedEmail.receivedAt)}
                     </span>
                   </div>
                 </div>
