@@ -28,7 +28,15 @@ export async function GET(request: NextRequest) {
 
     // The callback succeeded, meaning the tokens are saved.
     // Now redirect the user to the onboarding steps.
-    const frontendUrl = new URL('/onboarding', request.url);
+    const headers = request.headers;
+    const proto = headers.get('x-forwarded-proto') || 'http';
+    const host = headers.get('x-forwarded-host') || headers.get('host') || 'localhost:3000';
+    
+    // Safety check: force http for localhost to avoid ERR_SSL_PROTOCOL_ERROR
+    const safeProto = host.includes('localhost') ? 'http' : proto;
+    const baseUrl = `${safeProto}://${host}`;
+    
+    const frontendUrl = new URL('/onboarding', baseUrl);
     frontendUrl.searchParams.set('step', '2'); // Stay on connection screen to allow multiple links
     frontendUrl.searchParams.set('tenantId', result.tenantId);
     frontendUrl.searchParams.set('plugin', result.plugin);

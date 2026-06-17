@@ -1,0 +1,5 @@
+1-bording.png: 1285 x 1224 (png)
+2-bording.png: 1407 x 1118 (png)
+3-bording.png: 1403 x 1121 (png)
+4-boarding.png: 1450 x 1085 (png)
+5-boarding.png: 1402 x 1122 (png)
