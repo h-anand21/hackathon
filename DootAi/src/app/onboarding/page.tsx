@@ -20,6 +20,367 @@ import {
   Users
 } from "lucide-react";
 
+// ----------------------------------------------------
+// HIGH FIDELITY VECTOR SVG COMPONENTS FOR GHIBLI DESIGN
+// ----------------------------------------------------
+
+function HankoLogoSVG({ className = "w-9 h-9" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 100 100" className={`${className} rotate-[-3deg] shrink-0`} style={{ filter: "drop-shadow(1px 2px 2px rgba(184, 50, 39, 0.15))" }}>
+      {/* Outer red stamp border with sketchy outline */}
+      <rect x="8" y="8" width="84" height="84" rx="10" fill="none" stroke="#b83227" strokeWidth="7" strokeDasharray="95 5 90 8 98 4" />
+      {/* Red ink character */}
+      <text x="50" y="52" fill="#b83227" fontSize="42" fontWeight="black" textAnchor="middle" fontFamily="'Kalam', 'Caveat', sans-serif" dominantBaseline="middle">
+        道
+      </text>
+      <text x="50" y="80" fill="#b83227" fontSize="16" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif" letterSpacing="2">
+        AI
+      </text>
+    </svg>
+  );
+}
+
+function DootWaving() {
+  return (
+    <div className="relative w-40 h-40 flex items-center justify-center">
+      <svg viewBox="0 0 120 120" className="w-full h-full">
+        {/* Antenna */}
+        <line x1="60" y1="30" x2="60" y2="15" stroke="#2b2725" strokeWidth="2.5" strokeLinecap="round" />
+        <motion.circle
+          cx="60"
+          cy="12"
+          r="5"
+          fill="#b83227"
+          stroke="#2b2725"
+          strokeWidth="2"
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+        />
+        
+        {/* Head */}
+        <rect x="30" y="30" width="60" height="42" rx="18" fill="#ffffff" stroke="#2b2725" strokeWidth="2.5" />
+        
+        {/* Visor */}
+        <rect x="40" y="37" width="40" height="24" rx="8" fill="#2b2725" />
+        
+        {/* Eyes (happy curves) */}
+        <path d="M 47 48 Q 51 44 55 48" stroke="#388e3c" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <path d="M 65 48 Q 69 44 73 48" stroke="#388e3c" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        
+        {/* Cheeks */}
+        <circle cx="45" cy="54" r="2.5" fill="#e8a7a1" opacity="0.8" />
+        <circle cx="75" cy="54" r="2.5" fill="#e8a7a1" opacity="0.8" />
+        
+        {/* Body */}
+        <path d="M 42 72 L 78 72 L 72 100 L 48 100 Z" fill="#ffffff" stroke="#2b2725" strokeWidth="2.5" />
+        
+        {/* Hanko logo on chest */}
+        <circle cx="60" cy="85" r="7" fill="#b83227" />
+        <text x="60" y="89" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">道</text>
+        
+        {/* Left Arm (Relaxed) */}
+        <path d="M 42 75 Q 30 85 25 95" stroke="#2b2725" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        
+        {/* Right Arm (Waving!) */}
+        <motion.path
+          d="M 78 75 Q 92 68 98 52"
+          stroke="#2b2725"
+          strokeWidth="2.5"
+          fill="none"
+          strokeLinecap="round"
+          style={{ originX: "78px", originY: "75px" }}
+          animate={{ rotate: [0, -15, 0, 15, 0] }}
+          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+        />
+        <circle cx="98" cy="51" r="3.5" fill="#ffffff" stroke="#2b2725" strokeWidth="2" />
+        
+        {/* Legs */}
+        <rect x="47" y="100" width="8" height="10" rx="4" fill="#ffffff" stroke="#2b2725" strokeWidth="2" />
+        <rect x="65" y="100" width="8" height="10" rx="4" fill="#ffffff" stroke="#2b2725" strokeWidth="2" />
+      </svg>
+    </div>
+  );
+}
+
+function DootPointing() {
+  return (
+    <div className="relative w-40 h-40 flex items-center justify-center">
+      <svg viewBox="0 0 120 120" className="w-full h-full">
+        {/* Antenna */}
+        <line x1="60" y1="30" x2="60" y2="15" stroke="#2b2725" strokeWidth="2.5" strokeLinecap="round" />
+        <circle cx="60" cy="12" r="5" fill="#3c6382" stroke="#2b2725" strokeWidth="2" />
+        
+        {/* Head */}
+        <rect x="30" y="30" width="60" height="42" rx="18" fill="#ffffff" stroke="#2b2725" strokeWidth="2.5" />
+        
+        {/* Visor */}
+        <rect x="40" y="37" width="40" height="24" rx="8" fill="#2b2725" />
+        
+        {/* Eyes (focused) */}
+        <path d="M 47 48 Q 51 44 55 48" stroke="#3c6382" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <circle cx="69" cy="48" r="2.5" fill="#3c6382" />
+        
+        {/* Body */}
+        <path d="M 42 72 L 78 72 L 72 100 L 48 100 Z" fill="#ffffff" stroke="#2b2725" strokeWidth="2.5" />
+        
+        {/* Hanko logo on chest */}
+        <circle cx="60" cy="85" r="7" fill="#b83227" />
+        <text x="60" y="89" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">道</text>
+        
+        {/* Left Arm */}
+        <path d="M 42 75 Q 28 85 24 95" stroke="#2b2725" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        
+        {/* Right Arm (Pointing up/right) */}
+        <path d="M 78 75 Q 95 68 102 54" stroke="#2b2725" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <circle cx="102" cy="54" r="3.5" fill="#ffffff" stroke="#2b2725" strokeWidth="2" />
+        
+        {/* Sparkle effect at pointed finger */}
+        <motion.path
+          d="M 106 44 L 110 48 M 110 40 L 106 48 M 104 44 L 112 44 M 108 40 L 108 48"
+          stroke="#f5b041"
+          strokeWidth="1.5"
+          animate={{ opacity: [0, 1, 0], scale: [0.7, 1.2, 0.7] }}
+          transition={{ repeat: Infinity, duration: 1.2 }}
+        />
+        
+        {/* Legs */}
+        <rect x="47" y="100" width="8" height="10" rx="4" fill="#ffffff" stroke="#2b2725" strokeWidth="2" />
+        <rect x="65" y="100" width="8" height="10" rx="4" fill="#ffffff" stroke="#2b2725" strokeWidth="2" />
+      </svg>
+    </div>
+  );
+}
+
+function DootDesk() {
+  return (
+    <div className="relative w-48 h-32 flex items-center justify-center">
+      <svg viewBox="0 0 160 120" className="w-full h-full">
+        {/* Background Desk Shelf */}
+        <rect x="5" y="105" width="150" height="8" fill="#e6dfd3" stroke="#2b2725" strokeWidth="2" rx="2" />
+        
+        {/* Bonsai Pot */}
+        <rect x="15" y="95" width="22" height="10" fill="#3c6382" stroke="#2b2725" strokeWidth="2" rx="2" />
+        {/* Bonsai Trunk */}
+        <path d="M 26 95 Q 22 83 28 75 Q 24 68 26 62" fill="none" stroke="#2b2725" strokeWidth="2" />
+        {/* Bonsai Leaves */}
+        <ellipse cx="26" cy="58" rx="8" ry="6" fill="#388e3c" stroke="#2b2725" strokeWidth="1.5" />
+        <ellipse cx="32" cy="70" rx="7" ry="5" fill="#388e3c" stroke="#2b2725" strokeWidth="1.5" />
+        
+        {/* Doot Mascot */}
+        {/* Head */}
+        <rect x="55" y="32" width="50" height="36" rx="15" fill="#ffffff" stroke="#2b2725" strokeWidth="2" />
+        <rect x="63" y="38" width="34" height="20" rx="6" fill="#2b2725" />
+        <path d="M 69 47 Q 73 43 77 47" stroke="#388e3c" strokeWidth="2" fill="none" />
+        <path d="M 83 47 Q 87 43 91 47" stroke="#388e3c" strokeWidth="2" fill="none" />
+        <line x1="80" y1="32" x2="80" y2="20" stroke="#2b2725" strokeWidth="2" />
+        <circle cx="80" cy="18" r="4" fill="#b83227" stroke="#2b2725" strokeWidth="1.5" />
+        
+        {/* Body */}
+        <path d="M 64 68 L 96 68 L 92 95 L 68 95 Z" fill="#ffffff" stroke="#2b2725" strokeWidth="2" />
+        <circle cx="80" cy="80" r="5" fill="#b83227" />
+        
+        {/* Laptop */}
+        <rect x="100" y="95" width="36" height="10" fill="#777777" stroke="#2b2725" strokeWidth="2" rx="1" />
+        <path d="M 103 95 L 108 68 L 138 68 L 133 95 Z" fill="#e6dfd3" stroke="#2b2725" strokeWidth="2" />
+        
+        {/* Glowing Screen */}
+        <motion.rect
+          x="111" y="71" width="22" height="18"
+          fill="#3c6382" opacity="0.15"
+          animate={{ opacity: [0.1, 0.35, 0.1] }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+        />
+        
+        {/* Paper Scroll */}
+        <path d="M 120 98 Q 128 108 135 102 T 148 106" fill="none" stroke="#2b2725" strokeWidth="2" />
+        
+        {/* Hands typing */}
+        <circle cx="95" cy="94" r="3" fill="#ffffff" stroke="#2b2725" strokeWidth="1.5" />
+        <circle cx="103" cy="92" r="3" fill="#ffffff" stroke="#2b2725" strokeWidth="1.5" />
+      </svg>
+    </div>
+  );
+}
+
+function DootBench() {
+  return (
+    <div className="relative w-44 h-40 flex items-center justify-center">
+      <svg viewBox="0 0 120 120" className="w-full h-full">
+        {/* Wooden Bench */}
+        <rect x="5" y="95" width="110" height="8" fill="#e6dfd3" stroke="#2b2725" strokeWidth="2" rx="2" />
+        <rect x="15" y="103" width="8" height="15" fill="#dbd0be" stroke="#2b2725" strokeWidth="2" />
+        <rect x="97" y="103" width="8" height="15" fill="#dbd0be" stroke="#2b2725" strokeWidth="2" />
+        
+        {/* Bonsai on Bench */}
+        <rect x="85" y="87" width="16" height="8" fill="#777" stroke="#2b2725" strokeWidth="1.5" rx="1" />
+        <path d="M 93 87 Q 90 77 94 72" fill="none" stroke="#2b2725" strokeWidth="2" />
+        <ellipse cx="94" cy="70" rx="5.5" ry="4" fill="#388e3c" stroke="#2b2725" strokeWidth="1.2" />
+
+        {/* Tea Cup with Steam */}
+        <rect x="14" y="87" width="9" height="8" fill="#fcf2eb" stroke="#2b2725" strokeWidth="1.5" rx="1" />
+        <circle cx="18" cy="91" r="1" fill="#b83227" />
+        {/* Steam paths */}
+        <motion.path
+          d="M 16 83 Q 14 78 16 73"
+          fill="none"
+          stroke="#2b2725"
+          strokeWidth="1"
+          strokeDasharray="1.5 1.5"
+          animate={{ y: [-1, -4, -1], opacity: [0.3, 0.8, 0.3] }}
+          transition={{ repeat: Infinity, duration: 1.8, ease: "linear" }}
+        />
+        <motion.path
+          d="M 19 84 Q 21 79 19 74"
+          fill="none"
+          stroke="#2b2725"
+          strokeWidth="1"
+          strokeDasharray="1.5 1.5"
+          animate={{ y: [0, -3, 0], opacity: [0.2, 0.7, 0.2] }}
+          transition={{ repeat: Infinity, duration: 1.8, ease: "linear", delay: 0.6 }}
+        />
+
+        {/* Doot Sitting */}
+        {/* Head */}
+        <rect x="35" y="35" width="48" height="34" rx="14" fill="#ffffff" stroke="#2b2725" strokeWidth="2" />
+        <rect x="42" y="40" width="34" height="18" rx="5" fill="#2b2725" />
+        <path d="M 48 48 Q 52 45 56 48" stroke="#388e3c" strokeWidth="2.2" fill="none" />
+        <path d="M 62 48 Q 66 45 70 48" stroke="#388e3c" strokeWidth="2.2" fill="none" />
+        <circle cx="46" cy="53" r="1.5" fill="#e8a7a1" />
+        <circle cx="72" cy="53" r="1.5" fill="#e8a7a1" />
+        <line x1="59" y1="35" x2="59" y2="22" stroke="#2b2725" strokeWidth="2" />
+        <circle cx="59" cy="19" r="4.5" fill="#b83227" stroke="#2b2725" strokeWidth="1.5" />
+
+        {/* Body */}
+        <path d="M 42 69 L 76 69 L 72 95 L 46 95 Z" fill="#ffffff" stroke="#2b2725" strokeWidth="2" />
+        <circle cx="59" cy="80" r="4.5" fill="#b83227" />
+        
+        {/* Arms folded */}
+        <path d="M 42 74 Q 59 84 76 74" stroke="#2b2725" strokeWidth="2" fill="none" strokeLinecap="round" />
+      </svg>
+    </div>
+  );
+}
+
+function OnboardingLeftScene({ step }: { step: number }) {
+  return (
+    <div className="w-full h-full relative bg-[#fdfaf4] flex flex-col justify-between p-8 overflow-hidden select-none">
+      
+      {/* 1. Mt Fuji & Red Sun Background (Center-Back) */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-70 z-0">
+        <div className="w-[85%] h-[60%] mt-[15%]">
+          <svg viewBox="0 0 200 120" className="w-full h-full object-contain">
+            {/* Red Sun */}
+            <circle cx="100" cy="55" r="28" fill="#e8a7a1" opacity="0.45" />
+            
+            {/* Fuji mountain contour */}
+            <path 
+              d="M 10 110 C 60 90, 85 45, 95 30 L 105 30 C 115 45, 140 90, 190 110 Z" 
+              fill="#ebdcc8" 
+              stroke="#2b2725" 
+              strokeWidth="2" 
+            />
+            {/* Snowy peak */}
+            <path 
+              d="M 88 47 C 92 45, 96 30, 95 30 L 105 30 C 104 30, 108 45, 112 47 C 105 52, 100 45, 98 49 C 94 45, 90 50, 88 47 Z" 
+              fill="#ffffff" 
+              stroke="#2b2725" 
+              strokeWidth="1.5" 
+            />
+            
+            {/* Flapping birds */}
+            <motion.path
+              d="M 35 25 Q 40 20 45 25 Q 50 20 55 25"
+              fill="none"
+              stroke="#2b2725"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              animate={{ y: [0, -3, 0] }}
+              transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
+            />
+            <motion.path
+              d="M 155 35 Q 160 31 165 35 Q 170 31 175 35"
+              fill="none"
+              stroke="#2b2725"
+              strokeWidth="1.0"
+              strokeLinecap="round"
+              animate={{ y: [0, -2, 0] }}
+              transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", delay: 0.5 }}
+            />
+          </svg>
+        </div>
+      </div>
+
+      {/* 2. Cherry Blossom Branches (Top Right) */}
+      <div className="absolute top-0 right-0 w-48 h-48 pointer-events-none z-10 opacity-80">
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <path d="M 100 0 C 80 10, 50 15, 30 12 C 45 18, 70 20, 100 10" fill="none" stroke="#2b2725" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M 60 14 C 50 22, 35 25, 20 25" fill="none" stroke="#2b2725" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M 80 7 C 75 18, 65 25, 55 30" fill="none" stroke="#2b2725" strokeWidth="1.2" strokeLinecap="round" />
+          
+          <circle cx="30" cy="12" r="4" fill="#ffb7c5" stroke="#2b2725" strokeWidth="1" />
+          <circle cx="32" cy="11" r="2" fill="#fdf2eb" />
+          <circle cx="20" cy="25" r="4" fill="#ffb7c5" stroke="#2b2725" strokeWidth="1" />
+          
+          <circle cx="55" cy="14" r="4.5" fill="#ffb7c5" stroke="#2b2725" strokeWidth="1" />
+          <circle cx="75" cy="9" r="5.5" fill="#ffb7c5" stroke="#2b2725" strokeWidth="1" />
+          <circle cx="77" cy="8" r="2.5" fill="#fdf2eb" />
+
+          <circle cx="48" cy="20" r="3.5" fill="#ffb7c5" stroke="#2b2725" strokeWidth="1" />
+          <circle cx="65" cy="24" r="4.5" fill="#ffb7c5" stroke="#2b2725" strokeWidth="1" />
+        </svg>
+      </div>
+
+      {/* 3. Pagoda Silhouette (Bottom Left) */}
+      <div className="absolute bottom-6 left-6 z-10">
+        <svg viewBox="0 0 100 150" className="w-14 h-22 opacity-80">
+          <rect x="40" y="130" width="20" height="20" fill="#f1ebe0" stroke="#2b2725" strokeWidth="1.5" />
+          <path d="M35 130 L65 130 L60 110 L40 110 Z" fill="#b83227" stroke="#2b2725" strokeWidth="1.5" />
+          <path d="M30 110 Q50 100 70 110 L65 105 L35 105 Z" fill="#2b2725" stroke="#2b2725" strokeWidth="1.5" />
+          <path d="M38 105 L62 105 L58 85 L42 85 Z" fill="#b83227" stroke="#2b2725" strokeWidth="1.5" />
+          <path d="M32 85 Q50 75 68 85 L64 80 L36 80 Z" fill="#2b2725" stroke="#2b2725" strokeWidth="1.5" />
+          <path d="M41 80 L59 80 L56 60 L44 60 Z" fill="#b83227" stroke="#2b2725" strokeWidth="1.5" />
+          <path d="M35 60 Q50 50 65 60 L61 55 L39 55 Z" fill="#2b2725" stroke="#2b2725" strokeWidth="1.5" />
+          <line x1="50" y1="55" x2="50" y2="25" stroke="#2b2725" strokeWidth="2" />
+        </svg>
+      </div>
+
+      {/* 4. Torii Gate Silhouette (Bottom Right) */}
+      <div className="absolute bottom-6 right-6 z-10">
+        <svg viewBox="0 0 80 80" className="w-12 h-12 opacity-85">
+          <line x1="25" y1="75" x2="28" y2="25" stroke="#2b2725" strokeWidth="2.5" />
+          <line x1="25" y1="75" x2="28" y2="25" stroke="#b83227" strokeWidth="1.2" />
+          <line x1="55" y1="75" x2="52" y2="25" stroke="#2b2725" strokeWidth="2.5" />
+          <line x1="55" y1="75" x2="52" y2="25" stroke="#b83227" strokeWidth="1.2" />
+          <rect x="20" y="32" width="40" height="3" fill="#b83227" stroke="#2b2725" strokeWidth="1.2" rx="0.5" />
+          <path d="M 12 18 Q 40 10 68 18 L 65 24 Q 40 16 15 24 Z" fill="#b83227" stroke="#2b2725" strokeWidth="1.2" />
+          <path d="M 10 18 L 70 18 L 70 15 L 10 15 Z" fill="#2b2725" stroke="#2b2725" strokeWidth="1.2" />
+        </svg>
+      </div>
+
+      {/* 5. Mascot (Foreground - Center/Bottom) */}
+      <div className="w-full h-full flex items-end justify-center pb-8 z-10 relative">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            className="flex flex-col items-center"
+          >
+            {step === 1 && <DootWaving />}
+            {step === 2 && <DootPointing />}
+            {step === 3 && <div className="h-40" /> /* Mascot is rendered in the card */}
+            {step === 4 && <DootBench />}
+            {step === 5 && <DootWaving />}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+    </div>
+  );
+}
+
 function OnboardingPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -273,28 +634,7 @@ function OnboardingPageContent() {
             ))}
           </div>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, x: -15 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 15 }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="w-full h-full"
-            >
-              <img
-                src={
-                  step === 1 ? "/boarding_left_step1.png" :
-                  step === 2 ? "/boarding_left_step2.png" :
-                  step === 3 ? "/boarding_left_step3.png" :
-                  step === 4 ? "/boarding_left_step4.png" :
-                  "/boarding_left_step5.png"
-                }
-                alt={`Step ${step} background`}
-                className="w-full h-full object-cover mix-blend-multiply select-none"
-              />
-            </motion.div>
-          </AnimatePresence>
+          <OnboardingLeftScene step={step} />
         </div>
 
         {/* Right Side: Main Sketchbook Card Page */}
@@ -303,11 +643,7 @@ function OnboardingPageContent() {
           {/* Header Bar */}
           <header className="w-full flex justify-between items-center pb-5 border-b border-dashed border-[#e6dfd3] mb-6">
             <div className="flex items-center space-x-3 select-none">
-              <img 
-                src="/hanko_logo.png" 
-                alt="DootAI Stamp Logo" 
-                className="w-9 h-9 object-contain mix-blend-multiply rotate-[-3deg]" 
-              />
+              <HankoLogoSVG className="w-9 h-9" />
               <div className="flex flex-col text-left">
                 <span className="font-handwriting text-2xl font-extrabold text-[#2b2725] leading-none">DootAI</span>
                 <span className="text-[9px] text-[#2b2725]/60 font-mono tracking-wider">AI Executive Assistant</span>
@@ -583,11 +919,7 @@ function OnboardingPageContent() {
 
                     {/* Doot desk illustration */}
                     <div className="w-full flex justify-center py-2 bg-[#fbf9f4]/80 border border-dashed border-[#e6dfd3] rounded-xl overflow-hidden shadow-inner">
-                      <img
-                        src="/boarding_step3_doot.png"
-                        alt="Doot preparing workspace"
-                        className="h-28 object-contain mix-blend-multiply"
-                      />
+                      <DootDesk />
                     </div>
 
                     <div className="space-y-2.5">
@@ -640,7 +972,7 @@ function OnboardingPageContent() {
                     {/* Bottom Status Box */}
                     <div className="p-3 bg-[#fef5f0] border border-dashed border-[#b83227]/30 rounded-xl flex items-center space-x-3">
                       <div className="w-9 h-9 rounded-full bg-white border border-[#2b2725] flex items-center justify-center overflow-hidden shrink-0">
-                        <img src="/hanko_logo.png" alt="Doot Mascot" className="w-6 h-6 object-contain mix-blend-multiply" />
+                        <HankoLogoSVG className="w-6 h-6" />
                       </div>
                       <div>
                         <h5 className="font-handwriting font-black text-xs text-[#b83227]">Almost there!</h5>
@@ -860,7 +1192,7 @@ function OnboardingPageContent() {
                     {/* Doot ready alert */}
                     <div className="p-3 bg-[#fef5f0] border border-dashed border-[#b83227]/30 rounded-xl flex items-center space-x-3">
                       <div className="w-9 h-9 rounded-full bg-white border border-[#2b2725] flex items-center justify-center overflow-hidden shrink-0">
-                        <img src="/hanko_logo.png" alt="Doot Mascot" className="w-6 h-6 object-contain mix-blend-multiply" />
+                        <HankoLogoSVG className="w-6 h-6" />
                       </div>
                       <div>
                         <h5 className="font-handwriting font-black text-xs text-[#b83227]">Your AI assistant is ready</h5>
