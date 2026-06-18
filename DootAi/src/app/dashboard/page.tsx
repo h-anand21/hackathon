@@ -618,615 +618,158 @@ export default function DashboardPage() {
             <ChevronDown className="w-3.5 h-3.5 text-[#2b2725]/60" />
           </div>
 
-        </div>
-      </div>
-
-      {/* 2. BODY LAYOUT: MAIN SIDE & RIGHT BAR */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-hidden select-text pr-1.5">
+        {/* 2. BODY LAYOUT: FULL-SCREEN CHAT ASSISTANT PANEL */}
+      <div className="flex-1 flex flex-col min-h-0 select-text pr-1.5 pb-2">
         
-        {/* LEFT COLUMN: MAIN HERO / CHAT & BOTTOM WIDGETS */}
-        <div className="flex-1 flex flex-col gap-6 min-h-0">
+        {/* CENTER HERO PANEL / CHAT AREA (FULL SCREEN WIDTH) */}
+        <div className="bg-[#fcfaf4] sketch-border sketch-shadow flex-1 min-h-0 flex flex-col overflow-hidden relative rounded-xl border-b-3 border-r-3">
           
-          {/* CENTER HERO PANEL / CHAT AREA */}
-          <div className="bg-[#fcfaf4] sketch-border sketch-shadow flex-1 min-h-[420px] flex flex-col overflow-hidden relative rounded-xl">
-            
-            {/* Fuji Background Graphic - Visible in Dashboard Mode */}
-            {!showChatHistory && <VectorLandscape />}
+          {/* Ghibli Watercolor Landscape Background - Always visible as a watermark overlay */}
+          <VectorLandscape />
 
-            {/* HEADER PANEL FOR CHAT */}
-            {showChatHistory && (
-              <div className="p-3 px-5 bg-white border-b border-[#e6dfd3] flex justify-between items-center z-10 shrink-0">
-                <div className="flex items-center space-x-2.5">
-                  <DootMascotHead className="w-8 h-8" />
-                  <div>
-                    <h3 className="font-handwriting font-black text-sm text-[#2b2725] leading-none">Chatting with Doot</h3>
-                    <p className="text-[10px] text-green-700 font-handwriting font-extrabold leading-none mt-0.5">Online & Syncing</p>
+          {/* HEADER PANEL FOR CHAT */}
+          <div className="p-3 px-5 bg-white/90 border-b border-[#e6dfd3] flex justify-between items-center z-10 shrink-0 select-none">
+            <div className="flex items-center space-x-2.5">
+              <DootMascotHead className="w-8 h-8" />
+              <div>
+                <h3 className="font-handwriting font-black text-sm text-[#2b2725] leading-none">Doot AI Sensei</h3>
+                <p className="text-[10px] text-green-700 font-handwriting font-extrabold leading-none mt-0.5">Online & Synced with MailOS</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setMessages([
+                  {
+                    id: "welcome",
+                    role: "assistant",
+                    content: "Konnichiwa! 🌸 I am Doot, your personal mail assistant. Ask me anything about your emails, tasks, or calendar schedule. For example, you can say: 'What is on my schedule today?' or 'Draft an email to Aarav Patel.'",
+                    createdAt: new Date().toISOString()
+                  }
+                ])}
+                className="px-2.5 py-1 bg-white hover:bg-red-50 text-xs font-handwriting font-black text-red-700 hover:text-red-800 sketch-border-sm transition-all cursor-pointer shadow-sm flex items-center gap-1"
+              >
+                <Trash2 className="w-3.5 h-3.5" /> Clear History
+              </button>
+            </div>
+          </div>
+
+          {/* CHAT MESSAGES STREAM CONTAINER */}
+          <div className="flex-1 overflow-y-auto relative z-10 p-5 min-h-0 flex flex-col space-y-4 notebook-grid-small pr-1 scroll-smooth">
+            {messages.map((msg) => {
+              const isAssistant = msg.role === "assistant";
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex ${isAssistant ? "justify-start" : "justify-end"} items-start space-x-2.5`}
+                >
+                  {isAssistant && (
+                    <div className="w-8 h-8 rounded-full bg-white border border-[#2b2725] flex items-center justify-center shrink-0 shadow-sm mt-0.5 select-none">
+                      <Bot className="w-4.5 h-4.5 text-[#b83227]" />
+                    </div>
+                  )}
+                  <div
+                    className={`max-w-[75%] p-4 rounded-2xl shadow-sm border-b-3 text-left relative ${
+                      isAssistant
+                        ? "bg-white border-[#ebdcc8] text-[#2b2725]"
+                        : "bg-[#fcdfd7] border-[#b83227]/25 text-[#2b2725]"
+                    }`}
+                  >
+                    <div className="flex items-center space-x-1.5 mb-1.5 opacity-60 select-none">
+                      {isAssistant && <Sparkles className="w-3.5 h-3.5 text-[#f5b041]" />}
+                      <span className="text-[9px] font-mono uppercase tracking-wider font-bold">
+                        {isAssistant ? "Doot AI" : "You"}
+                      </span>
+                    </div>
+                    <p className="text-xs font-sans leading-relaxed whitespace-pre-wrap font-medium">
+                      {msg.content}
+                    </p>
+                    <span className="block font-mono text-[8px] text-gray-400 mt-2 text-right select-none">
+                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowChatHistory(false)}
-                  className="px-3 py-1 bg-white text-xs font-handwriting font-bold text-[#2b2725]/70 hover:text-[#2b2725] sketch-border-sm hover:bg-gray-50 transition-all cursor-pointer shadow-sm"
-                >
-                  ← Back to Dashboard
-                </button>
+              );
+            })}
+
+            {sending && (
+              <div className="flex justify-start items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-full bg-white border border-[#2b2725] flex items-center justify-center shrink-0 shadow-sm select-none">
+                  <Bot className="w-4.5 h-4.5 text-[#b83227]" />
+                </div>
+                <div className="bg-white border border-[#ebdcc8] rounded-2xl px-4 py-3 shadow-sm flex items-center space-x-2 text-xs font-handwriting text-[#2b2725]/60">
+                  <Loader2 className="w-4 h-4 animate-spin text-[#b83227]" />
+                  <span>Doot is organizing your sketchbook agenda... 🌸</span>
+                </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
+          </div>
 
-            {/* PANEL CONTENT SWITCHER */}
-            <div className="flex-1 overflow-y-auto relative z-10 p-5 min-h-0 flex flex-col">
-              <AnimatePresence mode="wait">
-                
-                {/* MODE A: CHAT HISTORY DISPLAY */}
-                {showChatHistory ? (
-                  <motion.div
-                    key="chat"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex-1 space-y-4 pr-1 scroll-smooth"
-                  >
-                    {messages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                      >
-                        <div
-                          className={`max-w-[80%] p-4 sketch-border-sm ${
-                            msg.role === "user"
-                              ? "bg-[#3c6382] text-white"
-                              : "bg-white text-[#2b2725]"
-                          }`}
-                        >
-                          <div className="flex items-center space-x-1.5 mb-1 opacity-70">
-                            {msg.role === "assistant" && (
-                              <Sparkles className="w-3.5 h-3.5 text-[#f5b041]" />
-                            )}
-                            <span className="text-[9px] font-mono uppercase tracking-wider font-bold">
-                              {msg.role === "user" ? "You" : "Doot Assistant"}
-                            </span>
-                          </div>
-                          <p className="text-xs font-sans leading-relaxed whitespace-pre-line font-medium">
-                            {msg.content}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    {sending && (
-                      <div className="flex justify-start">
-                        <div className="max-w-[85%] p-4 bg-white sketch-border-sm flex items-center space-x-3 shadow-sm">
-                          <Loader2 className="w-4 h-4 animate-spin text-[#b83227]" />
-                          <span className="font-handwriting text-xs text-[#2b2725]/60 font-bold">Doot is leafing through emails...</span>
-                        </div>
-                      </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                  </motion.div>
-                ) : (
-                  
-                  // MODE B: DASHBOARD HERO ART & ACTION CHIPS
-                  <motion.div
-                    key="dashboard"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex-1 flex flex-col justify-between"
-                  >
-                    {/* Doot & Speech Bubble Panel */}
-                    <div className="flex flex-col md:flex-row items-center justify-center md:space-x-6 py-2">
-                      <DootWaving className="w-28 h-28 shrink-0 hover:scale-105 transition-transform" />
-                      <div className="space-y-2 text-center md:text-left">
-                        <div className="flex items-baseline justify-center md:justify-start space-x-2">
-                          <h2 className="text-4xl font-handwriting font-black text-[#2b2725] tracking-tight">Doot AI</h2>
-                          <span className="text-[10px] font-mono bg-[#ebdcc8]/50 text-[#b83227] font-bold px-1.5 py-0.5 rounded">Mascot</span>
-                        </div>
-                        <p className="text-xs font-mono text-[#2b2725]/60 max-w-xs font-semibold leading-relaxed">
-                          Your AI Executive Assistant.<br />Always here to help you stay ahead.
-                        </p>
-                        
-                        {/* Speech Bubble */}
-                        <div className="p-2.5 px-4 bg-white border border-[#2b2725] rounded-2xl relative shadow-sm inline-block select-none text-xs font-handwriting font-black text-[#2b2725] border-b-3 border-r-3 border-[#ebdcc8]">
-                          🌸 What would you like me to do today?
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action Cards Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-4">
-                      {actionCards.map((card, idx) => {
-                        const Icon = card.icon;
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => handleQuickAction(card.text)}
-                            className={`p-3.5 rounded-xl border border-[#2b2725]/25 hover:border-[#b83227]/50 text-left transition-all hover:scale-102 hover:shadow cursor-pointer relative overflow-hidden group select-none flex items-center space-x-3 ${card.bg} border-b-3 border-r-3`}
-                          >
-                            <div className="p-2 bg-white rounded-lg border border-[#2b2725]/20 text-[#2b2725] group-hover:text-[#b83227] shrink-0">
-                              <Icon className="w-4 h-4" />
-                            </div>
-                            <span className="font-handwriting font-black text-xs text-[#2b2725] leading-snug">
-                              {card.desc}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* CHAT INPUT AREA (SHARED AT BOTTOM OF HERO PANEL) */}
-            <div className="p-4 bg-white border-t border-[#e6dfd3] flex flex-col space-y-3 shrink-0">
-              
-              {/* Suggestion Chips - Visible in active chat mode to helper prompts */}
-              {showChatHistory && (
-                <div className="flex gap-2 overflow-x-auto pb-1 select-none">
-                  {suggestionChips.map((chip, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSend(chip)}
-                      className="px-3 py-1 bg-[#fcfaf4] hover:bg-[#e6dfd3]/20 text-[10px] font-handwriting font-black text-[#2b2725]/75 sketch-border-sm whitespace-nowrap cursor-pointer hover:scale-102 transition-transform shadow-sm"
-                    >
-                      {chip}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex items-center space-x-3">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
-                  placeholder="Ask Doot anything..."
-                  className="flex-1 px-4 py-2.5 bg-[#fbf9f4] sketch-border-sm text-xs font-handwriting font-bold focus:outline-none focus:ring-1 focus:ring-[#b83227]/40 shadow-inner"
-                />
+          {/* QUICK BENTO SUGGESTION CARDS PANEL */}
+          <div className="p-4 bg-white/95 border-t border-[#e6dfd3] flex flex-col space-y-3 shrink-0 z-10 select-none">
+            
+            {/* Horizontal suggestion chips deck */}
+            <div className="flex gap-2 overflow-x-auto pb-1 select-none">
+              {suggestionChips.map((chip, idx) => (
                 <button
-                  onClick={() => handleSend(input)}
-                  className="p-2.5 bg-[#b83227] hover:bg-[#a02b21] text-white sketch-border-sm cursor-pointer shadow flex items-center justify-center transition-colors border-b-3"
+                  key={idx}
+                  onClick={() => handleSend(chip)}
+                  className="px-3 py-1 bg-[#fcfaf4] hover:bg-[#e6dfd3]/20 text-[10px] font-handwriting font-black text-[#2b2725]/75 sketch-border-sm whitespace-nowrap cursor-pointer hover:scale-102 transition-transform shadow-sm"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  💡 {chip}
                 </button>
-              </div>
-
-              {/* Status checklist label */}
-              <div className="flex items-center justify-between text-[9px] font-mono text-[#2b2725]/50 font-bold select-none px-1">
-                <span>✓ Doot uses AI to understand your context and get things done.</span>
-                {showChatHistory && (
-                  <button onClick={() => setShowChatHistory(false)} className="text-[#b83227] hover:underline cursor-pointer">
-                    Back to dashboard view
-                  </button>
-                )}
-              </div>
+              ))}
             </div>
 
-          </div>
-
-          {/* BOTTOM ROW: THREE INTERACTIVE WIDGETS */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-auto md:h-52 shrink-0">
-            
-            {/* WIDGET 1: INTERACTIVE TASKS LIST */}
-            <div className="bg-[#fdfbf7] sketch-border-sm p-4 flex flex-col justify-between relative overflow-hidden rounded-xl border-b-3 border-r-3">
-              {/* Taped paper sticker look */}
-              <div className="absolute top-[-8px] right-[10%] w-12 h-3 bg-[#e8a7a1]/40 border-l border-r border-dashed border-white/50 rotate-[-4deg]" />
-              
-              <div className="flex justify-between items-center mb-1">
-                <h3 className="font-handwriting font-black text-sm text-[#2b2725] flex items-center gap-1">
-                  📋 Tasks
-                </h3>
-                <button 
-                  onClick={() => setAddingTask(!addingTask)}
-                  className="text-[10px] font-handwriting font-black text-[#b83227] hover:underline cursor-pointer flex items-center gap-0.5"
+            {/* Selector Mode tags */}
+            <div className="flex space-x-2 select-none">
+              <span className="text-[10px] font-handwriting font-black text-[#2b2725]/50 self-center">Task Mode:</span>
+              {["Standard", "Deep Search", "Analyze", "Create"].map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => handleSend(`Run ${mode.toLowerCase()} mode query: `)}
+                  className="px-2.5 py-0.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-lg text-[9px] font-handwriting font-black cursor-pointer shadow-sm"
                 >
-                  <Plus className="w-3 h-3" /> Add
+                  {mode}
                 </button>
-              </div>
-
-              {/* Tasks List Container */}
-              <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 py-1">
-                {addingTask ? (
-                  <form onSubmit={handleAddTask} className="bg-white p-2 border border-dashed border-[#ebdcc8] rounded-lg space-y-1.5">
-                    <input
-                      type="text"
-                      required
-                      placeholder="Task description..."
-                      value={newTaskText}
-                      onChange={(e) => setNewTaskText(e.target.value)}
-                      className="w-full p-1 text-xs font-handwriting font-bold border-b border-[#e6dfd3] focus:outline-none"
-                    />
-                    <div className="flex justify-between items-center">
-                      <div className="flex space-x-1">
-                        {(["High", "Medium", "Low"] as const).map((p) => (
-                          <button
-                            key={p}
-                            type="button"
-                            onClick={() => setNewTaskPriority(p)}
-                            className={`text-[8px] font-mono px-1 rounded ${
-                              newTaskPriority === p ? "bg-[#b83227] text-white" : "bg-[#e6dfd3]/40 text-[#2b2725]"
-                            }`}
-                          >
-                            {p}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="flex space-x-1 text-[9px] font-handwriting">
-                        <button type="button" onClick={() => setAddingTask(false)} className="text-[#2b2725]/60 px-1">Cancel</button>
-                        <button type="submit" className="text-white bg-green-700 px-1.5 rounded">Add</button>
-                      </div>
-                    </div>
-                  </form>
-                ) : (
-                  tasks.map((t) => (
-                    <div key={t.id} className="flex items-center justify-between text-xs font-handwriting font-bold bg-white/60 p-1 px-2 border border-dashed border-[#e6dfd3] hover:border-gray-300 rounded-lg group transition-colors select-none">
-                      <div className="flex items-center space-x-2 truncate">
-                        <input
-                          type="checkbox"
-                          checked={t.completed}
-                          onChange={() => toggleTask(t.id)}
-                          className="w-3.5 h-3.5 accent-green-700 cursor-pointer"
-                        />
-                        <span className={`truncate ${t.completed ? "line-through text-[#2b2725]/40" : "text-[#2b2725]"}`}>
-                          {t.text}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-1.5">
-                        <span className={`text-[8px] font-mono px-1 rounded font-bold uppercase ${
-                          t.priority === "High" ? "bg-red-100 text-red-700" :
-                          t.priority === "Medium" ? "bg-yellow-100 text-yellow-700" :
-                          "bg-blue-100 text-blue-700"
-                        }`}>
-                          {t.priority}
-                        </span>
-                        <button onClick={() => deleteTask(t.id)} className="text-[#2b2725]/30 hover:text-red-700 md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-pointer">
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="pt-1 border-t border-dashed border-[#e6dfd3] text-right">
-                <span className="text-[9px] font-mono text-[#2b2725]/50 font-bold">
-                  {tasks.filter(t => !t.completed).length} active tasks remaining
-                </span>
-              </div>
+              ))}
             </div>
 
-            {/* WIDGET 2: TOP CONTACTS */}
-            <div className="bg-[#fdfbf7] sketch-border-sm p-4 flex flex-col justify-between relative overflow-hidden rounded-xl border-b-3 border-r-3">
-              <div className="absolute top-[-8px] right-[25%] w-10 h-3 bg-[#f5b041]/20 border-l border-r border-dashed border-white/50 rotate-[3deg] z-10 pointer-events-none" />
-              
-              <div>
-                <h3 className="font-handwriting font-black text-sm text-[#2b2725] mb-2 flex items-center gap-1">
-                  👥 Top Contacts
-                </h3>
-                
-                <div className="space-y-2">
-                  {contacts.length > 0 ? (
-                    contacts.slice(0, 3).map((c, idx) => {
-                      const colors = ["bg-purple-100 text-purple-700 border-purple-400", "bg-[#fcdfd7] text-[#b83227] border-[#b83227]/30", "bg-green-100 text-green-700 border-green-400"];
-                      const col = colors[idx % 3];
-                      return (
-                        <div key={c.id || idx} className="flex items-center space-x-2.5 cursor-pointer hover:bg-gray-50/50 p-0.5 rounded" onClick={() => router.push("/dashboard/contacts")}>
-                          <div className={`w-6.5 h-6.5 rounded-full font-mono font-bold flex items-center justify-center text-xs border ${col}`}>
-                            {c.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="truncate text-left">
-                            <p className="text-xs font-handwriting font-black leading-none text-[#2b2725]">{c.name}</p>
-                            <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none">{c.email}</p>
-                          </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <>
-                      {/* Contact 1 */}
-                      <div className="flex items-center space-x-2.5">
-                        <div className="w-6.5 h-6.5 rounded-full bg-purple-100 text-purple-700 font-mono font-bold flex items-center justify-center text-xs border border-purple-400">
-                          A
-                        </div>
-                        <div className="truncate text-left">
-                          <p className="text-xs font-handwriting font-black leading-none text-[#2b2725]">Aarav Mehta</p>
-                          <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none">aarav@xxample.com</p>
-                        </div>
-                      </div>
-
-                      {/* Contact 2 */}
-                      <div className="flex items-center space-x-2.5">
-                        <div className="w-6.5 h-6.5 rounded-full bg-[#fcdfd7] text-[#b83227] font-mono font-bold flex items-center justify-center text-xs border border-[#b83227]/30">
-                          R
-                        </div>
-                        <div className="truncate text-left">
-                          <p className="text-xs font-handwriting font-black leading-none text-[#2b2725]">Riya Sharma</p>
-                          <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none">riya@example.com</p>
-                        </div>
-                      </div>
-
-                      {/* Contact 3 */}
-                      <div className="flex items-center space-x-2.5">
-                        <div className="w-6.5 h-6.5 rounded-full bg-green-100 text-green-700 font-mono font-bold flex items-center justify-center text-xs border border-green-400">
-                          C
-                        </div>
-                        <div className="truncate text-left">
-                          <p className="text-xs font-handwriting font-black leading-none text-[#2b2725]">Corsair Team</p>
-                          <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none">team@corsair.com</p>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="text-[9px] font-mono text-[#2b2725]/50 font-bold border-t border-dashed border-[#e6dfd3] pt-1 text-right select-none">
-                {contacts.length || 3} workspaces verified
-              </div>
+            {/* Input form */}
+            <div className="flex items-center space-x-3 select-none">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend(input);
+                  }
+                }}
+                placeholder="Ask Doot to schedule review, summarize email scrolls, forward drafts, add meetings..."
+                className="flex-1 px-4 py-2.5 bg-[#fbf9f4] sketch-border-sm text-xs font-handwriting font-bold focus:outline-none focus:ring-1 focus:ring-[#b83227]/40 shadow-inner h-11 resize-none leading-relaxed"
+              />
+              <button
+                onClick={() => handleSend(input)}
+                disabled={sending || !input.trim()}
+                className="p-3 bg-[#b83227] hover:bg-[#a02b21] disabled:opacity-50 text-white sketch-border-sm cursor-pointer shadow flex items-center justify-center transition-all hover:scale-103 border-b-3"
+              >
+                <Send className="w-4.5 h-4.5" />
+              </button>
             </div>
 
-            {/* WIDGET 3: AI SUGGESTIONS */}
-            <div className="bg-[#fdfbf7] sketch-border-sm p-4 flex flex-col justify-between relative overflow-hidden rounded-xl border-b-3 border-r-3">
-              {/* Sticker tape */}
-              <div className="absolute top-[-8px] left-[15%] w-11 h-3 bg-green-200/30 border-l border-r border-dashed border-white/50 rotate-[-2deg] z-10 pointer-events-none" />
-              
-              {/* Mascot Head watermark in bottom right corner */}
-              <div className="absolute bottom-1 right-1 opacity-20 pointer-events-none">
-                <DootMascotHead className="w-12 h-12" />
-              </div>
-
-              <div>
-                <h3 className="font-handwriting font-black text-sm text-[#2b2725] mb-2 flex items-center gap-1">
-                  ✨ Suggestions
-                </h3>
-
-                <div className="space-y-1.5 z-10 relative">
-                  {suggestionChips.map((sug, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSend(sug)}
-                      className="w-full text-left p-1.5 bg-[#fef5f0]/80 hover:bg-[#fcdfd7] text-[10px] font-handwriting font-extrabold text-[#b83227] rounded-lg border border-dashed border-[#e8a7a1] transition-all truncate shadow-inner cursor-pointer"
-                    >
-                      💡 {sug}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="text-[9px] font-mono text-[#2b2725]/50 font-bold border-t border-dashed border-[#e6dfd3] pt-1 select-none">
-                Updated just now
-              </div>
+            {/* Footer status notice */}
+            <div className="flex items-center justify-between text-[9px] font-mono text-[#2b2725]/50 font-bold select-none px-1">
+              <span>✓ Doot AI Co-Pilot executes calendar block scheduling and email sends dynamically.</span>
+              <span>Village Library v1.2</span>
             </div>
-
           </div>
 
         </div>
 
-        {/* RIGHT COLUMN: INDEX CARD PANELS (Today's Brief, Upcoming, Recent Emails) */}
-        <div className="w-full lg:w-76 flex flex-col gap-6 shrink-0">
-          
-          {/* CARD 1: TODAY'S BRIEF */}
-          <div className="bg-[#fdfbf7] sketch-border-sm p-5 relative overflow-hidden rounded-xl shadow-sm border-b-3 border-r-3 select-none">
-            {/* Washi Tape Ribbon */}
-            <div className="absolute top-[-10px] left-[15%] w-16 h-4 bg-[#ebd2be] opacity-75 border-l border-r border-dashed border-white/40 rotate-[-5deg] shadow-sm select-none pointer-events-none" />
-            
-            {/* Bamboo background decoration */}
-            <VectorBamboo />
-
-            <h3 className="font-handwriting font-black text-lg text-[#2b2725] mb-3 relative z-10 flex items-center gap-1.5">
-              Today's Brief <span className="text-red-500">🌸</span>
-            </h3>
-
-            <div className="space-y-3 relative z-10">
-              
-              {/* Unread Emails */}
-              <div 
-                onClick={() => handleSend("Summarize unread emails")}
-                className="flex items-center space-x-3 p-1 rounded hover:bg-[#e6dfd3]/20 transition-colors cursor-pointer"
-              >
-                <div className="p-1.5 bg-[#b83227]/10 rounded border border-dashed border-[#b83227]/30 text-[#b83227]">
-                  <Mail className="w-4 h-4" />
-                </div>
-                <div className="text-left leading-tight">
-                  <p className="text-lg font-handwriting font-black text-[#2b2725] leading-none">{stats.unreadEmails}</p>
-                  <p className="text-[10px] font-handwriting font-bold text-[#2b2725]/60 leading-none">Unread Emails</p>
-                </div>
-              </div>
-
-              {/* Meetings Today */}
-              <div 
-                onClick={() => handleSend("Show today's agenda")}
-                className="flex items-center space-x-3 p-1 rounded hover:bg-[#e6dfd3]/20 transition-colors cursor-pointer"
-              >
-                <div className="p-1.5 bg-[#3c6382]/10 rounded border border-dashed border-[#3c6382]/30 text-[#3c6382]">
-                  <Calendar className="w-4 h-4" />
-                </div>
-                <div className="text-left leading-tight">
-                  <p className="text-lg font-handwriting font-black text-[#2b2725] leading-none">{stats.meetingsToday}</p>
-                  <p className="text-[10px] font-handwriting font-bold text-[#2b2725]/60 leading-none">Meetings Today</p>
-                </div>
-              </div>
-
-              {/* Tasks Pending */}
-              <div className="flex items-center space-x-3 p-1">
-                <div className="p-1.5 bg-green-50 text-green-700 rounded border border-dashed border-green-300">
-                  <CheckSquare className="w-4 h-4" />
-                </div>
-                <div className="text-left leading-tight">
-                  <p className="text-lg font-handwriting font-black text-[#2b2725] leading-none">{tasks.filter(t=>!t.completed).length}</p>
-                  <p className="text-[10px] font-handwriting font-bold text-[#2b2725]/60 leading-none">Tasks Pending</p>
-                </div>
-              </div>
-
-              {/* High Priority */}
-              <div className="flex items-center space-x-3 p-1">
-                <div className="p-1.5 bg-yellow-50 text-yellow-700 rounded border border-dashed border-yellow-300">
-                  <Bookmark className="w-4 h-4" />
-                </div>
-                <div className="text-left leading-tight">
-                  <p className="text-lg font-handwriting font-black text-[#2b2725] leading-none">
-                    {tasks.filter(t => !t.completed && t.priority === "High").length}
-                  </p>
-                  <p className="text-[10px] font-handwriting font-bold text-[#2b2725]/60 leading-none">High Priority</p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* CARD 2: UPCOMING MEETINGS */}
-          <div className="bg-[#fdfbf7] sketch-border-sm p-5 relative overflow-hidden rounded-xl shadow-sm border-b-3 border-r-3 select-none">
-            {/* Washi Tape Ribbon */}
-            <div className="absolute top-[-10px] right-[10%] w-14 h-4 bg-[#fcdfd7] opacity-75 border-l border-r border-dashed border-white/40 rotate-[3deg] shadow-sm select-none pointer-events-none" />
-            
-            <div className="flex justify-between items-baseline mb-3">
-              <h3 className="font-handwriting font-black text-lg text-[#2b2725]">Upcoming Meetings</h3>
-              <button 
-                onClick={() => router.push("/dashboard/calendar")}
-                className="text-[9px] font-handwriting font-bold text-[#b83227] hover:underline cursor-pointer"
-              >
-                View all →
-              </button>
-            </div>
-
-            {/* Meetings Timeline */}
-            <div className="space-y-4 text-left pl-2.5 border-l-2 border-dashed border-[#e6dfd3] relative">
-              {meetings.length > 0 ? (
-                meetings.slice(0, 3).map((m, idx) => {
-                  let timeStr = "All Day";
-                  try {
-                    timeStr = new Date(m.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                  } catch (e) {}
-                  const colors = ["bg-[#3c6382] text-[#3c6382] border-[#3c6382]", "bg-green-700 text-green-700 border-green-700", "bg-[#b83227] text-[#b83227] border-[#b83227]"];
-                  const col = colors[idx % 3];
-                  return (
-                    <div key={m.id || idx} className="relative cursor-pointer hover:bg-gray-50/50 p-1 rounded animate-fade-in" onClick={() => router.push("/dashboard/calendar")}>
-                      <div className={`absolute left-[-15.5px] top-[8px] w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${col.split(" ")[0]}`} />
-                      <div className="leading-snug">
-                        <p className={`text-[10px] font-mono font-black ${col.split(" ")[1]}`}>{timeStr}</p>
-                        <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate max-w-[180px]">{m.title}</h4>
-                        <p className="text-[9px] text-[#2b2725]/55 font-mono truncate max-w-[180px]">{m.location || 'Google Meet / Sync'}</p>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <>
-                  <div className="relative">
-                    <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-[#3c6382] border-2 border-white shadow-sm" />
-                    <div className="leading-snug">
-                      <p className="text-[10px] font-mono text-[#3c6382] font-black">10:00 AM</p>
-                      <h4 className="text-xs font-handwriting font-black text-[#2b2725]">Team Standup</h4>
-                      <p className="text-[9px] text-[#2b2725]/55 font-mono">30 min • Google Meet</p>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-green-700 border-2 border-white shadow-sm" />
-                    <div className="leading-snug">
-                      <p className="text-[10px] font-mono text-green-700 font-black">11:30 AM</p>
-                      <h4 className="text-xs font-handwriting font-black text-[#2b2725]">Client Call</h4>
-                      <p className="text-[9px] text-[#2b2725]/55 font-mono">1 hr • Zoom Meeting</p>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-[#b83227] border-2 border-white shadow-sm" />
-                    <div className="leading-snug">
-                      <p className="text-[10px] font-mono text-[#b83227] font-black">2:00 PM</p>
-                      <h4 className="text-xs font-handwriting font-black text-[#2b2725]">Product Demo</h4>
-                      <p className="text-[9px] text-[#2b2725]/55 font-mono">1 hr • Google Meet</p>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* CARD 3: RECENT EMAILS */}
-          <div className="bg-[#fdfbf7] sketch-border-sm p-5 relative overflow-hidden rounded-xl shadow-sm border-b-3 border-r-3 select-none flex-1 flex flex-col justify-between">
-            <div className="absolute top-[-10px] left-[25%] w-15 h-4 bg-[#c8e6c9]/60 opacity-75 border-l border-r border-dashed border-white/40 rotate-[-1deg] shadow-sm select-none pointer-events-none" />
-            <VectorLantern />
-            <div className="flex justify-between items-baseline mb-3 relative z-10">
-              <h3 className="font-handwriting font-black text-lg text-[#2b2725]">Recent Emails</h3>
-              <button 
-                onClick={() => router.push("/dashboard/inbox")}
-                className="text-[9px] font-handwriting font-bold text-[#b83227] hover:underline cursor-pointer"
-              >
-                View all →
-              </button>
-            </div>
-            <div className="space-y-3 text-left relative z-10 flex-1 flex flex-col justify-start">
-              {emails.length > 0 ? (
-                emails.slice(0, 3).map((em, idx) => {
-                  let timeStr = "7:30 AM";
-                  try {
-                    timeStr = new Date(em.receivedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                  } catch (e) {}
-                  const colors = ["bg-[#b83227]", "bg-[#b83227]", "bg-[#3c6382]"];
-                  const dotCol = colors[idx % 3];
-                  return (
-                    <div 
-                      key={em.id || idx}
-                      onClick={() => handleSend(`Summarize email from ${em.sender}`)}
-                      className="p-2 bg-white/70 border border-dashed border-[#e6dfd3] hover:border-gray-300 rounded-lg cursor-pointer transition-all flex justify-between items-center"
-                    >
-                      <div className="truncate pr-2">
-                        <div className="flex items-center space-x-1.5">
-                          <span className={`w-1.5 h-1.5 rounded-full ${dotCol}`} />
-                          <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate">{em.sender.split(" <")[0]}</h4>
-                        </div>
-                        <p className="text-[10px] font-handwriting text-[#2b2725]/65 font-bold truncate pl-3">{em.subject}</p>
-                      </div>
-                      <span className="text-[9px] font-mono text-[#2b2725]/50 whitespace-nowrap">{timeStr}</span>
-                    </div>
-                  );
-                })
-              ) : (
-                <>
-                  <div 
-                    onClick={() => handleSend("Summarize email from Aarav Mehta")}
-                    className="p-2 bg-white/70 border border-dashed border-[#e6dfd3] hover:border-gray-300 rounded-lg cursor-pointer transition-all flex justify-between items-center"
-                  >
-                    <div className="truncate pr-2">
-                      <div className="flex items-center space-x-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#b83227]" />
-                        <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate">Aarav Mehta</h4>
-                      </div>
-                      <p className="text-[10px] font-handwriting text-[#2b2725]/65 font-bold truncate pl-3">Meeting Follow Up</p>
-                    </div>
-                    <span className="text-[9px] font-mono text-[#2b2725]/50 whitespace-nowrap">9:15 AM</span>
-                  </div>
-                  <div 
-                    onClick={() => handleSend("Summarize email from Corsair Team")}
-                    className="p-2 bg-white/70 border border-dashed border-[#e6dfd3] hover:border-gray-300 rounded-lg cursor-pointer transition-all flex justify-between items-center"
-                  >
-                    <div className="truncate pr-2">
-                      <div className="flex items-center space-x-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#b83227]" />
-                        <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate">Corsair Team</h4>
-                      </div>
-                      <p className="text-[10px] font-handwriting text-[#2b2725]/65 font-bold truncate pl-3">Hackathon Update</p>
-                    </div>
-                    <span className="text-[9px] font-mono text-[#2b2725]/50 whitespace-nowrap">8:45 AM</span>
-                  </div>
-                  <div 
-                    onClick={() => handleSend("Show calendar updates")}
-                    className="p-2 bg-white/70 border border-dashed border-[#e6dfd3] hover:border-gray-300 rounded-lg cursor-pointer transition-all flex justify-between items-center"
-                  >
-                    <div className="truncate pr-2">
-                      <div className="flex items-center space-x-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#3c6382]" />
-                        <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate">Google Calendar</h4>
-                      </div>
-                      <p className="text-[10px] font-handwriting text-[#2b2725]/65 font-bold truncate pl-3">Event Updated</p>
-                    </div>
-                    <span className="text-[9px] font-mono text-[#2b2725]/50 whitespace-nowrap">7:30 AM</span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
+
     </div>
   );
 

@@ -385,9 +385,9 @@ export default function CalendarPage() {
   };
 
   // Add Event handler
-  const handleAddEvent = (e: React.FormEvent) => {
+  const handleAddEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!eventTitle.trim()) return;
+    if (!eventTitle.trim() || !user) return;
     setSavingEvent(true);
 
     const startHour = parseInt(eventTimeStart.split(":")[0]);
@@ -400,24 +400,52 @@ export default function CalendarPage() {
 
     const colMap = eventDay - 12; // 12=0 (Mon), 13=1, 14=2...
 
-    const newEvent: CalendarEvent = {
-      id: String(Date.now()),
-      title: eventTitle,
-      description: eventDescription,
-      start: `2024-05-${eventDay}T${eventTimeStart}:00`,
-      end: `2024-05-${eventDay}T${eventTimeEnd}:00`,
-      col: colMap,
-      top: `${topVal.toFixed(2)}%`,
-      height: `${heightVal.toFixed(2)}%`,
-      color: "bg-[#fcf7ec] border-[#f5b041]/40 text-[#f5b041]"
-    };
+    const startISO = `2024-05-${eventDay}T${eventTimeStart}:00`;
+    const endISO = `2024-05-${eventDay}T${eventTimeEnd}:00`;
 
-    setEvents((prev) => [...prev, newEvent]);
-    setEventTitle("");
-    setEventDescription("");
-    setIsAddingEvent(false);
-    setSavingEvent(false);
-    alert("Event scheduled successfully! 📅");
+    try {
+      const res = await fetch("/api/calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.uid,
+          title: eventTitle,
+          description: eventDescription,
+          start: startISO,
+          end: endISO,
+          location: "Cozy Study Desk"
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.event) {
+        const gridEvent = mapEventToGrid(data.event);
+        setEvents((prev) => [...prev, gridEvent]);
+        alert("Event scheduled successfully! 📅");
+      } else {
+        throw new Error(data.error || "Failed to save");
+      }
+    } catch (err) {
+      console.error(err);
+      // Local fallback
+      const newEvent: CalendarEvent = {
+        id: String(Date.now()),
+        title: eventTitle,
+        description: eventDescription,
+        start: startISO,
+        end: endISO,
+        col: colMap,
+        top: `${topVal.toFixed(2)}%`,
+        height: `${heightVal.toFixed(2)}%`,
+        color: "bg-[#fcf7ec] border-[#f5b041]/40 text-[#f5b041]"
+      };
+      setEvents((prev) => [...prev, newEvent]);
+      alert("Event scheduled locally! 📅");
+    } finally {
+      setEventTitle("");
+      setEventDescription("");
+      setIsAddingEvent(false);
+      setSavingEvent(false);
+    }
   };
 
   // Filter events for selected day view
