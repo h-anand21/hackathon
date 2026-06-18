@@ -83,6 +83,7 @@ model User {
   emails       PriorityEmail[]
   tasks        Task[]
   chatSessions ChatSession[]
+  localEvents  LocalEvent[]
 }
 
 model PriorityEmail {
@@ -137,4 +138,20 @@ model ChatMessage {
   createdAt DateTime    @default(now()) @map("created_at")
   
   session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model LocalEvent {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  title       String
+  description String?  @db.Text
+  start       String
+  end         String
+  location    String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("local_events")
 }

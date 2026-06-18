@@ -281,6 +281,7 @@ export default function CalendarPage() {
   const daysToMon = currentDay === 0 ? -6 : 1 - currentDay;
   const mondayOfCurrentWeek = new Date(todayDate);
   mondayOfCurrentWeek.setDate(todayDate.getDate() + daysToMon);
+  mondayOfCurrentWeek.setHours(0, 0, 0, 0);
 
   const daysHeader: { label: string; date: number; fullDate: Date }[] = [];
   const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -407,8 +408,15 @@ export default function CalendarPage() {
   };
 
   useEffect(() => {
-    setUser(auth.currentUser);
-    fetchEvents(auth.currentUser?.uid || "mock-uid");
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        fetchEvents(currentUser.uid);
+      } else {
+        fetchEvents("mock-uid");
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleManualSync = async () => {
@@ -505,9 +513,19 @@ export default function CalendarPage() {
     }
   };
 
+  // Filter events to only show those in the active week
+  const mondayDate = daysHeader[0]?.fullDate;
+  const sundayDateEnd = new Date(daysHeader[6]?.fullDate);
+  sundayDateEnd.setHours(23, 59, 59, 999);
+  
+  const activeWeekEvents = events.filter((ev) => {
+    const evDate = new Date(ev.start);
+    return evDate >= mondayDate && evDate <= sundayDateEnd;
+  });
+
   // Filter events for selected day view
   const selectedCol = daysHeader.findIndex((d) => d.date === selectedDay);
-  const selectedDayEvents = events
+  const selectedDayEvents = activeWeekEvents
     .filter((e) => e.col === selectedCol)
     .sort((a, b) => a.start.localeCompare(b.start));
 
@@ -677,19 +695,19 @@ export default function CalendarPage() {
                       
                       {/* Merged Saturday/Sunday Mount Fuji card */}
                       {colIdx === 5 && (
-                        <div className="absolute inset-y-0 left-0 w-[200%] bg-[#fdfaf4]/90 z-10 border-l border-[#e6dfd3]">
+                        <div className="absolute inset-y-0 left-0 w-[200%] bg-[#fdfaf4]/80 z-0 pointer-events-none border-l border-[#e6dfd3]">
                           <VectorMtFujiWatermark />
                         </div>
                       )}
 
                       {/* Event Cards rendering */}
-                      {!isWeekend && events
+                      {activeWeekEvents
                         .filter((ev) => ev.col === colIdx)
                         .map((ev) => (
                           <div
                             key={ev.id}
                             style={{ top: ev.top, height: ev.height }}
-                            className={`absolute left-1.5 right-1.5 border border-l-3 rounded-lg p-1.5 px-2 flex flex-col justify-between overflow-hidden cursor-pointer select-text text-left leading-tight hover:shadow shadow-sm transition-all hover:scale-[1.01] ${ev.color}`}
+                            className={`absolute left-1.5 right-1.5 border border-l-3 rounded-lg p-1.5 px-2 flex flex-col justify-between overflow-hidden cursor-pointer select-text text-left leading-tight hover:shadow shadow-sm transition-all hover:scale-[1.01] z-10 ${ev.color}`}
                             title={`${ev.title}\n${ev.description}`}
                           >
                             <div className="truncate">
@@ -759,7 +777,7 @@ export default function CalendarPage() {
 
             {/* List of today's schedule items */}
             <div className="space-y-3.5 pl-2.5 border-l-2 border-dashed border-[#e6dfd3] relative">
-              {events
+              {activeWeekEvents
                 .filter(ev => ev.col === daysHeader.findIndex(d => d.date === selectedDay))
                 .slice(0, 3)
                 .map((ev, idx) => (
@@ -854,14 +872,16 @@ export default function CalendarPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-mono text-[#2b2725]/60 mb-1">Day of May 2024</label>
+                  <label className="block text-xs font-mono text-[#2b2725]/60 mb-1">Day of {startMonth} {startYear}</label>
                   <select
                     value={eventDay}
                     onChange={(e) => setEventDay(parseInt(e.target.value))}
                     className="w-full p-2.5 bg-white sketch-border-sm text-xs focus:outline-none font-bold"
                   >
                     {daysHeader.map(d => (
-                      <option key={d.date} value={d.date}>{d.label} (May {d.date})</option>
+                      <option key={d.date} value={d.date}>
+                        {d.label} ({d.fullDate.toLocaleString("en-US", { month: "short" })} {d.date})
+                      </option>
                     ))}
                   </select>
                 </div>

@@ -39,9 +39,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
     }
 
-    // Read custom local events
-    let allEvents = readLocalEvents();
-    let localEvents = allEvents.filter((ev: any) => ev.userId === userId);
+    // 1. Fetch custom local events from database
+    const dbLocalEvents = await prisma.localEvent.findMany({
+      where: { userId }
+    });
+
+    let localEvents = dbLocalEvents.map((e: any) => ({
+      id: e.id,
+      userId: e.userId,
+      title: e.title,
+      description: e.description || '',
+      start: e.start,
+      end: e.end,
+      location: e.location || '',
+    }));
 
     // If no local events exist for this user, seed default events relative to current week
     if (localEvents.length === 0) {
@@ -67,7 +78,6 @@ export async function GET(request: NextRequest) {
 
       const seedEvents = [
         {
-          id: 'seed-ev-1',
           userId,
           title: '🌸 Team Standup',
           description: 'Daily team sync to review sketchbook layout features',
@@ -76,7 +86,6 @@ export async function GET(request: NextRequest) {
           location: 'Google Meet',
         },
         {
-          id: 'seed-ev-2',
           userId,
           title: '📞 Client Call',
           description: 'Sync with stakeholders on integrations feedback',
@@ -85,7 +94,6 @@ export async function GET(request: NextRequest) {
           location: 'Zoom',
         },
         {
-          id: 'seed-ev-3',
           userId,
           title: '🌸 Design Review',
           description: 'Review Ghibli vector layout options',
@@ -94,7 +102,6 @@ export async function GET(request: NextRequest) {
           location: 'Conference Room 3A',
         },
         {
-          id: 'seed-ev-4',
           userId,
           title: '🌸 Project Demo',
           description: 'Demo Ghibli flow to Aarav Patel',
@@ -103,7 +110,6 @@ export async function GET(request: NextRequest) {
           location: 'DootAI Lounge',
         },
         {
-          id: 'seed-ev-5',
           userId,
           title: '🍱 Bento Lunch & Hackathon Party',
           description: 'Catered Kyoto-style lunch boxes arriving',
@@ -112,9 +118,26 @@ export async function GET(request: NextRequest) {
           location: 'DootAI Main Lounge',
         }
       ];
-      allEvents = [...allEvents, ...seedEvents];
-      writeLocalEvents(allEvents);
-      localEvents = seedEvents;
+
+      // Bulk insert seeds
+      await prisma.localEvent.createMany({
+        data: seedEvents
+      });
+
+      // Fetch newly seeded events
+      const newlySeeded = await prisma.localEvent.findMany({
+        where: { userId }
+      });
+
+      localEvents = newlySeeded.map((e: any) => ({
+        id: e.id,
+        userId: e.userId,
+        title: e.title,
+        description: e.description || '',
+        start: e.start,
+        end: e.end,
+        location: e.location || '',
+      }));
     }
 
     // Find the Google Calendar accounts for this user
@@ -172,19 +195,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required event fields' }, { status: 400 });
     }
 
-    const localEvents = readLocalEvents();
-    const newEvent = {
-      id: `local-ev-${Date.now()}`,
-      userId,
-      title,
-      description: description || '',
-      start,
-      end,
-      location: location || '',
-    };
-
-    localEvents.push(newEvent);
-    writeLocalEvents(localEvents);
+    // Write to PostgreSQL database
+    const newEvent = await prisma.localEvent.create({
+      data: {
+        userId,
+        title,
+        description: description || '',
+        start,
+        end,
+        location: location || '',
+      }
+    });
 
     return NextResponse.json({ success: true, event: newEvent });
   } catch (error: any) {

@@ -44,11 +44,12 @@ export async function POST(request: NextRequest) {
 
     // 1. Context retrieval via embedding
     let emailContext = "";
+    let matches: any[] = [];
     try {
       const queryEmbedding = await getGeminiEmbedding(message);
       const embeddingString = `[${queryEmbedding.join(',')}]`;
       
-      const matches: any[] = await prisma.$queryRawUnsafe(`
+      matches = await prisma.$queryRawUnsafe(`
         SELECT 
           p."subject", 
           p."sender", 
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
     const sundayStr = sundayOfCurrentWeekVal.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
     const promptText = `You are "Doot", an AI assistant in DootAI MailOS, a workspace with a beautiful watercolor Japanese sketchbook theme.
-You must respond in Hinglish (Hindi + English) with cute emoji accents (🌸, 🍱, 🍙, ⛩).
+You must respond in English with cute emoji accents (🌸, 🍱, 🍙, ⛩).
 The current local time is ${todayDate.toISOString()}.
 The calendar UI is displaying the current week of ${mondayStr} to ${sundayStr}.
 If the user asks you to schedule a meeting, event, or task on the calendar, schedule it within this week. For example, if today is ${todayDate.toLocaleDateString("en-US", { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}, calculate relative days (like "tomorrow" or "this Friday") correctly. Use the correct year, month, and date for all scheduled events so they show up on the calendar UI.
@@ -118,7 +119,7 @@ You must output your response in JSON format. The JSON must have this structure:
       "body": "Complete draft body of the email"
     }
   ],
-  "reply": "Your Hinglish conversational response confirming what actions you are performing and formatting the details of the email (to, subject, snippet) and calendar event (title, time, location) in a clear checklist/summary format."
+  "reply": "Your English conversational response confirming what actions you are performing and formatting the details of the email (to, subject, snippet) and calendar event (title, time, location) in a clear checklist/summary format."
 }
 
 ${emailContext}
@@ -203,27 +204,122 @@ User query: "${message}"`;
     if (!reply) {
       let fallbackReply = "";
       
+      // Load contacts to find names/emails
+      let contacts: any[] = [];
+      try {
+        const contactsPath = path.join(process.cwd(), "src/lib/data/contacts.json");
+        if (fs.existsSync(contactsPath)) {
+          contacts = JSON.parse(fs.readFileSync(contactsPath, 'utf-8') || '[]');
+        }
+      } catch (e) {
+        console.error("Error reading contacts in fallback:", e);
+      }
+
       // Extract email to from query if possible
-      let toEmail = "aarav@doot.ai";
-      const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/;
-      const emailMatch = query.match(emailRegex);
-      if (emailMatch) {
-        toEmail = emailMatch[1];
+      let toEmail = "";
+      let matchedContactName = "";
+      // Search for any name from contacts in the query
+      for (const contact of contacts) {
+        const nameParts = contact.name.toLowerCase().split(' ');
+        if (query.includes(contact.name.toLowerCase()) || (nameParts[0] && nameParts[0].length > 2 && query.includes(nameParts[0]))) {
+          toEmail = contact.email;
+          matchedContactName = contact.name;
+          break;
+        }
+      }
+      
+      if (!toEmail) {
+        const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/;
+        const emailMatch = query.match(emailRegex);
+        if (emailMatch) {
+          toEmail = emailMatch[1];
+        } else {
+          toEmail = "recipient@example.com";
+        }
       }
 
       if (query.includes('schedule') || query.includes('meeting') || query.includes('calendar') || query.includes('event')) {
-        const title = "🌸 Japanese Sketchbook Design Review";
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        let title = "Meeting";
+        const meetingAboutMatch = query.match(/(?:meeting|event|schedule|call)(?:\s+about|\s+called|\s+for)?\s+([^,.\n?]+)/);
+        if (meetingAboutMatch && meetingAboutMatch[1] && meetingAboutMatch[1].trim().length > 2) {
+          let extracted = meetingAboutMatch[1].trim();
+          const stopWords = ["tomorrow", "today", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "morning", "afternoon", "evening", "at", "pm", "am", "with"];
+          for (const sw of stopWords) {
+            const regex = new RegExp(`\\b${sw}\\b.*`, 'i');
+            extracted = extracted.replace(regex, '').trim();
+          }
+          if (extracted.length > 2) {
+            title = `${extracted.charAt(0).toUpperCase() + extracted.slice(1)}`;
+          }
+        }
+        title = `🌸 ${title}`;
+
+        const targetDate = new Date();
+        targetDate.setDate(todayDate.getDate() + 1); // Default to tomorrow
         
-        const yr = tomorrow.getFullYear();
-        const mo = String(tomorrow.getMonth() + 1).padStart(2, '0');
-        const da = String(tomorrow.getDate()).padStart(2, '0');
-        
-        const start = `${yr}-${mo}-${da}T11:00:00`;
-        const end = `${yr}-${mo}-${da}T12:00:00`;
-        
-        const dateStrFormatted = tomorrow.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+        if (query.includes("today")) {
+          targetDate.setTime(todayDate.getTime());
+        } else if (query.includes("tomorrow")) {
+          targetDate.setDate(todayDate.getDate() + 1);
+        } else if (query.includes("monday")) {
+          const currentDay = todayDate.getDay();
+          const distance = (1 - currentDay + 7) % 7;
+          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+        } else if (query.includes("tuesday")) {
+          const currentDay = todayDate.getDay();
+          const distance = (2 - currentDay + 7) % 7;
+          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+        } else if (query.includes("wednesday")) {
+          const currentDay = todayDate.getDay();
+          const distance = (3 - currentDay + 7) % 7;
+          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+        } else if (query.includes("thursday")) {
+          const currentDay = todayDate.getDay();
+          const distance = (4 - currentDay + 7) % 7;
+          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+        } else if (query.includes("friday")) {
+          const currentDay = todayDate.getDay();
+          const distance = (5 - currentDay + 7) % 7;
+          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+        } else if (query.includes("saturday")) {
+          const currentDay = todayDate.getDay();
+          const distance = (6 - currentDay + 7) % 7;
+          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+        } else if (query.includes("sunday")) {
+          const currentDay = todayDate.getDay();
+          const distance = (7 - currentDay + 7) % 7;
+          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+        }
+
+        let startHour = 11;
+        let startMin = 0;
+        const timeMatch = query.match(/(?:at|around)\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/);
+        if (timeMatch) {
+          let hr = parseInt(timeMatch[1]);
+          const min = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
+          const ampm = timeMatch[3];
+          if (ampm) {
+            if (ampm.toLowerCase() === 'pm' && hr < 12) hr += 12;
+            if (ampm.toLowerCase() === 'am' && hr === 12) hr = 0;
+          } else {
+            if (hr >= 1 && hr <= 7) hr += 12;
+          }
+          startHour = hr;
+          startMin = min;
+        }
+
+        const yr = targetDate.getFullYear();
+        const mo = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const da = String(targetDate.getDate()).padStart(2, '0');
+        const sh = String(startHour).padStart(2, '0');
+        const sm = String(startMin).padStart(2, '0');
+        const eh = String(Math.min(startHour + 1, 23)).padStart(2, '0');
+
+        const start = `${yr}-${mo}-${da}T${sh}:${sm}:00`;
+        const end = `${yr}-${mo}-${da}T${eh}:${sm}:00`;
+
+        const dateStrFormatted = targetDate.toLocaleDateString("en-US", { weekday: 'long', month: "short", day: "numeric", year: "numeric" });
+        const timeStrFormatted = `${startHour}:${sm} ${startHour >= 12 ? 'PM' : 'AM'}`;
 
         actions.push({
           type: "schedule_event",
@@ -233,23 +329,30 @@ User query: "${message}"`;
           end,
           location: "DootAI Main Lounge"
         });
-        fallbackReply = `📅 **Meeting scheduled!**\n- **Event:** ${title}\n- **Time:** ${dateStrFormatted}, 11:00 AM - 12:00 PM\n- **Location:** DootAI Main Lounge\n\nI have added this to your sketchbook calendar! 🍱`;
+        fallbackReply = `📅 **Meeting Scheduled!**\n- **Event:** ${title}\n- **Time:** ${dateStrFormatted} at ${timeStrFormatted}\n- **Location:** DootAI Main Lounge\n\nI have added this to your sketchbook calendar! 🍱`;
       }
 
       if (query.includes('draft') || query.includes('email') || query.includes('send') || query.includes('forward')) {
-        const subject = "Forwarded: Japanese Sketchbook Discussion";
-        const body = `Hi,\n\nI am forwarding the requested sketchbook design files and calendar meeting invite.\n\nBest regards,\nHimanshu`;
+        let emailSubject = "Discussion";
+        let emailBody = "Hi,\n\nI am sending this email regarding our discussion.\n\nBest regards,\nHimanshu";
+        
+        if (matches && matches.length > 0) {
+          const firstMatch = matches[0];
+          emailSubject = `Fwd: ${firstMatch.subject}`;
+          emailBody = `Hi,\n\nI am forwarding this email to you:\n\n---------- Forwarded message ---------\nFrom: ${firstMatch.sender}\nSubject: ${firstMatch.subject}\nDate: ${firstMatch.receivedAt}\n\n${firstMatch.summary || ''}\n\nBest regards,\nHimanshu`;
+        }
+
         actions.push({
           type: "send_email",
           to: toEmail,
-          subject,
-          body
+          subject: emailSubject,
+          body: emailBody
         });
-        fallbackReply += (fallbackReply ? "\n\n" : "") + `📧 **Email Forwarded!**\n- **To:** ${toEmail}\n- **Subject:** ${subject}\n\nI have drafted and sent the email scroll for you. 🌸`;
+        fallbackReply += (fallbackReply ? "\n\n" : "") + `📧 **Email Drafted!**\n- **To:** ${toEmail}\n- **Subject:** ${emailSubject}\n\nI have prepared the email scroll for you. 🌸`;
       }
 
       if (!fallbackReply) {
-        fallbackReply = `Konnichiwa! I am Doot, your personal mail assistant. Ask me to schedule a meeting, send or forward emails, and I will handle it all! 🌸`;
+        fallbackReply = `Hello! I am Doot, your personal mail assistant. Ask me to schedule a meeting, send or forward emails, and I will handle it all! 🌸`;
       }
       reply = fallbackReply;
     }
@@ -258,18 +361,17 @@ User query: "${message}"`;
     for (const action of actions) {
       if (action.type === 'schedule_event') {
         try {
-          const localEvents = readLocalEvents();
-          const newEvent = {
-            id: `local-ev-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            userId,
-            title: action.title,
-            description: action.description || '',
-            start: action.start,
-            end: action.end,
-            location: action.location || 'Cozy Study Desk'
-          };
-          localEvents.push(newEvent);
-          writeLocalEvents(localEvents);
+          // Write to PostgreSQL database
+          await prisma.localEvent.create({
+            data: {
+              userId,
+              title: action.title,
+              description: action.description || '',
+              start: action.start,
+              end: action.end,
+              location: action.location || 'Cozy Study Desk'
+            }
+          });
 
           // Create checklist task in DB
           await prisma.task.create({
