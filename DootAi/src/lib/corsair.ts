@@ -52,18 +52,12 @@ export async function ensureCorsairConfigured() {
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/corsair/auth/callback`;
 
   // 2. Configure global client ID/Secret for Gmail
-  const currentGmailClientId = await corsair.keys.gmail.get_client_id();
-  if (currentGmailClientId !== clientId) {
-    await corsair.keys.gmail.set_client_id(clientId);
-    await corsair.keys.gmail.set_client_secret(clientSecret);
-    await corsair.keys.gmail.set_redirect_url(redirectUri);
-  }
+  await corsair.keys.gmail.set_client_id(clientId);
+  await corsair.keys.gmail.set_client_secret(clientSecret);
+  await corsair.keys.gmail.set_redirect_url(redirectUri);
 
   // 3. Configure global client ID/Secret for Calendar
-  const currentCalendarClientId = await corsair.keys.googlecalendar.get_client_id();
-  if (currentCalendarClientId !== clientId) {
-    await corsair.keys.googlecalendar.set_client_id(clientId);
-    await corsair.keys.googlecalendar.set_client_secret(clientSecret);
-    await corsair.keys.googlecalendar.set_redirect_url(redirectUri);
-  }
+  await corsair.keys.googlecalendar.set_client_id(clientId);
+  await corsair.keys.googlecalendar.set_client_secret(clientSecret);
+  await corsair.keys.googlecalendar.set_redirect_url(redirectUri);
 }
