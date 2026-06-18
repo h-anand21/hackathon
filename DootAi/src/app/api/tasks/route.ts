@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, resolveUserId } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const rawUserId = searchParams.get('userId');
 
-    if (!userId) {
+    if (!rawUserId) {
       return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
     }
+
+    const userId = await resolveUserId(rawUserId);
 
     const tasks = await prisma.task.findMany({
       where: { userId },
@@ -24,11 +26,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, title, priority } = await request.json();
+    const { userId: rawUserId, title, priority } = await request.json();
 
-    if (!userId || !title) {
+    if (!rawUserId || !title) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    const userId = await resolveUserId(rawUserId);
 
     const task = await prisma.task.create({
       data: {

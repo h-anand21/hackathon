@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, resolveUserId } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
+    const rawUserId = searchParams.get("userId");
 
-    if (!userId) {
+    if (!rawUserId) {
       return NextResponse.json(
         { error: 'Missing userId parameter' },
         { status: 400 }
       );
     }
+
+    const userId = await resolveUserId(rawUserId);
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -30,14 +32,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, preferences } = await request.json();
+    const { userId: rawUserId, preferences } = await request.json();
 
-    if (!userId || !preferences) {
+    if (!rawUserId || !preferences) {
       return NextResponse.json(
         { error: 'Missing userId or preferences' },
         { status: 400 }
       );
     }
+
+    const userId = await resolveUserId(rawUserId);
 
     const user = await prisma.user.update({
       where: { id: userId },

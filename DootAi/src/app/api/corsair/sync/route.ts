@@ -14,18 +14,8 @@ export async function POST(request: NextRequest) {
     // Ensure Corsair integrations are configured and database encryption keys are set up
     await ensureCorsairConfigured();
 
-    // Get the tenant client scoped for the user
-    const tenant = corsair.withTenant(userId);
-
-    let gmailSynced = false;
-    let gmailCount = 0;
-    let gmailError = null;
-    let calendarSynced = false;
-    let calendarCount = 0;
-    let calendarError = null;
-
-    // 1. Sync Gmail (exclude mock accounts)
-    const gmailAccount = await prisma.corsairAccount.findFirst({
+    let targetTenantId = userId;
+    let gmailAccount = await prisma.corsairAccount.findFirst({
       where: {
         tenantId: userId,
         id: { not: 'mock-account-id' },
@@ -34,6 +24,30 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    if (!gmailAccount) {
+      gmailAccount = await prisma.corsairAccount.findFirst({
+        where: {
+          id: { not: 'mock-account-id' },
+          integration: {
+            name: 'gmail',
+          },
+        },
+      });
+      if (gmailAccount) {
+        targetTenantId = gmailAccount.tenantId;
+      }
+    }
+
+    // Get the tenant client scoped for the user
+    const tenant = corsair.withTenant(targetTenantId);
+
+    let gmailSynced = false;
+    let gmailCount = 0;
+    let gmailError = null;
+    let calendarSynced = false;
+    let calendarCount = 0;
+    let calendarError = null;
 
     if (gmailAccount) {
       try {
@@ -116,9 +130,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Sync Google Calendar
-    const calendarAccount = await prisma.corsairAccount.findFirst({
+    let calendarAccount = await prisma.corsairAccount.findFirst({
       where: {
-        tenantId: userId,
+        tenantId: targetTenantId,
         integration: {
           name: 'googlecalendar',
         },

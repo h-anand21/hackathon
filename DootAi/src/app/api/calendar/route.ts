@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, resolveUserId } from '@/lib/db';
 import fs from 'fs';
 import path from 'path';
 
@@ -33,11 +33,13 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const rawUserId = searchParams.get('userId');
 
-    if (!userId) {
+    if (!rawUserId) {
       return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
     }
+
+    const userId = await resolveUserId(rawUserId);
 
     // 1. Fetch custom local events from database
     const dbLocalEvents = await prisma.localEvent.findMany({
@@ -56,8 +58,7 @@ export async function GET(request: NextRequest) {
 
     // Seeding logic removed so that empty state is clean and no dummy events are shown.
 
-    // Find the Google Calendar accounts for this user
-    const accounts = await prisma.corsairAccount.findMany({
+    let accounts = await prisma.corsairAccount.findMany({
       where: {
         tenantId: userId,
         integration: {
@@ -65,6 +66,17 @@ export async function GET(request: NextRequest) {
         },
       },
     });
+
+    if (accounts.length === 0) {
+      accounts = await prisma.corsairAccount.findMany({
+        where: {
+          integration: {
+            name: 'googlecalendar',
+          },
+        },
+        take: 1
+      });
+    }
 
     let googleEvents: any[] = [];
 
@@ -105,11 +117,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, title, description, start, end, location } = await request.json();
+    const { userId: rawUserId, title, description, start, end, location } = await request.json();
 
-    if (!userId || !title || !start || !end) {
+    if (!rawUserId || !title || !start || !end) {
       return NextResponse.json({ error: 'Missing required event fields' }, { status: 400 });
     }
+
+    const userId = await resolveUserId(rawUserId);
 
     // Write to PostgreSQL database
     const newEvent = await prisma.localEvent.create({
@@ -126,6 +140,57 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, event: newEvent });
   } catch (error: any) {
     console.error('Error creating local calendar event:', error);
+    return NextResponse.json(
+      { error: 'Internal server error', details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const eventId = searchParams.get('eventId');
+    const rawUserId = searchParams.get('userId');
+
+    if (!eventId || !rawUserId) {
+      return NextResponse.json({ error: 'Missing eventId or userId' }, { status: 400 });
+    }
+
+    const userId = await resolveUserId(rawUserId);
+
+    // Attempt to find and delete the event in localEvent first
+    const localEvent = await prisma.localEvent.findFirst({
+      where: { id: eventId, userId }
+    });
+
+    if (localEvent) {
+      await prisma.localEvent.delete({
+        where: { id: eventId }
+      });
+      return NextResponse.json({ success: true, message: 'Event deleted successfully' });
+    }
+
+    // If it's a CorsairEntity event (cached google event)
+    const googleEvent = await prisma.corsairEntity.findFirst({
+      where: {
+        id: eventId,
+        account: {
+          tenantId: userId
+        }
+      }
+    });
+
+    if (googleEvent) {
+      await prisma.corsairEntity.delete({
+        where: { id: eventId }
+      });
+      return NextResponse.json({ success: true, message: 'Google calendar event removed from cache' });
+    }
+
+    return NextResponse.json({ error: 'Event not found or unauthorized' }, { status: 404 });
+  } catch (error: any) {
+    console.error('Error deleting calendar event:', error);
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
       { status: 500 }

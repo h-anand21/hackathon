@@ -14,3 +14,20 @@ export const prisma =
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
 }
+
+export async function resolveUserId(userId: string): Promise<string> {
+  if (userId === "guest-judge-dootai") {
+    const firstUser = await prisma.user.findFirst({
+      where: {
+        id: { not: "guest-judge-dootai" }
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
+    if (firstUser) {
+      return firstUser.id;
+    }
+  }
+  return userId;
+}

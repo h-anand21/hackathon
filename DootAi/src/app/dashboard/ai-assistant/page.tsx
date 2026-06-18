@@ -184,16 +184,33 @@ export default function AIAssistantPage() {
     { title: "Filter Setup", desc: "Route all reports to a workspace tag folder", action: "Create tag report" }
   ];
 
-  // Monitor Auth State
+  // Monitor Auth State & Fetch Chat History
   useEffect(() => {
-    setUser(auth.currentUser);
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        // Fetch chat history
+        fetch(`/api/chat?userId=${currentUser.uid}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success && data.messages && data.messages.length > 0) {
+              setMessages(data.messages);
+            }
+          })
+          .catch((err) => console.error("Error loading chat history:", err));
+      } else {
+        router.push("/onboarding");
+      }
+    });
 
     // Read initial query if passed via url params
     const initialQuery = searchParams.get("query");
     if (initialQuery) {
       setInput(initialQuery);
     }
-  }, [searchParams]);
+
+    return () => unsubscribe();
+  }, [searchParams, router]);
 
   // Scroll to bottom
   useEffect(() => {
@@ -300,18 +317,20 @@ export default function AIAssistantPage() {
         {/* LEFT COMPONENT: MAIN INTERACTIVE CHAT WRAPPER (75% width) */}
         <div className={`flex-1 flex flex-col min-h-[500px] lg:min-h-0 bg-white sketch-border sketch-shadow rounded-xl p-5 ${activeTab !== "chat" ? "hidden lg:flex" : "flex"}`}>
           
-          {/* Greeting post card */}
-          <div className="bg-[#fdfbf7] border border-dashed border-[#e6dfd3] p-4 rounded-xl flex items-center gap-4 relative overflow-hidden select-none mb-4 shrink-0">
-            <VectorMtFuji />
-            <DootWaving className="w-20 h-20 shrink-0" />
-            <div className="relative z-10 text-left">
-              <h3 className="font-handwriting font-black text-sm text-[#2b2725]">Talk to Doot, Assistant Sensei ⛩️</h3>
-              <p className="text-[11px] font-handwriting font-bold text-gray-600 mt-1 leading-relaxed">
-                Send prompts to write letters, schedule appointments on the weekly timetable, search emails, or extract task items. I use Gemini integration to format response logs.
-              </p>
+           {/* Greeting post card */}
+          {messages.length <= 1 && (
+            <div className="bg-[#fdfbf7] border border-dashed border-[#e6dfd3] p-4 rounded-xl flex items-center gap-4 relative overflow-hidden select-none mb-4 shrink-0">
+              <VectorMtFuji />
+              <DootWaving className="w-20 h-20 shrink-0" />
+              <div className="relative z-10 text-left">
+                <h3 className="font-handwriting font-black text-sm text-[#2b2725]">Talk to Doot, Assistant Sensei ⛩️</h3>
+                <p className="text-[11px] font-handwriting font-bold text-gray-600 mt-1 leading-relaxed">
+                  Send prompts to write letters, schedule appointments on the weekly timetable, search emails, or extract task items. I use Gemini integration to format response logs.
+                </p>
+              </div>
+              <div className="absolute right-3 top-3"><HankoLogoSVG className="w-5 h-5 opacity-40" /></div>
             </div>
-            <div className="absolute right-3 top-3"><HankoLogoSVG className="w-5 h-5 opacity-40" /></div>
-          </div>
+          )}
 
           {/* Conversation history lists */}
           <div className="flex-1 overflow-y-auto p-3 bg-[#faf7f2]/40 border border-[#e6dfd3] rounded-xl space-y-3 font-handwriting font-bold text-sm min-h-0 pr-1">
@@ -357,22 +376,24 @@ export default function AIAssistantPage() {
           </div>
 
           {/* Bento boxes for quick inputs */}
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5 select-none shrink-0">
-            {defaultPrompts.map((p, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSend(p.query)}
-                className="p-2 bg-white hover:bg-gray-50 border border-[#e6dfd3] hover:border-gray-300 text-left rounded-xl cursor-pointer transition-all hover:scale-102 flex flex-col justify-between h-16 shadow-sm group"
-              >
-                <span className="text-[10px] font-handwriting font-extrabold text-[#2b2725]/85 group-hover:text-[#b83227] leading-tight line-clamp-2">
-                  {p.text}
-                </span>
-                <span className="text-[8px] font-mono text-gray-400 font-bold flex items-center gap-0.5">
-                  Try prompt <ArrowRight className="w-2.5 h-2.5 text-gray-300 group-hover:text-[#b83227]" />
-                </span>
-              </button>
-            ))}
-          </div>
+          {messages.length <= 1 && (
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5 select-none shrink-0">
+              {defaultPrompts.map((p, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSend(p.query)}
+                  className="p-2 bg-white hover:bg-gray-50 border border-[#e6dfd3] hover:border-gray-300 text-left rounded-xl cursor-pointer transition-all hover:scale-102 flex flex-col justify-between h-16 shadow-sm group"
+                >
+                  <span className="text-[10px] font-handwriting font-extrabold text-[#2b2725]/85 group-hover:text-[#b83227] leading-tight line-clamp-2">
+                    {p.text}
+                  </span>
+                  <span className="text-[8px] font-mono text-gray-400 font-bold flex items-center gap-0.5">
+                    Try prompt <ArrowRight className="w-2.5 h-2.5 text-gray-300 group-hover:text-[#b83227]" />
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Chat Text Area & Send panel */}
           <div className="mt-4 pt-3 border-t border-[#e6dfd3] shrink-0 select-none">

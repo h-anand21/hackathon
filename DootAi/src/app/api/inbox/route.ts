@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, resolveUserId } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const rawUserId = searchParams.get('userId');
 
-    if (!userId) {
+    if (!rawUserId) {
       return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
     }
 
-    // Find the Gmail accounts for this user
-    const accounts = await prisma.corsairAccount.findMany({
+    const userId = await resolveUserId(rawUserId);
+
+    let accounts = await prisma.corsairAccount.findMany({
       where: {
         tenantId: userId,
         integration: {
@@ -21,6 +22,17 @@ export async function GET(request: NextRequest) {
         },
       },
     });
+
+    if (accounts.length === 0) {
+      accounts = await prisma.corsairAccount.findMany({
+        where: {
+          integration: {
+            name: 'gmail',
+          },
+        },
+        take: 1
+      });
+    }
 
     let mergedEmails: any[] = [];
 

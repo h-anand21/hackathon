@@ -14,7 +14,8 @@ import {
   Loader2,
   Sparkles,
   MoreVertical,
-  CheckSquare
+  CheckSquare,
+  Trash2
 } from "lucide-react";
 
 type CalendarEvent = {
@@ -143,6 +144,7 @@ export default function CalendarPage() {
   const [syncing, setSyncing] = useState(false);
   const [selectedDay, setSelectedDay] = useState(todayDate.getDate()); 
   const [viewAllUpcoming, setViewAllUpcoming] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
   // Event modal state
   const [isAddingEvent, setIsAddingEvent] = useState(false);
@@ -325,6 +327,32 @@ export default function CalendarPage() {
     }
   };
 
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!user) return;
+    const confirmDelete = window.confirm("Are you sure you want to delete this event? 🌸");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`/api/calendar?eventId=${eventId}&userId=${user.uid}`, {
+        method: "DELETE"
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEvents((prev) => prev.filter((ev) => ev.id !== eventId));
+        setSelectedEvent(null);
+        alert("Event deleted successfully! 🌸");
+      } else {
+        throw new Error(data.error || "Failed to delete");
+      }
+    } catch (err) {
+      console.error("Error deleting event:", err);
+      // Local fallback deletion
+      setEvents((prev) => prev.filter((ev) => ev.id !== eventId));
+      setSelectedEvent(null);
+      alert("Event deleted locally! 🌸");
+    }
+  };
+
   // Filter events to only show those in the active week
   const mondayDate = daysHeader[0]?.fullDate;
   const sundayDateEnd = new Date(daysHeader[6]?.fullDate);
@@ -477,9 +505,13 @@ export default function CalendarPage() {
             <div className="flex-1 flex relative overflow-y-auto">
               
               {/* Left Hour labels */}
-              <div className="w-16 border-r border-[#e6dfd3] bg-[#fdfaf4] select-none text-right pr-2 shrink-0">
+              <div className="w-16 border-r border-[#e6dfd3] bg-[#fdfaf4] select-none text-right pr-2 shrink-0 relative h-[720px]">
                 {hours.map((h, i) => (
-                  <div key={i} className="h-14 text-[9px] font-mono text-[#2b2725]/45 font-bold pt-1.5 leading-none">
+                  <div 
+                    key={i} 
+                    className="absolute right-2 text-[9px] font-mono text-[#2b2725]/45 font-bold -translate-y-1/2 leading-none"
+                    style={{ top: `${(i / 11) * 100}%` }}
+                  >
                     {h}
                   </div>
                 ))}
@@ -521,6 +553,7 @@ export default function CalendarPage() {
                           <div
                             key={ev.id}
                             style={{ top: ev.top, height: ev.height }}
+                            onClick={() => setSelectedEvent(ev)}
                             className={`absolute left-1.5 right-1.5 border border-l-3 rounded-lg p-1.5 px-2 flex flex-col justify-between overflow-hidden cursor-pointer select-text text-left leading-tight hover:shadow shadow-sm transition-all hover:scale-[1.01] z-10 ${ev.color}`}
                             title={`${ev.title}\n${ev.description}`}
                           >
@@ -599,8 +632,12 @@ export default function CalendarPage() {
                 selectedDayEvents
                   .slice(0, 5)
                   .map((ev, idx) => (
-                    <div key={idx} className="relative text-left leading-snug">
-                      <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-[#b83227] border-2 border-white shadow-sm" />
+                    <div 
+                      key={idx} 
+                      onClick={() => setSelectedEvent(ev)}
+                      className="relative text-left leading-snug cursor-pointer hover:bg-gray-100/60 p-1.5 rounded-lg transition-all"
+                    >
+                      <div className="absolute left-[-15.5px] top-[10px] w-2.5 h-2.5 rounded-full bg-[#b83227] border-2 border-white shadow-sm" />
                       <div>
                         <p className="text-[9px] font-mono text-[#b83227] font-black">
                           {viewAllUpcoming 
@@ -747,6 +784,77 @@ export default function CalendarPage() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Event Details Modal */}
+      {selectedEvent && (
+        <div className="fixed inset-0 bg-[#2b2725]/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-[#fbf8f3] w-full max-w-md p-6 sketch-border sketch-shadow relative space-y-4 text-left">
+            <div className="flex justify-between items-center pb-3 border-b border-dashed border-[#e6dfd3]">
+              <span className="font-handwriting text-lg font-bold text-[#b83227] flex items-center gap-1">
+                <span>🌸</span> Event Details
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedEvent(null)}
+                className="text-xs font-bold underline hover:text-[#b83227] cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <h3 className="text-xl font-handwriting font-black text-[#2b2725]">{selectedEvent.title}</h3>
+              </div>
+
+              {selectedEvent.description && (
+                <div className="bg-[#fdfbf7] p-3 sketch-border-sm rounded-lg border border-dashed border-[#ebdcc8]">
+                  <p className="text-xs font-handwriting font-bold text-gray-700 whitespace-pre-wrap">{selectedEvent.description}</p>
+                </div>
+              )}
+
+              <div className="space-y-2.5 text-xs font-handwriting font-bold text-gray-600">
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-4 h-4 text-[#b83227] shrink-0" />
+                  <span>
+                    {new Date(selectedEvent.start).toLocaleDateString("en-US", { weekday: 'long', month: "short", day: "numeric", year: "numeric" })}
+                    <br />
+                    <span className="text-[10px] text-gray-400 font-mono">
+                      {new Date(selectedEvent.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {new Date(selectedEvent.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </span>
+                </div>
+
+                {selectedEvent.location && (
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-4 h-4 text-[#b83227] shrink-0" />
+                    <span>{selectedEvent.location}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-3 border-t border-dashed border-[#e6dfd3]">
+              <button
+                type="button"
+                onClick={() => handleDeleteEvent(selectedEvent.id)}
+                className="px-3 py-1.5 bg-white hover:bg-red-50 text-[#b83227] border border-[#b83227] font-bold text-xs sketch-border-sm flex items-center space-x-1 cursor-pointer transition-all rounded-lg"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Event</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setSelectedEvent(null)}
+                className="px-5 py-2 bg-[#2b2725] text-white font-bold text-xs sketch-border cursor-pointer transition-all hover:scale-102 rounded-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

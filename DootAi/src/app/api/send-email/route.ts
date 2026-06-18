@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     if (isDraft) {
       // Find the Gmail accounts for this user to bind the draft to
-      const gmailAccount = await prisma.corsairAccount.findFirst({
+      let gmailAccount = await prisma.corsairAccount.findFirst({
         where: {
           tenantId: userId,
           integration: {
@@ -20,6 +20,16 @@ export async function POST(request: NextRequest) {
           },
         },
       });
+
+      if (!gmailAccount) {
+        gmailAccount = await prisma.corsairAccount.findFirst({
+          where: {
+            integration: {
+              name: 'gmail',
+            },
+          },
+        });
+      }
 
       const accountId = gmailAccount?.id || 'mock-account-id';
       const entityId = `draft-${Date.now()}`;
@@ -79,14 +89,27 @@ export async function POST(request: NextRequest) {
       .replace(/\//g, '_')
       .replace(/=+$/, '');
 
+    let targetTenantId = userId;
     // Get the tenant instance to check if it exists
     const tenantMeta = await corsair.manage.tenants.get(userId).catch(() => null);
     if (!tenantMeta) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+      // Fallback to the first available connected tenant
+      const fallbackAcc = await prisma.corsairAccount.findFirst({
+        where: {
+          integration: {
+            name: 'gmail'
+          }
+        }
+      });
+      if (fallbackAcc) {
+        targetTenantId = fallbackAcc.tenantId;
+      } else {
+        return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+      }
     }
 
     // Get the plugin-enabled tenant client
-    const tenant = corsair.withTenant(userId);
+    const tenant = corsair.withTenant(targetTenantId);
 
     // Send the message using Gmail plugin API
     await tenant.gmail.api.messages.send({

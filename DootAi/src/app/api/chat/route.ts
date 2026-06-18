@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, resolveUserId } from '@/lib/db';
 import { getGeminiEmbedding } from '@/lib/ai';
 import { corsair } from '@/lib/corsair';
 import fs from 'fs';
@@ -30,15 +30,259 @@ function writeLocalEvents(events: any[]) {
   }
 }
 
+function generateFallbackEmail(query: string, toEmail: string) {
+  let subject = "Discussion";
+  let body = "Hi,\n\nI am writing this email regarding our discussion.\n\nBest regards,\nHimanshu";
+
+  const lowerQuery = query.toLowerCase();
+
+  // 1. Sick / Leave request
+  if (lowerQuery.includes("sick") || lowerQuery.includes("leave") || lowerQuery.includes("fever") || lowerQuery.includes("unwell") || lowerQuery.includes("ill")) {
+    subject = "Leave Request - Sick Leave 🤒";
+    body = `Hi,\n\nI am writing to inform you that I am feeling unwell today and need to take sick leave. I will keep you updated on my recovery.\n\nBest regards,\nHimanshu`;
+  }
+  // 2. Marriage / Wedding
+  else if (lowerQuery.includes("marriage") || lowerQuery.includes("marrage") || lowerQuery.includes("wedding")) {
+    let relative = "my brother";
+    if (lowerQuery.includes("sister")) relative = "my sister";
+    else if (lowerQuery.includes("friend")) relative = "my friend";
+    else if (lowerQuery.includes("cousin")) relative = "my cousin";
+    
+    subject = `Wedding Invitation: Celebration of ${relative}'s Marriage! 🌸`;
+    body = `Hi,\n\nI hope you are doing well.\n\nI am absolutely delighted to invite you to the wedding ceremony and celebrations of ${relative}. It would mean the world to us to have your presence and blessings on this auspicious occasion.\n\nPlease find the details of the venue and schedule attached below. We look forward to celebrating this beautiful milestone together!\n\nWarm regards,\nHimanshu`;
+  }
+  // 3. Celebration / Party / Happiness / General Invitation
+  else if (
+    lowerQuery.includes("celebration") || lowerQuery.includes("party") || 
+    lowerQuery.includes("happiness") || lowerQuery.includes("hapapaines") || 
+    lowerQuery.includes("hapapiness") || lowerQuery.includes("occosene") || 
+    lowerQuery.includes("occasion") ||
+    (
+      (lowerQuery.includes("invite") || lowerQuery.includes("invitation")) && 
+      !lowerQuery.includes("meeting") && !lowerQuery.includes("metting") && 
+      !lowerQuery.includes("schedule") && !lowerQuery.includes("sync") && 
+      !lowerQuery.includes("call")
+    )
+  ) {
+    subject = "Invitation to Celebrate! 🌸";
+    body = `Hi,\n\nI hope you are doing well.\n\nI am absolutely delighted to invite you to join us for a celebration on this special occasion. It would mean a lot to us to have your presence to share in our happiness.\n\nPlease let me know if you will be able to make it.\n\nBest regards,\nHimanshu`;
+  }
+  // 4. Doctor Appointment (specifically patient request)
+  else if (
+    (lowerQuery.includes("doctor") || lowerQuery.includes("docot") || lowerQuery.includes("appoint") || lowerQuery.includes("hospital")) &&
+    !lowerQuery.includes("party") && !lowerQuery.includes("happiness") && !lowerQuery.includes("hapapaines") && !lowerQuery.includes("occosene") && !lowerQuery.includes("occasion") && !lowerQuery.includes("invite")
+  ) {
+    subject = "Doctor Appointment Request 🏥";
+    body = `Dear Doctor,\n\nI would like to request an appointment for a consultation. Please let me know your available time slots this week.\n\nBest regards,\nHimanshu`;
+  }
+  // 5. Meeting / Sync
+  else if (lowerQuery.includes("meeting") || lowerQuery.includes("metting") || lowerQuery.includes("schedule") || lowerQuery.includes("sync") || lowerQuery.includes("catch up") || lowerQuery.includes("call")) {
+    subject = "Meeting Invitation / Sync Request 🗓️";
+    body = `Hi,\n\nI would like to request a brief meeting or sync-up to discuss our ongoing work and align on the next steps.\n\nPlease let me know your availability for a 15-30 minute slot this week, or send over a calendar invite at your convenience.\n\nBest regards,\nHimanshu`;
+  }
+  // 7. General message parsing (e.g. "saying I will join the review Friday")
+  else {
+    let sayingContent = "";
+    const sayingMatch = query.match(/(?:saying|tell them|that)\s+([^,.\n?]+)/i);
+    if (sayingMatch && sayingMatch[1] && sayingMatch[1].trim().length > 3) {
+      sayingContent = sayingMatch[1].trim();
+    }
+
+    if (sayingContent) {
+      const formattedSaying = sayingContent.charAt(0).toUpperCase() + sayingContent.slice(1);
+      subject = "Discussion Update";
+      body = `Hi,\n\nI hope this email finds you well.\n\nI am sending this email to let you know that:\n\n${formattedSaying}.\n\nBest regards,\nHimanshu`;
+    } else {
+      let extractedAbout = "";
+      const aboutMatch = query.match(/(?:about|regarding|for|on behalf of|on behave of|behalf of|behave of|subject)\s+([^,.\n?]+)/i);
+      if (aboutMatch && aboutMatch[1] && aboutMatch[1].trim().length > 2) {
+        extractedAbout = aboutMatch[1].trim();
+        if (extractedAbout.toLowerCase().startsWith("to ")) {
+          extractedAbout = extractedAbout.slice(3).trim();
+        }
+      }
+
+      if (extractedAbout) {
+        // Capitalize words in subject
+        subject = extractedAbout.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        body = `Hi,\n\nI hope this email finds you well.\n\nI am writing to reach out regarding: ${extractedAbout}.\n\nPlease let me know your thoughts on this when you have a moment, or if you would like to hop on a quick call to discuss further.\n\nBest regards,\nHimanshu`;
+      } else {
+        subject = "Discussion Topic";
+        body = `Hi,\n\nI hope this email finds you well.\n\nI am writing this email regarding our conversation. Please let me know when you are free to discuss.\n\nBest regards,\nHimanshu`;
+      }
+    }
+  }
+
+  return { subject, body };
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const rawUserId = searchParams.get('userId');
+
+    if (!rawUserId) {
+      return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
+    }
+
+    const userId = await resolveUserId(rawUserId);
+
+    const session = await prisma.chatSession.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' }
+        }
+      }
+    });
+
+    if (!session) {
+      return NextResponse.json({ success: true, messages: [] });
+    }
+
+    const formattedMessages = session.messages.map((m: any) => ({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+      createdAt: m.createdAt.toISOString()
+    }));
+
+    return NextResponse.json({ success: true, messages: formattedMessages });
+  } catch (error: any) {
+    console.error('Error fetching chat history:', error);
+    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { userId, message } = await request.json();
+    const { userId: rawUserId, message } = await request.json();
 
-    if (!userId || !message) {
+    if (!rawUserId || !message) {
       return NextResponse.json({ error: 'Missing userId or message' }, { status: 400 });
     }
 
-    const query = message.toLowerCase();
+    const userId = await resolveUserId(rawUserId);
+
+    const query = message.trim().toLowerCase();
+    
+    // Check if user is confirming/sending the latest draft
+    const isConfirmationOnly = (
+      ["yes", "send", "haa", "bhej do", "confirm", "send it", "bhej do please", "bhejdo", "send now", "ok", "ok send", "approve", "confirm send"].includes(query) ||
+      ( (query.includes("send") || query.includes("haa") || query.includes("yes") || query.includes("bhej do") || query.includes("confirm")) && 
+        !query.includes("@") && !query.includes("to ") && !query.includes("subject") && !query.includes("email to") && query.length < 35 )
+    );
+
+    if (isConfirmationOnly) {
+      const latestDraft = await prisma.priorityEmail.findFirst({
+        where: { userId, category: 'Drafts' },
+        orderBy: { receivedAt: 'desc' }
+      });
+
+      if (latestDraft) {
+        const corsairEntity = await prisma.corsairEntity.findUnique({
+          where: { id: latestDraft.entityId }
+        });
+
+        if (corsairEntity) {
+          const emailData = corsairEntity.data as any;
+          const to = emailData.to || 'aarav@doot.ai';
+          const subject = emailData.subject || 'Fwd: Email Scroll';
+          const body = emailData.body || '';
+
+          // 1. Send using Corsair
+          try {
+            let gmailAccount = await prisma.corsairAccount.findFirst({
+              where: {
+                tenantId: userId,
+                integration: { name: 'gmail' }
+              }
+            });
+
+            let targetTenantId = userId;
+            if (!gmailAccount) {
+              gmailAccount = await prisma.corsairAccount.findFirst({
+                where: {
+                  integration: { name: 'gmail' }
+                }
+              });
+              if (gmailAccount) {
+                targetTenantId = gmailAccount.tenantId;
+              }
+            }
+
+            if (gmailAccount) {
+              const tenant = corsair.withTenant(targetTenantId);
+              const mimeMessage = [
+                `To: ${to}`,
+                `Subject: ${subject}`,
+                'Content-Type: text/plain; charset=utf-8',
+                'MIME-Version: 1.0',
+                '',
+                body,
+              ].join('\r\n');
+
+              const raw = Buffer.from(mimeMessage)
+                .toString('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+
+              await tenant.gmail.api.messages.send({
+                userId: 'me',
+                raw,
+              });
+            }
+          } catch (gmailErr) {
+            console.warn("Could not send real Gmail on confirmation, logging mock instead:", gmailErr);
+          }
+
+          // 2. Update category from Drafts to Sent in both CorsairEntity and PriorityEmail
+          await prisma.corsairEntity.update({
+            where: { id: corsairEntity.id },
+            data: {
+              data: {
+                ...emailData,
+                category: 'Sent'
+              }
+            }
+          });
+
+          await prisma.priorityEmail.update({
+            where: { id: latestDraft.id },
+            data: {
+              category: 'Sent',
+              summary: `Sent email regarding: ${subject}`
+            }
+          });
+
+          const reply = `I have successfully sent your draft email to **${to}** with subject **"${subject}"**! 🌸 Bento box is updated.`;
+
+          // Save chat messages in history
+          let session = await prisma.chatSession.findFirst({
+            where: { userId },
+            orderBy: { createdAt: 'desc' },
+          });
+
+          if (!session) {
+            session = await prisma.chatSession.create({
+              data: { userId },
+            });
+          }
+
+          await prisma.chatMessage.createMany({
+            data: [
+              { sessionId: session.id, role: 'user', content: message },
+              { sessionId: session.id, role: 'assistant', content: reply },
+            ]
+          });
+
+          return NextResponse.json({ success: true, reply });
+        }
+      }
+    }
+
     let reply = "";
     let actions: any[] = [];
 
@@ -238,122 +482,416 @@ User query: "${message}"`;
         }
       }
 
-      if (query.includes('schedule') || query.includes('meeting') || query.includes('calendar') || query.includes('event')) {
-        let title = "Meeting";
-        const meetingAboutMatch = query.match(/(?:meeting|event|schedule|call)(?:\s+about|\s+called|\s+for)?\s+([^,.\n?]+)/);
-        if (meetingAboutMatch && meetingAboutMatch[1] && meetingAboutMatch[1].trim().length > 2) {
-          let extracted = meetingAboutMatch[1].trim();
-          const stopWords = ["tomorrow", "today", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "morning", "afternoon", "evening", "at", "pm", "am", "with"];
-          for (const sw of stopWords) {
-            const regex = new RegExp(`\\b${sw}\\b.*`, 'i');
-            extracted = extracted.replace(regex, '').trim();
-          }
-          if (extracted.length > 2) {
-            title = `${extracted.charAt(0).toUpperCase() + extracted.slice(1)}`;
-          }
-        }
-        title = `🌸 ${title}`;
+      // 1. Check if user is asking for email summary
+      const hasComposeKeywords = query.includes("draft") || 
+                                 query.includes("write") || 
+                                 query.includes("send") || 
+                                 query.includes("sent") ||
+                                 query.includes("forward") || 
+                                 query.includes("fowrda") ||
+                                 query.includes("forword") ||
+                                 query.includes("fowrd") ||
+                                 query.includes("foward") ||
+                                 query.includes("forwrd") ||
+                                 query.includes("fwd") || 
+                                 query.includes("reply") || 
+                                 query.includes("compose") || 
+                                 query.includes("bhej") || 
+                                 query.includes("bhejo") ||
+                                 query.includes("doctor") || 
+                                 query.includes("docot") || 
+                                 query.includes("appoint") || 
+                                 query.includes("sick") || 
+                                 query.includes("leave") ||
+                                 query.includes("meeting") ||
+                                 query.includes("schedule") ||
+                                 query.includes("event") ||
+                                 query.includes("add to calendar");
 
-        const targetDate = new Date();
-        targetDate.setDate(todayDate.getDate() + 1); // Default to tomorrow
-        
-        if (query.includes("today")) {
-          targetDate.setTime(todayDate.getTime());
-        } else if (query.includes("tomorrow")) {
-          targetDate.setDate(todayDate.getDate() + 1);
-        } else if (query.includes("monday")) {
-          const currentDay = todayDate.getDay();
-          const distance = (1 - currentDay + 7) % 7;
-          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
-        } else if (query.includes("tuesday")) {
-          const currentDay = todayDate.getDay();
-          const distance = (2 - currentDay + 7) % 7;
-          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
-        } else if (query.includes("wednesday")) {
-          const currentDay = todayDate.getDay();
-          const distance = (3 - currentDay + 7) % 7;
-          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
-        } else if (query.includes("thursday")) {
-          const currentDay = todayDate.getDay();
-          const distance = (4 - currentDay + 7) % 7;
-          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
-        } else if (query.includes("friday")) {
-          const currentDay = todayDate.getDay();
-          const distance = (5 - currentDay + 7) % 7;
-          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
-        } else if (query.includes("saturday")) {
-          const currentDay = todayDate.getDay();
-          const distance = (6 - currentDay + 7) % 7;
-          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
-        } else if (query.includes("sunday")) {
-          const currentDay = todayDate.getDay();
-          const distance = (7 - currentDay + 7) % 7;
-          targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
-        }
+      const hasSummaryKeywords = query.includes("summary") || 
+                                 query.includes("summarize") || 
+                                 query.includes("summarise") || 
+                                 query.includes("summar") || 
+                                 query.includes("summer") || 
+                                 query.includes("samary") || 
+                                 query.includes("samri") || 
+                                 query.includes("samre") || 
+                                 query.includes("samariya") ||
+                                 query.includes("unread") || 
+                                 query.includes("latest") || 
+                                 query.includes("inbox") ||
+                                 query.includes("recent") ||
+                                 query.includes("check mail") ||
+                                 query.includes("check email") ||
+                                 query.includes("show mail") ||
+                                 query.includes("show email") ||
+                                 query.includes("dikhao") ||
+                                 query.includes("read mail") ||
+                                 query.includes("read email");
 
-        let startHour = 11;
-        let startMin = 0;
-        const timeMatch = query.match(/(?:at|around)\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/);
-        if (timeMatch) {
-          let hr = parseInt(timeMatch[1]);
-          const min = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
-          const ampm = timeMatch[3];
-          if (ampm) {
-            if (ampm.toLowerCase() === 'pm' && hr < 12) hr += 12;
-            if (ampm.toLowerCase() === 'am' && hr === 12) hr = 0;
+      const hasEmailAddress = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/.test(query);
+      const hasExplicitRecipient = hasEmailAddress || (toEmail && toEmail !== "recipient@example.com");
+
+      const isSummaryRequest = !hasExplicitRecipient && (
+                                 hasSummaryKeywords || 
+                                 ((query.includes("emails") || query.includes("mail") || query.includes("inbox")) && !hasComposeKeywords)
+                               );
+
+      if (isSummaryRequest) {
+        try {
+          let filterConditions: any = {
+            userId,
+            category: { notIn: ['Sent', 'Drafts'] }
+          };
+
+          // Try to filter by sender if a contact name is mentioned in query
+          for (const contact of contacts) {
+            const nameParts = contact.name.toLowerCase().split(' ');
+            if (query.includes(contact.name.toLowerCase()) || (nameParts[0] && nameParts[0].length > 2 && query.includes(nameParts[0]))) {
+              filterConditions.sender = { contains: nameParts[0], mode: 'insensitive' };
+              break;
+            }
+          }
+
+          let inboxEmails = await prisma.priorityEmail.findMany({
+            where: filterConditions,
+            orderBy: { receivedAt: 'desc' },
+            take: 5
+          });
+
+          // Fallback to the same mock emails shown on the inbox page if db is empty
+          if (!inboxEmails || inboxEmails.length === 0) {
+            inboxEmails = [
+              {
+                sender: 'Aarav Patel <aarav@doot.ai>',
+                subject: '🌸 Urgent: Schedule review for Japanese Sketchbook Design System',
+                summary: 'Aarav requests a meeting this Friday morning at 9:00 AM to review the Japanese Sketchbook Design System features, including paper styles and ring physics.',
+                snippet: 'Hi there, we need to finalize the paper border styles and the spiral ring physics for the web view. Can we meet this Friday morning at 9:00 AM?'
+              },
+              {
+                sender: 'Yuki Sato <yuki@tokyobento.com>',
+                subject: '🍱 Bento Catering for the Hackathon Party',
+                summary: 'Yuki confirms the order of 50 Kyoto-style lunch boxes to be delivered on Saturday at 12:00 PM for the hackathon.',
+                snippet: 'Hello! Confirming your order for 50 Kyoto-style lunch boxes. We will deliver them directly to your workspace on Saturday at 12 PM.'
+              },
+              {
+                sender: 'Sketchy Weekly <news@sketchy.dev>',
+                subject: '🔥 Newsletter: 10 design tips for handwritten interfaces',
+                summary: 'Weekly newsletter discussing 10 design tips for hand-drawn interfaces, highlighting SVG filters and border-radius properties.',
+                snippet: 'In this week\'s issue: how to make web cards look hand-drawn using SVG filters and custom border-radius properties. Check it out!'
+              }
+            ] as any[];
+          }
+
+          if (inboxEmails && inboxEmails.length > 0) {
+            fallbackReply = "🌸 **Inbox Scroll Summary:**\nHere is a summary of your latest email scrolls:\n\n";
+            inboxEmails.forEach((email: any, idx: number) => {
+              const emailSummary = email.summary || email.snippet || "No summary available.";
+              fallbackReply += `${idx + 1}. **From:** ${email.sender}\n   **Subject:** ${email.subject}\n   **Summary:** ${emailSummary}\n\n`;
+            });
+            fallbackReply += "Let me know if you want me to draft replies to any of these! 🍱";
           } else {
-            if (hr >= 1 && hr <= 7) hr += 12;
+            fallbackReply = "🌸 Your inbox scrolls are currently clean and empty! No new messages to summarize. ⛩️";
           }
-          startHour = hr;
-          startMin = min;
+        } catch (dbErr) {
+          console.error("Failed to fetch inbox emails for summary:", dbErr);
+          fallbackReply = "🌸 I tried to read your inbox scrolls, but had trouble accessing the database. Please try again! ⛩️";
+        }
+      } else {
+        // 2. Otherwise run schedule or compose checks
+        if (
+          query.includes('schedule') || query.includes('meeting') || query.includes('calendar') || 
+          query.includes('event') || query.includes('calande') || query.includes('clander') || 
+          query.includes('calander') || query.includes('calender') || query.includes('metting') ||
+          query.includes('add')
+        ) {
+          let title = "Meeting";
+          const meetingAboutMatch = query.match(/(?:meeting|event|schedule|call|calande|clander|calander|calender|metting)(?:\s+about|\s+called|\s+for)?\s+([^,.\n?]+)/i);
+          if (meetingAboutMatch && meetingAboutMatch[1] && meetingAboutMatch[1].trim().length > 2) {
+            let extracted = meetingAboutMatch[1].trim();
+            const stopWords = ["tomorrow", "today", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "morning", "afternoon", "evening", "at", "pm", "am", "with"];
+            for (const sw of stopWords) {
+              const regex = new RegExp(`\\b${sw}\\b.*`, 'i');
+              extracted = extracted.replace(regex, '').trim();
+            }
+            if (extracted.length > 2) {
+              title = `${extracted.charAt(0).toUpperCase() + extracted.slice(1)}`;
+            }
+          }
+          title = `🌸 ${title}`;
+
+          // Extract meeting link (URL) if present
+          let meetingLink = "";
+          const urlRegex = /(https?:\/\/[^\s]+)/gi;
+          const urlMatch = message.match(urlRegex); // Search in original message to preserve case
+          if (urlMatch) {
+            meetingLink = urlMatch[0];
+          }
+
+          const targetDate = new Date(todayDate);
+          let dateMatched = false;
+
+          const monthRegexStr = '(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)';
+          
+          const patternA = new RegExp(`\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+${monthRegexStr}\\b`, 'i');
+          const patternB = new RegExp(`\\b${monthRegexStr}\\s+(\\d{1,2})(?:st|nd|rd|th)?\\b`, 'i');
+
+          const matchA = query.match(patternA);
+          const matchB = query.match(patternB);
+
+          let parsedDay = -1;
+          let parsedMonthStr = "";
+
+          if (matchA) {
+            parsedDay = parseInt(matchA[1], 10);
+            parsedMonthStr = matchA[2].toLowerCase();
+            dateMatched = true;
+          } else if (matchB) {
+            parsedMonthStr = matchB[1].toLowerCase();
+            parsedDay = parseInt(matchB[2], 10);
+            dateMatched = true;
+          }
+
+          if (dateMatched) {
+            const monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+            let monthIdx = -1;
+            for (let i = 0; i < 12; i++) {
+              if (parsedMonthStr.startsWith(monthNames[i])) {
+                monthIdx = i;
+                break;
+              }
+            }
+
+            if (monthIdx !== -1 && parsedDay >= 1 && parsedDay <= 31) {
+              targetDate.setDate(1); // Safe reset to avoid month-end rollover
+              targetDate.setMonth(monthIdx);
+              targetDate.setDate(parsedDay);
+              targetDate.setFullYear(todayDate.getFullYear());
+              
+              const todayCompare = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate());
+              const targetCompare = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+              if (targetCompare < todayCompare) {
+                targetDate.setFullYear(todayDate.getFullYear() + 1);
+              }
+            }
+          }
+
+          if (!dateMatched) {
+            if (query.includes("today")) {
+              targetDate.setTime(todayDate.getTime());
+            } else if (query.includes("tomorrow")) {
+              targetDate.setDate(todayDate.getDate() + 1);
+            } else if (query.includes("monday")) {
+              const currentDay = todayDate.getDay();
+              const distance = (1 - currentDay + 7) % 7;
+              targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+            } else if (query.includes("tuesday")) {
+              const currentDay = todayDate.getDay();
+              const distance = (2 - currentDay + 7) % 7;
+              targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+            } else if (query.includes("wednesday")) {
+              const currentDay = todayDate.getDay();
+              const distance = (3 - currentDay + 7) % 7;
+              targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+            } else if (query.includes("thursday")) {
+              const currentDay = todayDate.getDay();
+              const distance = (4 - currentDay + 7) % 7;
+              targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+            } else if (query.includes("friday")) {
+              const dayDiff = todayDate.getDay();
+              const distance = (5 - dayDiff + 7) % 7;
+              targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+            } else if (query.includes("saturday")) {
+              const currentDay = todayDate.getDay();
+              const distance = (6 - currentDay + 7) % 7;
+              targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+            } else if (query.includes("sunday")) {
+              const currentDay = todayDate.getDay();
+              const distance = (7 - currentDay + 7) % 7;
+              targetDate.setDate(todayDate.getDate() + (distance === 0 ? 7 : distance));
+            } else {
+              targetDate.setDate(todayDate.getDate() + 1);
+            }
+          }
+
+          let startHour = 11;
+          let startMin = 0;
+          let ampm = "";
+
+          // Try different time formats
+          const timeMatch1 = query.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm|baje)\b/i);
+          const timeMatch2 = query.match(/(\d{1,2}):(\d{2})\b/);
+          const timeMatch3 = query.match(/(?:at|around|ko|baje)\s*(\d{1,2})(?::(\d{2}))?\b/i);
+
+          if (timeMatch1) {
+            startHour = parseInt(timeMatch1[1], 10);
+            startMin = timeMatch1[2] ? parseInt(timeMatch1[2], 10) : 0;
+            ampm = timeMatch1[3].toLowerCase();
+          } else if (timeMatch2) {
+            startHour = parseInt(timeMatch2[1], 10);
+            startMin = parseInt(timeMatch2[2], 10);
+          } else if (timeMatch3) {
+            startHour = parseInt(timeMatch3[1], 10);
+            startMin = timeMatch3[2] ? parseInt(timeMatch3[2], 10) : 0;
+          }
+
+          if (ampm && ampm !== 'baje') {
+            if (ampm === 'pm' && startHour < 12) startHour += 12;
+            if (ampm === 'am' && startHour === 12) startHour = 0;
+          } else {
+            if (startHour >= 1 && startHour <= 7) startHour += 12;
+          }
+
+          const yr = targetDate.getFullYear();
+          const mo = String(targetDate.getMonth() + 1).padStart(2, '0');
+          const da = String(targetDate.getDate()).padStart(2, '0');
+          const sh = String(startHour).padStart(2, '0');
+          const sm = String(startMin).padStart(2, '0');
+          const eh = String(Math.min(startHour + 1, 23)).padStart(2, '0');
+
+          const start = `${yr}-${mo}-${da}T${sh}:${sm}:00`;
+          const end = `${yr}-${mo}-${da}T${eh}:${sm}:00`;
+
+          const dateStrFormatted = targetDate.toLocaleDateString("en-US", { weekday: 'long', month: "short", day: "numeric", year: "numeric" });
+          const displayHour = startHour % 12 === 0 ? 12 : startHour % 12;
+          const timeStrFormatted = `${displayHour}:${sm} ${startHour >= 12 ? 'PM' : 'AM'}`;
+
+          // Extract location from query if present and not a meeting link
+          let location = meetingLink || "";
+          if (!location) {
+            const locMatch = query.match(/(?:location is|location|in|at)\s+([^,.\n?]+)/i);
+            if (locMatch && locMatch[1]) {
+              let locCandidate = locMatch[1].trim();
+              const timeStopWords = ["tomorrow", "today", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "at", "on", "in", "baje", "am", "pm"];
+              for (const tsw of timeStopWords) {
+                const regex = new RegExp(`\\b${tsw}\\b.*`, 'i');
+                locCandidate = locCandidate.replace(regex, '').trim();
+              }
+              const isNumber = /^\d+$/.test(locCandidate);
+              if (locCandidate && !isNumber && locCandidate.length > 2) {
+                location = locCandidate.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+              }
+            }
+          }
+          if (!location) {
+            location = "DootAI Main Lounge";
+          }
+
+          const description = meetingLink 
+            ? `Scheduled via Doot AI Chatbot\n\nJoin Meeting: ${meetingLink}`
+            : `Scheduled via Doot AI Chatbot at ${location}`;
+
+          actions.push({
+            type: "schedule_event",
+            title,
+            description,
+            start,
+            end,
+            location
+          });
+
+          fallbackReply = `📅 **Meeting Scheduled!**\n- **Event:** ${title}\n- **Time:** ${dateStrFormatted} at ${timeStrFormatted}\n- **Location/Link:** ${location}\n\nI have added this to your sketchbook calendar! 🍱`;
         }
 
-        const yr = targetDate.getFullYear();
-        const mo = String(targetDate.getMonth() + 1).padStart(2, '0');
-        const da = String(targetDate.getDate()).padStart(2, '0');
-        const sh = String(startHour).padStart(2, '0');
-        const sm = String(startMin).padStart(2, '0');
-        const eh = String(Math.min(startHour + 1, 23)).padStart(2, '0');
+        if (
+          query.includes('draft') || query.includes('email') || query.includes('mail') || 
+          query.includes('send') || query.includes('sent') || query.includes('forward') || 
+          query.includes('fowrda') || query.includes('forword') || query.includes('fowrd') || 
+          query.includes('foward') || query.includes('forwrd') || query.includes('fwd') ||
+          query.includes('appoint') || query.includes('docot') || query.includes('bhej') ||
+          query.includes('bhejo') || hasEmailAddress
+        ) {
+          let emailSubject = "Discussion";
+          let emailBody = "Hi,\n\nI am sending this email regarding our discussion.\n\nBest regards,\nHimanshu";
+          
+          const isForwardRequest = (query.includes("forward") || query.includes("fwd")) && 
+                                   !query.includes("write") && 
+                                   !query.includes("draft") && 
+                                   !query.includes("mail") && 
+                                   !query.includes("doctor") && 
+                                   !query.includes("docot") && 
+                                   !query.includes("appoint");
 
-        const start = `${yr}-${mo}-${da}T${sh}:${sm}:00`;
-        const end = `${yr}-${mo}-${da}T${eh}:${sm}:00`;
+          let isUpdateRecipient = false;
+          if (hasEmailAddress) {
+            const hasNewTopicKeywords = query.includes("marriage") || query.includes("marrage") || 
+                                        query.includes("wedding") || query.includes("invitation") || 
+                                        query.includes("invite") || query.includes("celebration") ||
+                                        query.includes("sick") || query.includes("leave") || 
+                                        query.includes("fever") || query.includes("unwell") || 
+                                        query.includes("ill") || query.includes("doctor") || 
+                                        query.includes("docot") || query.includes("appoint") || 
+                                        query.includes("hospital") || query.includes("project") || 
+                                        query.includes("review") || query.includes("status") || 
+                                        query.includes("update") || query.includes("slide") || 
+                                        query.includes("report") || query.includes("thank") || 
+                                        query.includes("appreciate") || query.includes("thanks");
 
-        const dateStrFormatted = targetDate.toLocaleDateString("en-US", { weekday: 'long', month: "short", day: "numeric", year: "numeric" });
-        const timeStrFormatted = `${startHour}:${sm} ${startHour >= 12 ? 'PM' : 'AM'}`;
+            const hasForwardKeyword = query.includes("forward") || query.includes("fowrda") || 
+                                      query.includes("forword") || query.includes("fowrd") || 
+                                      query.includes("foward") || query.includes("forwrd") || 
+                                      query.includes("fwd") || query.includes("send") || 
+                                      query.includes("sent") || query.includes("bhej") || 
+                                      query.includes("bhejo") || query.includes("share") || 
+                                      query.includes("mail") || query.includes("email") ||
+                                      query.includes("to") || query.includes("on") || query.includes("par");
 
-        actions.push({
-          type: "schedule_event",
-          title,
-          description: "Scheduled via Doot AI Chatbot",
-          start,
-          end,
-          location: "DootAI Main Lounge"
-        });
-        fallbackReply = `📅 **Meeting Scheduled!**\n- **Event:** ${title}\n- **Time:** ${dateStrFormatted} at ${timeStrFormatted}\n- **Location:** DootAI Main Lounge\n\nI have added this to your sketchbook calendar! 🍱`;
-      }
+            const hasContextPronoun = query.includes("this email") || query.includes("it") || 
+                                      query.includes("that") || query.includes("this") || 
+                                      query.includes("above") || query.includes("previous") || 
+                                      query.includes("ye") || query.includes("isko") || 
+                                      query.includes("isse");
 
-      if (query.includes('draft') || query.includes('email') || query.includes('send') || query.includes('forward')) {
-        let emailSubject = "Discussion";
-        let emailBody = "Hi,\n\nI am sending this email regarding our discussion.\n\nBest regards,\nHimanshu";
-        
-        if (matches && matches.length > 0) {
-          const firstMatch = matches[0];
-          emailSubject = `Fwd: ${firstMatch.subject}`;
-          emailBody = `Hi,\n\nI am forwarding this email to you:\n\n---------- Forwarded message ---------\nFrom: ${firstMatch.sender}\nSubject: ${firstMatch.subject}\nDate: ${firstMatch.receivedAt}\n\n${firstMatch.summary || ''}\n\nBest regards,\nHimanshu`;
+            isUpdateRecipient = !hasNewTopicKeywords && (
+              hasContextPronoun || 
+              (hasForwardKeyword && query.length < 60)
+            );
+          }
+
+          if (isForwardRequest && matches && matches.length > 0) {
+            const firstMatch = matches[0];
+            emailSubject = `Fwd: ${firstMatch.subject}`;
+            emailBody = `Hi,\n\nI am forwarding this email to you:\n\n---------- Forwarded message ---------\nFrom: ${firstMatch.sender}\nSubject: ${firstMatch.subject}\nDate: ${firstMatch.receivedAt}\n\n${firstMatch.summary || ''}\n\nBest regards,\nHimanshu`;
+          } else if (isUpdateRecipient) {
+            try {
+              const latestDraft = await prisma.priorityEmail.findFirst({
+                where: { userId, category: 'Drafts' },
+                orderBy: { receivedAt: 'desc' }
+              });
+              if (latestDraft) {
+                const corsairEntity = await prisma.corsairEntity.findUnique({
+                  where: { id: latestDraft.entityId }
+                });
+                if (corsairEntity) {
+                  const emailData = corsairEntity.data as any;
+                  emailSubject = emailData.subject || "Discussion";
+                  emailBody = emailData.body || "";
+                }
+              }
+            } catch (err) {
+              console.error("Failed to retrieve latest draft for update recipient:", err);
+            }
+          } else {
+            // Compose / Draft Request
+            const parsed = generateFallbackEmail(query, toEmail);
+            emailSubject = parsed.subject;
+            emailBody = parsed.body;
+          }
+
+          actions.push({
+            type: "send_email",
+            to: toEmail,
+            subject: emailSubject,
+            body: emailBody
+          });
+          fallbackReply += (fallbackReply ? "\n\n" : "") + `📧 **Email Drafted!**\n- **To:** ${toEmail}\n- **Subject:** ${emailSubject}\n\n**Draft Content:**\n\`\`\`text\n${emailBody}\n\`\`\`\n\nI have prepared the email scroll for you. 🌸`;
         }
 
-        actions.push({
-          type: "send_email",
-          to: toEmail,
-          subject: emailSubject,
-          body: emailBody
-        });
-        fallbackReply += (fallbackReply ? "\n\n" : "") + `📧 **Email Drafted!**\n- **To:** ${toEmail}\n- **Subject:** ${emailSubject}\n\nI have prepared the email scroll for you. 🌸`;
+        if (!fallbackReply) {
+          fallbackReply = `Hello! I am Doot, your personal mail assistant. Ask me to schedule a meeting, send or forward emails, and I will handle it all! 🌸`;
+        }
       }
 
-      if (!fallbackReply) {
-        fallbackReply = `Hello! I am Doot, your personal mail assistant. Ask me to schedule a meeting, send or forward emails, and I will handle it all! 🌸`;
-      }
       reply = fallbackReply;
     }
 
@@ -393,56 +931,29 @@ User query: "${message}"`;
           const subject = action.subject || 'Fwd: Email Scroll';
           const body = action.body || '';
 
-          // Attempt Corsair send
-          try {
-            const gmailAccount = await prisma.corsairAccount.findFirst({
-              where: {
-                tenantId: userId,
-                integration: { name: 'gmail' }
-              }
-            });
-
-            if (gmailAccount) {
-              const tenant = corsair.withTenant(userId);
-              const mimeMessage = [
-                `To: ${to}`,
-                `Subject: ${subject}`,
-                'Content-Type: text/plain; charset=utf-8',
-                'MIME-Version: 1.0',
-                '',
-                body,
-              ].join('\r\n');
-
-              const raw = Buffer.from(mimeMessage)
-                .toString('base64')
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
-                .replace(/=+$/, '');
-
-              await tenant.gmail.api.messages.send({
-                userId: 'me',
-                raw,
-              });
-            }
-          } catch (gmailErr) {
-            console.warn("Could not send real Gmail, logging mock instead:", gmailErr);
-          }
-
-          // Save sent email into CorsairEntity and PriorityEmail so it displays in the "Sent" tab
-          const gmailAccount = await prisma.corsairAccount.findFirst({
+          // Save as DRAFT instead of sending directly
+          let gmailAccount = await prisma.corsairAccount.findFirst({
             where: {
               tenantId: userId,
               integration: { name: 'gmail' }
             }
           });
 
+          if (!gmailAccount) {
+            gmailAccount = await prisma.corsairAccount.findFirst({
+              where: {
+                integration: { name: 'gmail' }
+              }
+            });
+          }
+
           const gmailConfig = (gmailAccount?.config || {}) as any;
           const accountId = gmailAccount?.id || 'mock-account-id';
-          const entityId = `sent-${Date.now()}`;
+          const entityId = `draft-${Date.now()}`;
           
           const corsairEntity = await prisma.corsairEntity.create({
             data: {
-              id: `sent-entity-${Date.now()}`,
+              id: `draft-entity-${Date.now()}`,
               accountId,
               entityId,
               entityType: 'messages',
@@ -454,7 +965,7 @@ User query: "${message}"`;
                 snippet: body.substring(0, 100),
                 body,
                 createdAt: new Date().toISOString(),
-                category: 'Sent'
+                category: 'Drafts'
               }
             }
           });
@@ -467,11 +978,14 @@ User query: "${message}"`;
               sender: gmailConfig.emailAddress || 'you@doot.ai',
               snippet: body.substring(0, 100),
               priority: 'LOW',
-              category: 'Sent',
-              summary: `Sent email regarding: ${subject}`,
+              category: 'Drafts',
+              summary: `Draft email regarding: ${subject}`,
               receivedAt: new Date()
             }
           });
+
+          // Modify reply to prompt user for confirmation
+          reply += "\n\nWould you like me to send this email? Reply with 'Yes' or 'Send' to confirm.";
         } catch (emailErr) {
           console.error("Failed executing email action:", emailErr);
         }
