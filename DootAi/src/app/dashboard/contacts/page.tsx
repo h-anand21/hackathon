@@ -326,7 +326,7 @@ export default function ContactsPage() {
       </div>
 
       {/* 2. BODY SPLIT LAYOUT */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-hidden pr-1">
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto pr-1">
         
         {/* LEFT COMPONENT: GROUPS & MAIN LIST TABLE (75% width) */}
         <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-[500px] lg:min-h-0 shrink-0">

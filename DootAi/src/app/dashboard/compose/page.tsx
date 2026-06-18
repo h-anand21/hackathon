@@ -292,7 +292,7 @@ function ComposePageContent() {
         <span className="text-xs font-handwriting text-[#2b2725]/60 font-bold">Craft the perfect email with Doot AI</span>
       </div>
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-hidden pr-1">
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto pr-1">
         
         {/* LEFT COMPOSER PANEL */}
         <div className="flex-1 bg-white sketch-border sketch-shadow p-6 rounded-xl flex flex-col justify-between min-h-[480px] lg:min-h-0 relative">

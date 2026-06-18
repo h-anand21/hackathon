@@ -221,7 +221,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="absolute top-0 bottom-0 left-[20px] w-0.5 border-l border-red-300 opacity-60 pointer-events-none" />
           
           {/* Main content scroll container */}
-          <div className="flex-1 flex flex-col overflow-hidden pl-8 pr-6 py-6 relative z-10 select-text">
+          <div className="flex-1 flex flex-col overflow-y-auto pl-8 pr-6 py-6 relative z-10 select-text">
             {children}
           </div>
 

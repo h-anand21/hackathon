@@ -517,7 +517,7 @@ export default function InboxPage() {
       </div>
 
       {/* 3-PANE SPLIT LAYOUT */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-hidden pr-1">
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto pr-1">
         
         {/* PANE 1: EMAIL LIST (40% width) */}
         <div className="flex-1 lg:max-w-md flex flex-col min-h-[400px] lg:min-h-0 bg-white sketch-border sketch-shadow rounded-xl overflow-hidden shrink-0">

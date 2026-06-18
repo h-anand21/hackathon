@@ -80,196 +80,11 @@ function VectorMtFujiWatermark() {
 }
 
 // ----------------------------------------------------
-// MOCK CALENDAR EVENTS (Matching calendar.png Grid)
+// MOCK CALENDAR EVENTS (Cleared to avoid dummy/placeholder events)
 // ----------------------------------------------------
 
-const mockEventsData: CalendarEvent[] = [
-  // Monday 12
-  {
-    id: "e1",
-    title: "Team Standup",
-    description: "Daily team sync",
-    start: "2024-05-12T10:00:00",
-    end: "2024-05-12T10:30:00",
-    col: 0,
-    top: "18.18%", // 10:00 AM (8 AM is 0, 7 PM is 11 hrs total. 2 hrs out of 11 = 18.18%)
-    height: "4.54%", // 30 mins = 0.5/11 = 4.54%
-    color: "bg-[#fef5f0] border-[#b83227]/40 text-[#b83227]"
-  },
-  {
-    id: "e2",
-    title: "Client Call",
-    description: "Sync with stakeholders",
-    start: "2024-05-12T12:00:00",
-    end: "2024-05-12T13:00:00",
-    col: 0,
-    top: "36.36%", // 12:00 PM (4 hrs out of 11 = 36.36%)
-    height: "9.09%", // 1 hr = 9.09%
-    color: "bg-[#fcf7ec] border-[#f5b041]/40 text-[#f5b041]"
-  },
-  {
-    id: "e3",
-    title: "Design Review",
-    description: "Review Ghibli vector layout",
-    start: "2024-05-12T15:00:00",
-    end: "2024-05-12T16:00:00",
-    col: 0,
-    top: "63.63%", // 3:00 PM (7 hrs out of 11)
-    height: "9.09%",
-    color: "bg-[#f2f7fc] border-[#3c6382]/40 text-[#3c6382]"
-  },
-  {
-    id: "e4",
-    title: "Follow Up",
-    description: "Follow up items",
-    start: "2024-05-12T17:30:00",
-    end: "2024-05-12T18:00:00",
-    col: 0,
-    top: "86.36%", // 5:30 PM (9.5 hrs out of 11)
-    height: "4.54%",
-    color: "bg-[#f5fbf7] border-[#388e3c]/40 text-[#388e3c]"
-  },
+const mockEventsData: CalendarEvent[] = [];
 
-  // Tuesday 13
-  {
-    id: "e5",
-    title: "Product Sync",
-    description: "Sync on new specs",
-    start: "2024-05-13T11:00:00",
-    end: "2024-05-13T12:00:00",
-    col: 1,
-    top: "27.27%", // 11:00 AM (3 hrs out of 11)
-    height: "9.09%",
-    color: "bg-[#f2f7fc] border-[#3c6382]/40 text-[#3c6382]"
-  },
-  {
-    id: "e6",
-    title: "Marketing Sync",
-    description: "Marketing updates",
-    start: "2024-05-13T14:00:00",
-    end: "2024-05-13T15:00:00",
-    col: 1,
-    top: "54.54%", // 2:00 PM (6 hrs out of 11)
-    height: "9.09%",
-    color: "bg-[#fcf7ec] border-[#f5b041]/40 text-[#f5b041]"
-  },
-  {
-    id: "e7",
-    title: "Yoga Break",
-    description: "Time to relax",
-    start: "2024-05-13T18:00:00",
-    end: "2024-05-13T19:00:00",
-    col: 1,
-    top: "90.9%", // 6:00 PM (10 hrs out of 11)
-    height: "9.09%",
-    color: "bg-[#f5fbf7] border-[#388e3c]/40 text-[#388e3c]"
-  },
-
-  // Wednesday 14
-  {
-    id: "e8",
-    title: "Project Demo",
-    description: "Demo Ghibli flow to Aarav",
-    start: "2024-05-14T09:00:00",
-    end: "2024-05-14T10:30:00",
-    col: 2,
-    top: "9.09%", // 9:00 AM (1 hr out of 11)
-    height: "13.63%", // 1.5 hr = 13.63%
-    color: "bg-[#fcf7ec] border-[#f5b041]/40 text-[#f5b041]"
-  },
-  {
-    id: "e9",
-    title: "Stakeholder Call",
-    description: "Review roadmap feedback",
-    start: "2024-05-14T13:00:00",
-    end: "2024-05-14T14:00:00",
-    col: 2,
-    top: "45.45%", // 1:00 PM (5 hrs out of 11)
-    height: "9.09%",
-    color: "bg-[#fef5f0] border-[#b83227]/40 text-[#b83227]"
-  },
-  {
-    id: "e10",
-    title: "1:1 with Riya",
-    description: "1-on-1 UI sync",
-    start: "2024-05-14T16:00:00",
-    end: "2024-05-14T16:45:00",
-    col: 2,
-    top: "72.72%", // 4:00 PM (8 hrs out of 11)
-    height: "6.81%", // 45 min = 0.75/11 = 6.81%
-    color: "bg-[#f5fbf7] border-[#388e3c]/40 text-[#388e3c]"
-  },
-
-  // Thursday 15
-  {
-    id: "e11",
-    title: "Client Call",
-    description: "Sync with stakeholders",
-    start: "2024-05-15T10:30:00",
-    end: "2024-05-15T11:30:00",
-    col: 3,
-    top: "22.72%", // 10:30 AM (2.5 hrs out of 11)
-    height: "9.09%",
-    color: "bg-[#f2f7fc] border-[#3c6382]/40 text-[#3c6382]"
-  },
-  {
-    id: "e12",
-    title: "Documentation",
-    description: "Write dev specs",
-    start: "2024-05-15T14:00:00",
-    end: "2024-05-15T15:00:00",
-    col: 3,
-    top: "54.54%", // 2:00 PM (6 hrs out of 11)
-    height: "9.09%",
-    color: "bg-[#fcf7ec] border-[#f5b041]/40 text-[#f5b041]"
-  },
-  {
-    id: "e13",
-    title: "Sprint Planning",
-    description: "Plan next items",
-    start: "2024-05-15T17:00:00",
-    end: "2024-05-15T18:00:00",
-    col: 3,
-    top: "81.81%", // 5:00 PM (9 hrs out of 11)
-    height: "9.09%",
-    color: "bg-[#f2f7fc] border-[#3c6382]/40 text-[#3c6382]"
-  },
-
-  // Friday 16
-  {
-    id: "e14",
-    title: "Weekly Review",
-    description: "Weekly achievements",
-    start: "2024-05-16T11:00:00",
-    end: "2024-05-16T12:00:00",
-    col: 4,
-    top: "27.27%", // 11:00 AM (3 hrs out of 11)
-    height: "9.09%",
-    color: "bg-[#f5fbf7] border-[#388e3c]/40 text-[#388e3c]"
-  },
-  {
-    id: "e15",
-    title: "Product Demo",
-    description: "Review and demo new widgets",
-    start: "2024-05-16T15:00:00",
-    end: "2024-05-16T16:00:00",
-    col: 4,
-    top: "63.63%", // 3:00 PM (7 hrs out of 11)
-    height: "9.09%",
-    color: "bg-[#fef5f0] border-[#b83227]/40 text-[#b83227]"
-  },
-  {
-    id: "e16",
-    title: "Team Bonding",
-    description: "Relaxed sync",
-    start: "2024-05-16T18:00:00",
-    end: "2024-05-16T19:30:00",
-    col: 4,
-    top: "90.9%", // 6:00 PM (10 hrs out of 11)
-    height: "9.09%", // 1 hr (clipped at 7)
-    color: "bg-[#f2f7fc] border-[#3c6382]/40 text-[#3c6382]"
-  }
-];
 
 export default function CalendarPage() {
   const router = useRouter();
@@ -327,6 +142,7 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [selectedDay, setSelectedDay] = useState(todayDate.getDate()); 
+  const [viewAllUpcoming, setViewAllUpcoming] = useState(false);
 
   // Event modal state
   const [isAddingEvent, setIsAddingEvent] = useState(false);
@@ -389,15 +205,11 @@ export default function CalendarPage() {
     try {
       const res = await fetch(`/api/calendar?userId=${uid}&t=${Date.now()}`);
       const data = await res.json();
-      const shiftedMockData = shiftMockEventsToCurrentWeek(mockEventsData);
       if (data.success && data.events) {
         const mapped = data.events.map((e: any) => mapEventToGrid(e));
-        const filteredMock = shiftedMockData.filter(
-          (mock) => !mapped.some((item: any) => item.title.toLowerCase().trim() === mock.title.toLowerCase().trim())
-        );
-        setEvents([...mapped, ...filteredMock]);
+        setEvents(mapped);
       } else {
-        setEvents(shiftedMockData);
+        setEvents(shiftMockEventsToCurrentWeek(mockEventsData));
       }
     } catch (e) {
       console.error(e);
@@ -523,11 +335,13 @@ export default function CalendarPage() {
     return evDate >= mondayDate && evDate <= sundayDateEnd;
   });
 
-  // Filter events for selected day view
+  // Filter events for selected day view or all active week events
   const selectedCol = daysHeader.findIndex((d) => d.date === selectedDay);
-  const selectedDayEvents = activeWeekEvents
-    .filter((e) => e.col === selectedCol)
-    .sort((a, b) => a.start.localeCompare(b.start));
+  const selectedDayEvents = viewAllUpcoming
+    ? activeWeekEvents.sort((a, b) => a.start.localeCompare(b.start))
+    : activeWeekEvents
+        .filter((e) => e.col === selectedCol)
+        .sort((a, b) => a.start.localeCompare(b.start));
 
   const hours = [
     "8 AM", "9 AM", "10 AM", "11 AM", "12 PM",
@@ -575,7 +389,7 @@ export default function CalendarPage() {
       </div>
 
       {/* 2. BODY CONTENT: WEEK CALENDAR & RIGHT BAR */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-hidden pr-1">
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto pr-1">
         
         {/* LEFT COMPONENT: WEEK GRID */}
         <div className="flex-1 bg-white sketch-border sketch-shadow rounded-xl p-5 flex flex-col min-h-[500px] lg:min-h-0">
@@ -763,35 +577,43 @@ export default function CalendarPage() {
 
           {/* CARD 2: UPCOMING AGENDA */}
           <div className="bg-[#fdfbf7] sketch-border-sm p-5 relative overflow-hidden rounded-xl shadow-sm border-b-3 border-r-3">
-            <div className="absolute top-[-8px] left-[15%] w-10 h-3 bg-[#f5b041]/20 border-l border-r border-dashed border-white/50 rotate-[3deg]" />
+            <div className="absolute top-[-8px] left-[15%] w-10 h-3 bg-[#f5b041]/20 border-l border-r border-dashed border-[#e6dfd3] rotate-[3deg]" />
             
             <div className="flex justify-between items-baseline mb-3 select-none">
-              <h3 className="font-handwriting font-black text-lg text-[#2b2725]">Upcoming</h3>
+              <h3 className="font-handwriting font-black text-lg text-[#2b2725]">
+                {viewAllUpcoming ? "All Upcoming" : "Upcoming"}
+              </h3>
               <button 
-                onClick={() => setSelectedDay(todayDate.getDate())}
+                onClick={() => setViewAllUpcoming(!viewAllUpcoming)}
                 className="text-[9px] font-handwriting font-bold text-[#b83227] hover:underline cursor-pointer"
               >
-                View all →
+                {viewAllUpcoming ? "Show Daily" : "View all →"}
               </button>
             </div>
 
             {/* List of today's schedule items */}
             <div className="space-y-3.5 pl-2.5 border-l-2 border-dashed border-[#e6dfd3] relative">
-              {activeWeekEvents
-                .filter(ev => ev.col === daysHeader.findIndex(d => d.date === selectedDay))
-                .slice(0, 3)
-                .map((ev, idx) => (
-                  <div key={idx} className="relative text-left leading-snug">
-                    <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-[#b83227] border-2 border-white shadow-sm" />
-                    <div>
-                      <p className="text-[9px] font-mono text-[#b83227] font-black">
-                        {new Date(ev.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                      <h4 className="text-xs font-handwriting font-black text-[#2b2725]">{ev.title}</h4>
-                      <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none mt-0.5">{ev.description}</p>
+              {selectedDayEvents.length === 0 ? (
+                <p className="text-[10px] font-handwriting text-gray-400 font-bold py-1 select-none">No events scheduled.</p>
+              ) : (
+                selectedDayEvents
+                  .slice(0, 5)
+                  .map((ev, idx) => (
+                    <div key={idx} className="relative text-left leading-snug">
+                      <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-[#b83227] border-2 border-white shadow-sm" />
+                      <div>
+                        <p className="text-[9px] font-mono text-[#b83227] font-black">
+                          {viewAllUpcoming 
+                            ? `${new Date(ev.start).toLocaleDateString("en-US", { month: "short", day: "numeric" })} @ ${new Date(ev.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                            : new Date(ev.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                          }
+                        </p>
+                        <h4 className="text-xs font-handwriting font-black text-[#2b2725]">{ev.title}</h4>
+                        <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none mt-0.5">{ev.description}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+              )}
             </div>
           </div>
 

@@ -295,7 +295,7 @@ export default function AIAssistantPage() {
       </div>
 
       {/* 2. BODY GRID */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-hidden pr-1">
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto pr-1">
         
         {/* LEFT COMPONENT: MAIN INTERACTIVE CHAT WRAPPER (75% width) */}
         <div className={`flex-1 flex flex-col min-h-[500px] lg:min-h-0 bg-white sketch-border sketch-shadow rounded-xl p-5 ${activeTab !== "chat" ? "hidden lg:flex" : "flex"}`}>
