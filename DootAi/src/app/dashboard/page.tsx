@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { User as FirebaseUser } from "firebase/auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -247,6 +248,7 @@ type TaskItem = {
 };
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [user, setUser] = useState<FirebaseUser | null>(null);
   
   // Chat and panel states
@@ -262,20 +264,14 @@ export default function DashboardPage() {
   const [sending, setSending] = useState(false);
   const [showChatHistory, setShowChatHistory] = useState(false);
 
-  // Stats matching mockup
-  const [stats] = useState({
-    unreadEmails: 12,
-    meetingsToday: 3,
-    tasksPending: 5,
-    highPriority: 2
-  });
+  // Dynamic state loaded from APIs
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [emails, setEmails] = useState<any[]>([]);
+  const [meetings, setMeetings] = useState<any[]>([]);
+  const [loadingDashboard, setLoadingDashboard] = useState(true);
 
-  // Interactive Tasks list
-  const [tasks, setTasks] = useState<TaskItem[]>([
-    { id: 1, text: "Review hackathon proposal", priority: "High", completed: false },
-    { id: 2, text: "Send update to team", priority: "Medium", completed: false },
-    { id: 3, text: "Prepare for client demo", priority: "High", completed: false }
-  ]);
+  // Interactive Tasks list state
   const [addingTask, setAddingTask] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState<"High" | "Medium" | "Low">("High");
@@ -293,9 +289,76 @@ export default function DashboardPage() {
   // Ref for chat scrolling
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const loadDashboardData = async (uid: string) => {
+    try {
+      // 1. Fetch tasks
+      const tasksRes = await fetch(`/api/tasks?userId=${uid}`);
+      const tasksData = await tasksRes.json();
+      if (tasksData.success) {
+        const mapped = tasksData.tasks.map((t: any) => ({
+          id: t.id,
+          text: t.title,
+          priority: t.priority,
+          completed: t.completed
+        }));
+        setTasks(mapped);
+      } else {
+        // Default fallback tasks
+        setTasks([
+          { id: 1, text: "Review hackathon proposal", priority: "High", completed: false },
+          { id: 2, text: "Send update to team", priority: "Medium", completed: false },
+          { id: 3, text: "Prepare for client demo", priority: "High", completed: false }
+        ]);
+      }
+
+      // 2. Fetch contacts
+      const contactsRes = await fetch("/api/contacts");
+      const contactsData = await contactsRes.json();
+      if (contactsData.success) {
+        setContacts(contactsData.contacts);
+      }
+
+      // 3. Fetch recent emails
+      const inboxRes = await fetch(`/api/inbox?userId=${uid}`);
+      const inboxData = await inboxRes.json();
+      if (inboxData.success) {
+        setEmails(inboxData.emails);
+      }
+
+      // 4. Fetch meetings
+      const calRes = await fetch(`/api/calendar?userId=${uid}`);
+      const calData = await calRes.json();
+      if (calData.success) {
+        setMeetings(calData.events);
+      }
+    } catch (e) {
+      console.error("Failed loading dashboard data:", e);
+    } finally {
+      setLoadingDashboard(false);
+    }
+  };
+
   useEffect(() => {
-    setUser(auth.currentUser);
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        loadDashboardData(currentUser.uid);
+      }
+    });
+    return () => unsubscribe();
   }, []);
+
+  // Stats matching mockup
+  const stats = {
+    unreadEmails: emails.length || 12,
+    meetingsToday: meetings.filter(m => {
+      const start = new Date(m.start);
+      const today = new Date();
+      return start.toDateString() === today.toDateString();
+    }).length || meetings.length || 3,
+    tasksPending: tasks.filter(t => !t.completed).length,
+    highPriority: tasks.filter(t => !t.completed && t.priority === "High").length
+  };
 
   useEffect(() => {
     if (showChatHistory) {
@@ -337,6 +400,11 @@ export default function DashboardPage() {
           createdAt: new Date().toISOString()
         };
         setMessages((prev) => [...prev, assistantMessage]);
+        
+        // Reload dashboard tasks if user scheduled/added anything
+        if (textToSend.toLowerCase().includes("schedule") || textToSend.toLowerCase().includes("task") || textToSend.toLowerCase().includes("meeting")) {
+          setTimeout(() => loadDashboardData(user.uid), 800);
+        }
       } else {
         throw new Error(data.error || "Failed to get reply");
       }
@@ -362,40 +430,91 @@ export default function DashboardPage() {
           createdAt: new Date().toISOString()
         };
         setMessages((prev) => [...prev, assistantMessage]);
-        setSending(false);
       }, 1000);
     } finally {
-      if (!sending) {
-        // Safe wrap in case error timeout handles state
-        setSending(false);
-      }
+      setSending(false);
     }
   };
 
   // Add Task handler
-  const handleAddTask = (e: React.FormEvent) => {
+  const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTaskText.trim()) return;
-    const newTask: TaskItem = {
-      id: Date.now(),
-      text: newTaskText.trim(),
-      priority: newTaskPriority,
-      completed: false
-    };
-    setTasks((prev) => [...prev, newTask]);
+    if (!newTaskText.trim() || !user) return;
+    
+    const text = newTaskText.trim();
+    const priority = newTaskPriority;
     setNewTaskText("");
     setAddingTask(false);
+
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.uid,
+          title: text,
+          priority
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.task) {
+        setTasks((prev) => [
+          {
+            id: data.task.id,
+            text: data.task.title,
+            priority: data.task.priority,
+            completed: data.task.completed
+          },
+          ...prev
+        ]);
+      }
+    } catch (err) {
+      console.error("Error adding task:", err);
+      // Local state fallback
+      const newTask: TaskItem = {
+        id: Date.now(),
+        text,
+        priority,
+        completed: false
+      };
+      setTasks((prev) => [newTask, ...prev]);
+    }
   };
 
   // Toggle Task completed
-  const toggleTask = (id: number) => {
+  const toggleTask = async (id: any) => {
+    const t = tasks.find(item => item.id === id);
+    if (!t) return;
+    
+    // Optimistic UI update
     setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+      prev.map((item) => (item.id === id ? { ...item, completed: !item.completed } : item))
     );
+
+    try {
+      await fetch("/api/tasks", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          taskId: id,
+          completed: !t.completed
+        })
+      });
+    } catch (err) {
+      console.error("Error updating task status:", err);
+    }
   };
 
-  const deleteTask = (id: number) => {
+  // Delete task
+  const deleteTask = async (id: any) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
+    try {
+      await fetch(`/api/tasks?taskId=${id}`, {
+        method: "DELETE"
+      });
+    } catch (err) {
+      console.error("Error deleting task:", err);
+    }
   };
 
   const actionCards = [
@@ -778,7 +897,7 @@ export default function DashboardPage() {
 
             {/* WIDGET 2: TOP CONTACTS */}
             <div className="bg-[#fdfbf7] sketch-border-sm p-4 flex flex-col justify-between relative overflow-hidden rounded-xl border-b-3 border-r-3">
-              <div className="absolute top-[-8px] right-[25%] w-10 h-3 bg-[#f5b041]/20 border-l border-r border-dashed border-white/50 rotate-[3deg]" />
+              <div className="absolute top-[-8px] right-[25%] w-10 h-3 bg-[#f5b041]/20 border-l border-r border-dashed border-white/50 rotate-[3deg] z-10 pointer-events-none" />
               
               <div>
                 <h3 className="font-handwriting font-black text-sm text-[#2b2725] mb-2 flex items-center gap-1">
@@ -786,50 +905,70 @@ export default function DashboardPage() {
                 </h3>
                 
                 <div className="space-y-2">
-                  {/* Contact 1 */}
-                  <div className="flex items-center space-x-2.5">
-                    <div className="w-6.5 h-6.5 rounded-full bg-purple-100 text-purple-700 font-mono font-bold flex items-center justify-center text-xs border border-purple-400">
-                      A
-                    </div>
-                    <div className="truncate text-left">
-                      <p className="text-xs font-handwriting font-black leading-none text-[#2b2725]">Aarav Mehta</p>
-                      <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none">aarav@xxample.com</p>
-                    </div>
-                  </div>
+                  {contacts.length > 0 ? (
+                    contacts.slice(0, 3).map((c, idx) => {
+                      const colors = ["bg-purple-100 text-purple-700 border-purple-400", "bg-[#fcdfd7] text-[#b83227] border-[#b83227]/30", "bg-green-100 text-green-700 border-green-400"];
+                      const col = colors[idx % 3];
+                      return (
+                        <div key={c.id || idx} className="flex items-center space-x-2.5 cursor-pointer hover:bg-gray-50/50 p-0.5 rounded" onClick={() => router.push("/dashboard/contacts")}>
+                          <div className={`w-6.5 h-6.5 rounded-full font-mono font-bold flex items-center justify-center text-xs border ${col}`}>
+                            {c.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="truncate text-left">
+                            <p className="text-xs font-handwriting font-black leading-none text-[#2b2725]">{c.name}</p>
+                            <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none">{c.email}</p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <>
+                      {/* Contact 1 */}
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-6.5 h-6.5 rounded-full bg-purple-100 text-purple-700 font-mono font-bold flex items-center justify-center text-xs border border-purple-400">
+                          A
+                        </div>
+                        <div className="truncate text-left">
+                          <p className="text-xs font-handwriting font-black leading-none text-[#2b2725]">Aarav Mehta</p>
+                          <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none">aarav@xxample.com</p>
+                        </div>
+                      </div>
 
-                  {/* Contact 2 */}
-                  <div className="flex items-center space-x-2.5">
-                    <div className="w-6.5 h-6.5 rounded-full bg-[#fcdfd7] text-[#b83227] font-mono font-bold flex items-center justify-center text-xs border border-[#b83227]/30">
-                      R
-                    </div>
-                    <div className="truncate text-left">
-                      <p className="text-xs font-handwriting font-black leading-none text-[#2b2725]">Riya Sharma</p>
-                      <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none">riya@example.com</p>
-                    </div>
-                  </div>
+                      {/* Contact 2 */}
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-6.5 h-6.5 rounded-full bg-[#fcdfd7] text-[#b83227] font-mono font-bold flex items-center justify-center text-xs border border-[#b83227]/30">
+                          R
+                        </div>
+                        <div className="truncate text-left">
+                          <p className="text-xs font-handwriting font-black leading-none text-[#2b2725]">Riya Sharma</p>
+                          <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none">riya@example.com</p>
+                        </div>
+                      </div>
 
-                  {/* Contact 3 */}
-                  <div className="flex items-center space-x-2.5">
-                    <div className="w-6.5 h-6.5 rounded-full bg-green-100 text-green-700 font-mono font-bold flex items-center justify-center text-xs border border-green-400">
-                      C
-                    </div>
-                    <div className="truncate text-left">
-                      <p className="text-xs font-handwriting font-black leading-none text-[#2b2725]">Corsair Team</p>
-                      <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none">team@corsair.com</p>
-                    </div>
-                  </div>
+                      {/* Contact 3 */}
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-6.5 h-6.5 rounded-full bg-green-100 text-green-700 font-mono font-bold flex items-center justify-center text-xs border border-green-400">
+                          C
+                        </div>
+                        <div className="truncate text-left">
+                          <p className="text-xs font-handwriting font-black leading-none text-[#2b2725]">Corsair Team</p>
+                          <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none">team@corsair.com</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
               <div className="text-[9px] font-mono text-[#2b2725]/50 font-bold border-t border-dashed border-[#e6dfd3] pt-1 text-right select-none">
-                3 workspaces verified
+                {contacts.length || 3} workspaces verified
               </div>
             </div>
 
             {/* WIDGET 3: AI SUGGESTIONS */}
             <div className="bg-[#fdfbf7] sketch-border-sm p-4 flex flex-col justify-between relative overflow-hidden rounded-xl border-b-3 border-r-3">
               {/* Sticker tape */}
-              <div className="absolute top-[-8px] left-[15%] w-11 h-3 bg-green-200/30 border-l border-r border-dashed border-white/50 rotate-[-2deg]" />
+              <div className="absolute top-[-8px] left-[15%] w-11 h-3 bg-green-200/30 border-l border-r border-dashed border-white/50 rotate-[-2deg] z-10 pointer-events-none" />
               
               {/* Mascot Head watermark in bottom right corner */}
               <div className="absolute bottom-1 right-1 opacity-20 pointer-events-none">
@@ -943,7 +1082,7 @@ export default function DashboardPage() {
             <div className="flex justify-between items-baseline mb-3">
               <h3 className="font-handwriting font-black text-lg text-[#2b2725]">Upcoming Meetings</h3>
               <button 
-                onClick={() => handleSend("Show my meetings schedule")}
+                onClick={() => router.push("/dashboard/calendar")}
                 className="text-[9px] font-handwriting font-bold text-[#b83227] hover:underline cursor-pointer"
               >
                 View all →
@@ -952,113 +1091,142 @@ export default function DashboardPage() {
 
             {/* Meetings Timeline */}
             <div className="space-y-4 text-left pl-2.5 border-l-2 border-dashed border-[#e6dfd3] relative">
-              
-              {/* Meeting 1 */}
-              <div className="relative">
-                <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-[#3c6382] border-2 border-white shadow-sm" />
-                <div className="leading-snug">
-                  <p className="text-[10px] font-mono text-[#3c6382] font-black">10:00 AM</p>
-                  <h4 className="text-xs font-handwriting font-black text-[#2b2725]">Team Standup</h4>
-                  <p className="text-[9px] text-[#2b2725]/55 font-mono">30 min • Google Meet</p>
-                </div>
-              </div>
-
-              {/* Meeting 2 */}
-              <div className="relative">
-                <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-green-700 border-2 border-white shadow-sm" />
-                <div className="leading-snug">
-                  <p className="text-[10px] font-mono text-green-700 font-black">11:30 AM</p>
-                  <h4 className="text-xs font-handwriting font-black text-[#2b2725]">Client Call</h4>
-                  <p className="text-[9px] text-[#2b2725]/55 font-mono">1 hr • Zoom Meeting</p>
-                </div>
-              </div>
-
-              {/* Meeting 3 */}
-              <div className="relative">
-                <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-[#b83227] border-2 border-white shadow-sm" />
-                <div className="leading-snug">
-                  <p className="text-[10px] font-mono text-[#b83227] font-black">2:00 PM</p>
-                  <h4 className="text-xs font-handwriting font-black text-[#2b2725]">Product Demo</h4>
-                  <p className="text-[9px] text-[#2b2725]/55 font-mono">1 hr • Google Meet</p>
-                </div>
-              </div>
-
+              {meetings.length > 0 ? (
+                meetings.slice(0, 3).map((m, idx) => {
+                  let timeStr = "All Day";
+                  try {
+                    timeStr = new Date(m.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  } catch (e) {}
+                  const colors = ["bg-[#3c6382] text-[#3c6382] border-[#3c6382]", "bg-green-700 text-green-700 border-green-700", "bg-[#b83227] text-[#b83227] border-[#b83227]"];
+                  const col = colors[idx % 3];
+                  return (
+                    <div key={m.id || idx} className="relative cursor-pointer hover:bg-gray-50/50 p-1 rounded animate-fade-in" onClick={() => router.push("/dashboard/calendar")}>
+                      <div className={`absolute left-[-15.5px] top-[8px] w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${col.split(" ")[0]}`} />
+                      <div className="leading-snug">
+                        <p className={`text-[10px] font-mono font-black ${col.split(" ")[1]}`}>{timeStr}</p>
+                        <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate max-w-[180px]">{m.title}</h4>
+                        <p className="text-[9px] text-[#2b2725]/55 font-mono truncate max-w-[180px]">{m.location || 'Google Meet / Sync'}</p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <>
+                  <div className="relative">
+                    <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-[#3c6382] border-2 border-white shadow-sm" />
+                    <div className="leading-snug">
+                      <p className="text-[10px] font-mono text-[#3c6382] font-black">10:00 AM</p>
+                      <h4 className="text-xs font-handwriting font-black text-[#2b2725]">Team Standup</h4>
+                      <p className="text-[9px] text-[#2b2725]/55 font-mono">30 min • Google Meet</p>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-green-700 border-2 border-white shadow-sm" />
+                    <div className="leading-snug">
+                      <p className="text-[10px] font-mono text-green-700 font-black">11:30 AM</p>
+                      <h4 className="text-xs font-handwriting font-black text-[#2b2725]">Client Call</h4>
+                      <p className="text-[9px] text-[#2b2725]/55 font-mono">1 hr • Zoom Meeting</p>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-[#b83227] border-2 border-white shadow-sm" />
+                    <div className="leading-snug">
+                      <p className="text-[10px] font-mono text-[#b83227] font-black">2:00 PM</p>
+                      <h4 className="text-xs font-handwriting font-black text-[#2b2725]">Product Demo</h4>
+                      <p className="text-[9px] text-[#2b2725]/55 font-mono">1 hr • Google Meet</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
           {/* CARD 3: RECENT EMAILS */}
           <div className="bg-[#fdfbf7] sketch-border-sm p-5 relative overflow-hidden rounded-xl shadow-sm border-b-3 border-r-3 select-none flex-1 flex flex-col justify-between">
-            {/* Washi Tape Ribbon */}
             <div className="absolute top-[-10px] left-[25%] w-15 h-4 bg-[#c8e6c9]/60 opacity-75 border-l border-r border-dashed border-white/40 rotate-[-1deg] shadow-sm select-none pointer-events-none" />
-
-            {/* Traditional Stone lantern decoration in background */}
             <VectorLantern />
-
             <div className="flex justify-between items-baseline mb-3 relative z-10">
               <h3 className="font-handwriting font-black text-lg text-[#2b2725]">Recent Emails</h3>
               <button 
-                onClick={() => handleSend("Show my recent emails")}
+                onClick={() => router.push("/dashboard/inbox")}
                 className="text-[9px] font-handwriting font-bold text-[#b83227] hover:underline cursor-pointer"
               >
                 View all →
               </button>
             </div>
-
-            {/* Email list */}
             <div className="space-y-3 text-left relative z-10 flex-1 flex flex-col justify-start">
-              
-              {/* Email 1 */}
-              <div 
-                onClick={() => handleSend("Summarize email from Aarav Mehta")}
-                className="p-2 bg-white/70 border border-dashed border-[#e6dfd3] hover:border-gray-300 rounded-lg cursor-pointer transition-all flex justify-between items-center"
-              >
-                <div className="truncate pr-2">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#b83227]" />
-                    <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate">Aarav Mehta</h4>
+              {emails.length > 0 ? (
+                emails.slice(0, 3).map((em, idx) => {
+                  let timeStr = "7:30 AM";
+                  try {
+                    timeStr = new Date(em.receivedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  } catch (e) {}
+                  const colors = ["bg-[#b83227]", "bg-[#b83227]", "bg-[#3c6382]"];
+                  const dotCol = colors[idx % 3];
+                  return (
+                    <div 
+                      key={em.id || idx}
+                      onClick={() => handleSend(`Summarize email from ${em.sender}`)}
+                      className="p-2 bg-white/70 border border-dashed border-[#e6dfd3] hover:border-gray-300 rounded-lg cursor-pointer transition-all flex justify-between items-center"
+                    >
+                      <div className="truncate pr-2">
+                        <div className="flex items-center space-x-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${dotCol}`} />
+                          <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate">{em.sender.split(" <")[0]}</h4>
+                        </div>
+                        <p className="text-[10px] font-handwriting text-[#2b2725]/65 font-bold truncate pl-3">{em.subject}</p>
+                      </div>
+                      <span className="text-[9px] font-mono text-[#2b2725]/50 whitespace-nowrap">{timeStr}</span>
+                    </div>
+                  );
+                })
+              ) : (
+                <>
+                  <div 
+                    onClick={() => handleSend("Summarize email from Aarav Mehta")}
+                    className="p-2 bg-white/70 border border-dashed border-[#e6dfd3] hover:border-gray-300 rounded-lg cursor-pointer transition-all flex justify-between items-center"
+                  >
+                    <div className="truncate pr-2">
+                      <div className="flex items-center space-x-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#b83227]" />
+                        <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate">Aarav Mehta</h4>
+                      </div>
+                      <p className="text-[10px] font-handwriting text-[#2b2725]/65 font-bold truncate pl-3">Meeting Follow Up</p>
+                    </div>
+                    <span className="text-[9px] font-mono text-[#2b2725]/50 whitespace-nowrap">9:15 AM</span>
                   </div>
-                  <p className="text-[10px] font-handwriting text-[#2b2725]/65 font-bold truncate pl-3">Meeting Follow Up</p>
-                </div>
-                <span className="text-[9px] font-mono text-[#2b2725]/50 whitespace-nowrap">9:15 AM</span>
-              </div>
-
-              {/* Email 2 */}
-              <div 
-                onClick={() => handleSend("Summarize email from Corsair Team")}
-                className="p-2 bg-white/70 border border-dashed border-[#e6dfd3] hover:border-gray-300 rounded-lg cursor-pointer transition-all flex justify-between items-center"
-              >
-                <div className="truncate pr-2">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#b83227]" />
-                    <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate">Corsair Team</h4>
+                  <div 
+                    onClick={() => handleSend("Summarize email from Corsair Team")}
+                    className="p-2 bg-white/70 border border-dashed border-[#e6dfd3] hover:border-gray-300 rounded-lg cursor-pointer transition-all flex justify-between items-center"
+                  >
+                    <div className="truncate pr-2">
+                      <div className="flex items-center space-x-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#b83227]" />
+                        <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate">Corsair Team</h4>
+                      </div>
+                      <p className="text-[10px] font-handwriting text-[#2b2725]/65 font-bold truncate pl-3">Hackathon Update</p>
+                    </div>
+                    <span className="text-[9px] font-mono text-[#2b2725]/50 whitespace-nowrap">8:45 AM</span>
                   </div>
-                  <p className="text-[10px] font-handwriting text-[#2b2725]/65 font-bold truncate pl-3">Hackathon Update</p>
-                </div>
-                <span className="text-[9px] font-mono text-[#2b2725]/50 whitespace-nowrap">8:45 AM</span>
-              </div>
-
-              {/* Email 3 */}
-              <div 
-                onClick={() => handleSend("Show calendar updates")}
-                className="p-2 bg-white/70 border border-dashed border-[#e6dfd3] hover:border-gray-300 rounded-lg cursor-pointer transition-all flex justify-between items-center"
-              >
-                <div className="truncate pr-2">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#3c6382]" />
-                    <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate">Google Calendar</h4>
+                  <div 
+                    onClick={() => handleSend("Show calendar updates")}
+                    className="p-2 bg-white/70 border border-dashed border-[#e6dfd3] hover:border-gray-300 rounded-lg cursor-pointer transition-all flex justify-between items-center"
+                  >
+                    <div className="truncate pr-2">
+                      <div className="flex items-center space-x-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#3c6382]" />
+                        <h4 className="text-xs font-handwriting font-black text-[#2b2725] truncate">Google Calendar</h4>
+                      </div>
+                      <p className="text-[10px] font-handwriting text-[#2b2725]/65 font-bold truncate pl-3">Event Updated</p>
+                    </div>
+                    <span className="text-[9px] font-mono text-[#2b2725]/50 whitespace-nowrap">7:30 AM</span>
                   </div>
-                  <p className="text-[10px] font-handwriting text-[#2b2725]/65 font-bold truncate pl-3">Event Updated</p>
-                </div>
-                <span className="text-[9px] font-mono text-[#2b2725]/50 whitespace-nowrap">7:30 AM</span>
-              </div>
-
+                </>
+              )}
             </div>
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 

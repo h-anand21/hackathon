@@ -290,16 +290,64 @@ export default function CalendarPage() {
   const [eventDay, setEventDay] = useState(14);
   const [savingEvent, setSavingEvent] = useState(false);
 
+  // Map a database event from Corsair to the weekly calendar grid
+  const mapEventToGrid = (e: any): CalendarEvent => {
+    const startDate = new Date(e.start);
+    const endDate = new Date(e.end);
+    
+    // Day index: 0=Mon, 1=Tue, 2=Wed, etc.
+    let col = startDate.getDay() - 1;
+    if (col < 0) col = 6; // Sunday is 6
+    
+    const startHour = startDate.getHours();
+    const startMin = startDate.getMinutes();
+    const endHour = endDate.getHours();
+    const endMin = endDate.getMinutes();
+    
+    let topVal = ((startHour - 8 + startMin / 60) / 11) * 100;
+    if (topVal < 0) topVal = 0;
+    if (topVal > 100) topVal = 95;
+    
+    let duration = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+    if (duration <= 0) duration = 0.5;
+    let heightVal = (duration / 11) * 100;
+    if (heightVal < 5) heightVal = 5;
+    if (topVal + heightVal > 100) heightVal = 100 - topVal;
+    
+    const colors = [
+      "bg-[#fef5f0] border-[#b83227]/40 text-[#b83227]",
+      "bg-[#fcf7ec] border-[#f5b041]/40 text-[#f5b041]",
+      "bg-[#f2f7fc] border-[#3c6382]/40 text-[#3c6382]",
+      "bg-[#f5fbf7] border-[#388e3c]/40 text-[#388e3c]"
+    ];
+    const color = colors[Math.abs(e.title.charCodeAt(0) || 0) % colors.length];
+
+    return {
+      id: e.id,
+      title: e.title,
+      description: e.description || "",
+      start: e.start,
+      end: e.end,
+      location: e.location || "",
+      col,
+      top: `${topVal.toFixed(2)}%`,
+      height: `${heightVal.toFixed(2)}%`,
+      color
+    };
+  };
+
   // Fetch calendar events
   const fetchEvents = async (uid: string) => {
     setLoading(true);
     try {
       const res = await fetch(`/api/calendar?userId=${uid}&t=${Date.now()}`);
       const data = await res.json();
-      if (data.success && data.events && data.events.length > 0) {
-        // Map database events or use mockup grid
-        // For visual fidelity, we pre-fill the mockup grid of May 12 - 18, 2024
-        setEvents(mockEventsData);
+      if (data.success && data.events) {
+        const mapped = data.events.map((e: any) => mapEventToGrid(e));
+        const filteredMock = mockEventsData.filter(
+          (mock) => !mapped.some((item: any) => item.title.toLowerCase().trim() === mock.title.toLowerCase().trim())
+        );
+        setEvents([...mapped, ...filteredMock]);
       } else {
         setEvents(mockEventsData);
       }

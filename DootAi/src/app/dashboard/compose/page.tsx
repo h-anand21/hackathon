@@ -185,59 +185,42 @@ function ComposePageContent() {
   };
 
   // Generate Email using Doot AI
-  const handleGenerateEmail = () => {
+  const handleGenerateEmail = async () => {
+    if (!user) return;
     setGenerating(true);
-    setTimeout(() => {
+    try {
+      const prompt = `Write an email body based on the following template/topic: "${activeTemplate}". The tone should be "${activeTone}". Additional details: "${aiPrompt}". Do not output subject line or headers, only the email body itself. Keep it cozy and warm.`;
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.uid,
+          message: prompt
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.reply) {
+        setBody(data.reply);
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (e) {
+      console.error("Failed to generate email dynamically:", e);
+      // Fallback
       let draft = "";
       if (activeTemplate === "Follow Up") {
-        draft = `Dear Aarav,
-
-Thanks for the great discussion yesterday. It was wonderful to align on the project goals and next steps.
-
-As discussed, I have attached the project brief and timeline for your review.
-
-Please let me know if you have any feedback or questions.
-
-Looking forward to our next steps!
-
-Best regards,
-Himanshu`;
+        draft = `Dear Aarav,\n\nThanks for the great discussion yesterday. It was wonderful to align on the project goals and next steps.\n\nAs discussed, I have attached the project brief and timeline for your review.\n\nPlease let me know if you have any feedback or questions.\n\nLooking forward to our next steps!\n\nBest regards,\nHimanshu`;
       } else if (activeTemplate === "Meeting Invite") {
-        draft = `Hi Aarav,
-
-I hope you are having a productive week.
-
-I would love to schedule a follow-up session to review our progress on the MailOS dashboard. Let me know if you have any availability tomorrow at 11:30 AM or in the afternoon.
-
-Looking forward to catching up!
-
-Best regards,
-Himanshu`;
+        draft = `Hi Aarav,\n\nI hope you are having a productive week.\n\nI would love to schedule a follow-up session to review our progress on the MailOS dashboard. Let me know if you have any availability tomorrow at 11:30 AM or in the afternoon.\n\nLooking forward to catching up!\n\nBest regards,\nHimanshu`;
       } else if (activeTemplate === "Project Update") {
-        draft = `Hello Aarav,
-
-Here is a quick project update on the DootAI Ghibli components:
-- Left scene and vector mascots are fully integrated in onboarding and inbox.
-- All database hooks are synced.
-
-Everything looks extremely clean and runs hot-reloaded. Let me know if you want to inspect.
-
-Best,
-Himanshu`;
+        draft = `Hello Aarav,\n\nHere is a quick project update on the DootAI Ghibli components:\n- Left scene and vector mascots are fully integrated in onboarding and inbox.\n- All database hooks are synced.\n\nEverything looks extremely clean and runs hot-reloaded. Let me know if you want to inspect.\n\nBest,\nHimanshu`;
       } else {
-        draft = `Hi Aarav,
-
-I wanted to quickly check in on our follow-up actions. Let me know if you had a chance to review the documents we sent over.
-
-Have a great day!
-
-Warm regards,
-Himanshu`;
+        draft = `Hi Aarav,\n\nI wanted to quickly check in on our follow-up actions. Let me know if you had a chance to review the documents we sent over.\n\nHave a great day!\n\nWarm regards,\nHimanshu`;
       }
-
       setBody(draft);
+    } finally {
       setGenerating(false);
-    }, 1500);
+    }
   };
 
   // Add recipient chip
