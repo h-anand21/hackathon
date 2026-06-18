@@ -1,1 +1,56 @@
-[]
+[
+  {
+    "id": "seed-ev-1",
+    "userId": "nmX5Tjl802dtn93J3eL9OkJ91ti1",
+    "title": "🌸 Team Standup",
+    "description": "Daily team sync to review sketchbook layout features",
+    "start": "2024-05-12T10:00:00",
+    "end": "2024-05-12T10:30:00",
+    "location": "Google Meet"
+  },
+  {
+    "id": "seed-ev-2",
+    "userId": "nmX5Tjl802dtn93J3eL9OkJ91ti1",
+    "title": "📞 Client Call",
+    "description": "Sync with stakeholders on integrations feedback",
+    "start": "2024-05-12T12:00:00",
+    "end": "2024-05-12T13:00:00",
+    "location": "Zoom"
+  },
+  {
+    "id": "seed-ev-3",
+    "userId": "nmX5Tjl802dtn93J3eL9OkJ91ti1",
+    "title": "🌸 Design Review",
+    "description": "Review Ghibli vector layout options",
+    "start": "2024-05-12T15:00:00",
+    "end": "2024-05-12T16:00:00",
+    "location": "Conference Room 3A"
+  },
+  {
+    "id": "seed-ev-4",
+    "userId": "nmX5Tjl802dtn93J3eL9OkJ91ti1",
+    "title": "🌸 Project Demo",
+    "description": "Demo Ghibli flow to Aarav Patel",
+    "start": "2024-05-14T09:00:00",
+    "end": "2024-05-14T10:30:00",
+    "location": "DootAI Lounge"
+  },
+  {
+    "id": "seed-ev-5",
+    "userId": "nmX5Tjl802dtn93J3eL9OkJ91ti1",
+    "title": "🍱 Bento Lunch & Hackathon Party",
+    "description": "Catered Kyoto-style lunch boxes arriving",
+    "start": "2024-05-16T12:00:00",
+    "end": "2024-05-16T13:30:00",
+    "location": "DootAI Main Lounge"
+  },
+  {
+    "id": "local-ev-1781752754524-rmx71h08f",
+    "userId": "nmX5Tjl802dtn93J3eL9OkJ91ti1",
+    "title": "🌸 Japanese Sketchbook Design Review",
+    "description": "Scheduled via Doot AI Chatbot",
+    "start": "2024-05-15T11:00:00",
+    "end": "2024-05-15T12:00:00",
+    "location": "DootAI Main Lounge"
+  }
+]

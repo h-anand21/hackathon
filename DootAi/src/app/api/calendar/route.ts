@@ -40,7 +40,82 @@ export async function GET(request: NextRequest) {
     }
 
     // Read custom local events
-    const localEvents = readLocalEvents().filter((ev: any) => ev.userId === userId);
+    let allEvents = readLocalEvents();
+    let localEvents = allEvents.filter((ev: any) => ev.userId === userId);
+
+    // If no local events exist for this user, seed default events relative to current week
+    if (localEvents.length === 0) {
+      const today = new Date();
+      const currentDayOfWeek = today.getDay();
+      const daysToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
+      
+      const monday = new Date(today);
+      monday.setDate(today.getDate() + daysToMonday);
+
+      const wednesday = new Date(monday);
+      wednesday.setDate(monday.getDate() + 2);
+
+      const friday = new Date(monday);
+      friday.setDate(monday.getDate() + 4);
+
+      const formatISO = (d: Date, timeStr: string) => {
+        const yr = d.getFullYear();
+        const mo = String(d.getMonth() + 1).padStart(2, '0');
+        const da = String(d.getDate()).padStart(2, '0');
+        return `${yr}-${mo}-${da}T${timeStr}`;
+      };
+
+      const seedEvents = [
+        {
+          id: 'seed-ev-1',
+          userId,
+          title: '🌸 Team Standup',
+          description: 'Daily team sync to review sketchbook layout features',
+          start: formatISO(monday, '10:00:00'),
+          end: formatISO(monday, '10:30:00'),
+          location: 'Google Meet',
+        },
+        {
+          id: 'seed-ev-2',
+          userId,
+          title: '📞 Client Call',
+          description: 'Sync with stakeholders on integrations feedback',
+          start: formatISO(monday, '12:00:00'),
+          end: formatISO(monday, '13:00:00'),
+          location: 'Zoom',
+        },
+        {
+          id: 'seed-ev-3',
+          userId,
+          title: '🌸 Design Review',
+          description: 'Review Ghibli vector layout options',
+          start: formatISO(monday, '15:00:00'),
+          end: formatISO(monday, '16:00:00'),
+          location: 'Conference Room 3A',
+        },
+        {
+          id: 'seed-ev-4',
+          userId,
+          title: '🌸 Project Demo',
+          description: 'Demo Ghibli flow to Aarav Patel',
+          start: formatISO(wednesday, '09:00:00'),
+          end: formatISO(wednesday, '10:30:00'),
+          location: 'DootAI Lounge',
+        },
+        {
+          id: 'seed-ev-5',
+          userId,
+          title: '🍱 Bento Lunch & Hackathon Party',
+          description: 'Catered Kyoto-style lunch boxes arriving',
+          start: formatISO(friday, '12:00:00'),
+          end: formatISO(friday, '13:30:00'),
+          location: 'DootAI Main Lounge',
+        }
+      ];
+      allEvents = [...allEvents, ...seedEvents];
+      writeLocalEvents(allEvents);
+      localEvents = seedEvents;
+    }
 
     // Find the Google Calendar accounts for this user
     const accounts = await prisma.corsairAccount.findMany({
@@ -79,59 +154,6 @@ export async function GET(request: NextRequest) {
     }
 
     const mergedEvents = [...localEvents, ...googleEvents];
-
-    // Fallback mock events if nothing exists
-    if (mergedEvents.length === 0) {
-      const today = new Date();
-      
-      const event1Start = new Date(today);
-      event1Start.setHours(9, 0, 0, 0);
-      const event1End = new Date(today);
-      event1End.setHours(10, 0, 0, 0);
-
-      const event2Start = new Date(today);
-      event2Start.setDate(today.getDate() + 1); // Tomorrow
-      event2Start.setHours(14, 0, 0, 0);
-      const event2End = new Date(today);
-      event2End.setDate(today.getDate() + 1);
-      event2End.setHours(15, 30, 0, 0);
-
-      const event3Start = new Date(today);
-      event3Start.setDate(today.getDate() - 1); // Yesterday
-      event3Start.setHours(11, 0, 0, 0);
-      const event3End = new Date(today);
-      event3End.setDate(today.getDate() - 1);
-      event3End.setHours(12, 0, 0, 0);
-
-      const defaultEvents = [
-        {
-          id: 'mock-ev-1',
-          title: '🌸 Japanese Sketchbook Review',
-          description: 'Finalize border radius and sketch shadow designs',
-          start: event1Start.toISOString(),
-          end: event1End.toISOString(),
-          location: 'Conference Room 3A / Google Meet',
-        },
-        {
-          id: 'mock-ev-2',
-          title: '🍱 Bento Lunch & Hackathon Party',
-          description: 'Catered Kyoto-style lunch boxes arriving',
-          start: event2Start.toISOString(),
-          end: event2End.toISOString(),
-          location: 'DootAI Main Lounge',
-        },
-        {
-          id: 'mock-ev-3',
-          title: '⚡ Setup pgvector Database Container',
-          description: 'Initialize vector database extension for semantic index queries',
-          start: event3Start.toISOString(),
-          end: event3End.toISOString(),
-          location: 'Dev Standup Desk',
-        }
-      ];
-      return NextResponse.json({ success: true, events: defaultEvents });
-    }
-
     return NextResponse.json({ success: true, events: mergedEvents });
   } catch (error: any) {
     console.error('Error fetching calendar events:', error);

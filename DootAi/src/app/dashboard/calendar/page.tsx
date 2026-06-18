@@ -275,11 +275,57 @@ export default function CalendarPage() {
   const router = useRouter();
   const [user, setUser] = useState<FirebaseUser | null>(null);
   
+  // Dynamically calculate the current week starting on Monday
+  const todayDate = new Date();
+  const currentDay = todayDate.getDay();
+  const daysToMon = currentDay === 0 ? -6 : 1 - currentDay;
+  const mondayOfCurrentWeek = new Date(todayDate);
+  mondayOfCurrentWeek.setDate(todayDate.getDate() + daysToMon);
+
+  const daysHeader: { label: string; date: number; fullDate: Date }[] = [];
+  const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  for (let i = 0; i < 7; i++) {
+    const dObj = new Date(mondayOfCurrentWeek);
+    dObj.setDate(mondayOfCurrentWeek.getDate() + i);
+    daysHeader.push({
+      label: labels[i],
+      date: dObj.getDate(),
+      fullDate: dObj
+    });
+  }
+
+  const startMonth = mondayOfCurrentWeek.toLocaleString("en-US", { month: "short" });
+  const startYear = mondayOfCurrentWeek.getFullYear();
+  const sundayDate = daysHeader[6]?.fullDate || new Date();
+  const endMonth = sundayDate.toLocaleString("en-US", { month: "short" });
+  
+  const weekRangeString = `${startMonth} ${daysHeader[0]?.date} – ${endMonth} ${daysHeader[6]?.date}, ${startYear}`;
+
+  // Helper to shift mock events to current week dates
+  const shiftMockEventsToCurrentWeek = (mocks: CalendarEvent[]): CalendarEvent[] => {
+    return mocks.map((mock) => {
+      const targetDayObj = daysHeader[mock.col];
+      if (!targetDayObj) return mock;
+      const yr = targetDayObj.fullDate.getFullYear();
+      const mo = String(targetDayObj.fullDate.getMonth() + 1).padStart(2, '0');
+      const da = String(targetDayObj.fullDate.getDate()).padStart(2, '0');
+      
+      const startParts = mock.start.split('T')[1] || "09:00:00";
+      const endParts = mock.end.split('T')[1] || "10:00:00";
+      
+      return {
+        ...mock,
+        start: `${yr}-${mo}-${da}T${startParts}`,
+        end: `${yr}-${mo}-${da}T${endParts}`
+      };
+    });
+  };
+
   // States
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
-  const [selectedDay, setSelectedDay] = useState(14); // May 14 selected (Wednesday)
+  const [selectedDay, setSelectedDay] = useState(todayDate.getDate()); 
 
   // Event modal state
   const [isAddingEvent, setIsAddingEvent] = useState(false);
@@ -287,7 +333,7 @@ export default function CalendarPage() {
   const [eventDescription, setEventDescription] = useState("");
   const [eventTimeStart, setEventTimeStart] = useState("09:00");
   const [eventTimeEnd, setEventTimeEnd] = useState("10:00");
-  const [eventDay, setEventDay] = useState(14);
+  const [eventDay, setEventDay] = useState(todayDate.getDate());
   const [savingEvent, setSavingEvent] = useState(false);
 
   // Map a database event from Corsair to the weekly calendar grid
@@ -342,18 +388,19 @@ export default function CalendarPage() {
     try {
       const res = await fetch(`/api/calendar?userId=${uid}&t=${Date.now()}`);
       const data = await res.json();
+      const shiftedMockData = shiftMockEventsToCurrentWeek(mockEventsData);
       if (data.success && data.events) {
         const mapped = data.events.map((e: any) => mapEventToGrid(e));
-        const filteredMock = mockEventsData.filter(
+        const filteredMock = shiftedMockData.filter(
           (mock) => !mapped.some((item: any) => item.title.toLowerCase().trim() === mock.title.toLowerCase().trim())
         );
         setEvents([...mapped, ...filteredMock]);
       } else {
-        setEvents(mockEventsData);
+        setEvents(shiftedMockData);
       }
     } catch (e) {
       console.error(e);
-      setEvents(mockEventsData);
+      setEvents(shiftMockEventsToCurrentWeek(mockEventsData));
     } finally {
       setLoading(false);
     }
@@ -398,10 +445,20 @@ export default function CalendarPage() {
     const topVal = ((startHour - 8 + startMin / 60) / 11) * 100;
     const heightVal = ((endHour - startHour) / 11) * 100;
 
-    const colMap = eventDay - 12; // 12=0 (Mon), 13=1, 14=2...
+    const selectedDayObj = daysHeader.find(d => d.date === eventDay);
+    if (!selectedDayObj) {
+      setSavingEvent(false);
+      return;
+    }
 
-    const startISO = `2024-05-${eventDay}T${eventTimeStart}:00`;
-    const endISO = `2024-05-${eventDay}T${eventTimeEnd}:00`;
+    const colMap = daysHeader.indexOf(selectedDayObj);
+
+    const yr = selectedDayObj.fullDate.getFullYear();
+    const mo = String(selectedDayObj.fullDate.getMonth() + 1).padStart(2, '0');
+    const da = String(selectedDayObj.fullDate.getDate()).padStart(2, '0');
+
+    const startISO = `${yr}-${mo}-${da}T${eventTimeStart}:00`;
+    const endISO = `${yr}-${mo}-${da}T${eventTimeEnd}:00`;
 
     try {
       const res = await fetch("/api/calendar", {
@@ -449,23 +506,14 @@ export default function CalendarPage() {
   };
 
   // Filter events for selected day view
+  const selectedCol = daysHeader.findIndex((d) => d.date === selectedDay);
   const selectedDayEvents = events
-    .filter((e) => e.col === (selectedDay - 12))
+    .filter((e) => e.col === selectedCol)
     .sort((a, b) => a.start.localeCompare(b.start));
 
   const hours = [
     "8 AM", "9 AM", "10 AM", "11 AM", "12 PM",
     "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM", "7 PM"
-  ];
-
-  const daysHeader = [
-    { label: "Mon", date: 12 },
-    { label: "Tue", date: 13 },
-    { label: "Wed", date: 14 },
-    { label: "Thu", date: 15 },
-    { label: "Fri", date: 16 },
-    { label: "Sat", date: 17 },
-    { label: "Sun", date: 18 }
   ];
 
   const dootSuggestions = [
@@ -518,19 +566,39 @@ export default function CalendarPage() {
           <div className="flex justify-between items-center mb-4 select-none">
             <div className="flex items-center space-x-2">
               <button 
-                onClick={() => setSelectedDay(14)}
+                onClick={() => setSelectedDay(todayDate.getDate())}
                 className="px-3 py-1 bg-[#fcfaf4] hover:bg-gray-50 border border-gray-200 rounded-lg text-xs font-handwriting font-bold shadow-inner cursor-pointer"
               >
                 Today
               </button>
               <div className="flex space-x-1">
-                <button onClick={() => setSelectedDay(prev => Math.max(12, prev - 1))} className="p-1 bg-[#fcfaf4] border border-gray-200 rounded cursor-pointer"><ChevronLeft className="w-3.5 h-3.5" /></button>
-                <button onClick={() => setSelectedDay(prev => Math.min(18, prev + 1))} className="p-1 bg-[#fcfaf4] border border-gray-200 rounded cursor-pointer"><ChevronRight className="w-3.5 h-3.5" /></button>
+                <button 
+                  onClick={() => {
+                    const idx = daysHeader.findIndex(d => d.date === selectedDay);
+                    if (idx > 0) {
+                      setSelectedDay(daysHeader[idx - 1].date);
+                    }
+                  }} 
+                  className="p-1 bg-[#fcfaf4] border border-gray-200 rounded cursor-pointer"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button 
+                  onClick={() => {
+                    const idx = daysHeader.findIndex(d => d.date === selectedDay);
+                    if (idx < 6 && idx !== -1) {
+                      setSelectedDay(daysHeader[idx + 1].date);
+                    }
+                  }} 
+                  className="p-1 bg-[#fcfaf4] border border-gray-200 rounded cursor-pointer"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
 
             <h3 className="font-handwriting font-black text-lg text-[#2b2725]">
-              May 12 – May 18, 2024
+              {weekRangeString}
             </h3>
 
             {/* Day/Week/Month selector tabs */}
@@ -682,7 +750,7 @@ export default function CalendarPage() {
             <div className="flex justify-between items-baseline mb-3 select-none">
               <h3 className="font-handwriting font-black text-lg text-[#2b2725]">Upcoming</h3>
               <button 
-                onClick={() => setSelectedDay(14)}
+                onClick={() => setSelectedDay(todayDate.getDate())}
                 className="text-[9px] font-handwriting font-bold text-[#b83227] hover:underline cursor-pointer"
               >
                 View all →
@@ -692,7 +760,7 @@ export default function CalendarPage() {
             {/* List of today's schedule items */}
             <div className="space-y-3.5 pl-2.5 border-l-2 border-dashed border-[#e6dfd3] relative">
               {events
-                .filter(ev => ev.col === (selectedDay - 12))
+                .filter(ev => ev.col === daysHeader.findIndex(d => d.date === selectedDay))
                 .slice(0, 3)
                 .map((ev, idx) => (
                   <div key={idx} className="relative text-left leading-snug">

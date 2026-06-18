@@ -317,8 +317,8 @@ export default function InboxPage() {
   const [syncing, setSyncing] = useState(false);
   const [search, setSearch] = useState("");
   
-  // Tabs: Primary, Starred, Important, Sent, Drafts
-  const [activeTab, setActiveTab] = useState<"Primary" | "Starred" | "Important" | "Sent" | "Drafts">("Primary");
+  // Tabs: All Mail, Primary, Starred, Important, Sent, Drafts
+  const [activeTab, setActiveTab] = useState<"All Mail" | "Primary" | "Starred" | "Important" | "Sent" | "Drafts">("Primary");
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -328,7 +328,7 @@ export default function InboxPage() {
     try {
       const res = await fetch(`/api/inbox?userId=${uid}&t=${Date.now()}`);
       const data = await res.json();
-      if (data.success && data.emails && data.emails.length > 0) {
+      if (data.success && data.emails) {
         // Map database PriorityEmail to Email structure
         const mapped: Email[] = data.emails.map((e: any) => ({
           id: e.id,
@@ -344,8 +344,25 @@ export default function InboxPage() {
           unread: e.unread ?? false,
           starred: e.starred ?? false
         }));
-        setEmails(mapped);
-        setSelectedEmail(mapped[0]);
+
+        // Avoid duplicates by filtering mocks that have identical subjects as database emails
+        const filteredMock = defaultMocks.filter(
+          (mock) => !mapped.some((item) => item.subject.toLowerCase().trim() === mock.subject.toLowerCase().trim())
+        );
+
+        const merged = [...mapped, ...filteredMock];
+        setEmails(merged);
+
+        // Find first email matching current active tab
+        const first = merged.find(e => {
+          if (activeTab === "All Mail") return true;
+          if (activeTab === "Starred") return e.starred;
+          if (activeTab === "Important") return e.category === "Important";
+          if (activeTab === "Sent") return e.category === "Sent";
+          if (activeTab === "Drafts") return e.category === "Drafts";
+          return e.category !== "Sent" && e.category !== "Drafts";
+        });
+        setSelectedEmail(first || merged[0] || null);
       } else {
         // Fallback to mocks if no mails are in db
         setEmails(defaultMocks);
@@ -404,13 +421,14 @@ export default function InboxPage() {
       email.sender.toLowerCase().includes(search.toLowerCase()) ||
       email.snippet.toLowerCase().includes(search.toLowerCase());
     
+    if (activeTab === "All Mail") return matchesSearch;
     if (activeTab === "Starred") return email.starred && matchesSearch;
     if (activeTab === "Important") return email.category === "Important" && matchesSearch;
     if (activeTab === "Sent") return email.category === "Sent" && matchesSearch;
     if (activeTab === "Drafts") return email.category === "Drafts" && matchesSearch;
     
-    // Primary tab (default)
-    return email.category === "Primary" && matchesSearch;
+    // Primary tab (default) should show everything except Sent and Drafts
+    return email.category !== "Sent" && email.category !== "Drafts" && matchesSearch;
   });
 
   // Toggle Starred
@@ -506,18 +524,19 @@ export default function InboxPage() {
           
           {/* List Tab Navigation */}
           <div className="flex border-b border-[#e6dfd3] text-xs font-handwriting font-black select-none bg-[#fdfaf4]">
-            {(["Primary", "Starred", "Important", "Sent", "Drafts"] as const).map((tab) => (
+            {(["All Mail", "Primary", "Starred", "Important", "Sent", "Drafts"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => {
                   setActiveTab(tab);
                   setSelectedIndex(0);
                   const first = emails.find(e => {
+                    if (tab === "All Mail") return true;
                     if (tab === "Starred") return e.starred;
                     if (tab === "Important") return e.category === "Important";
                     if (tab === "Sent") return e.category === "Sent";
                     if (tab === "Drafts") return e.category === "Drafts";
-                    return e.category === "Primary";
+                    return e.category !== "Sent" && e.category !== "Drafts";
                   });
                   setSelectedEmail(first || null);
                 }}

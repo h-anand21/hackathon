@@ -618,7 +618,10 @@ export default function DashboardPage() {
             <ChevronDown className="w-3.5 h-3.5 text-[#2b2725]/60" />
           </div>
 
-        {/* 2. BODY LAYOUT: FULL-SCREEN CHAT ASSISTANT PANEL */}
+        </div>
+      </div>
+
+      {/* 2. BODY LAYOUT: FULL-SCREEN CHAT ASSISTANT PANEL */}
       <div className="flex-1 flex flex-col min-h-0 select-text pr-1.5 pb-2">
         
         {/* CENTER HERO PANEL / CHAT AREA (FULL SCREEN WIDTH) */}

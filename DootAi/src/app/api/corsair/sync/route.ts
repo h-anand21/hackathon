@@ -37,10 +37,10 @@ export async function POST(request: NextRequest) {
 
     if (gmailAccount) {
       try {
-        // Fetch latest 15 messages (summaries)
+        // Fetch latest 100 messages (summaries)
         const messagesList = await tenant.gmail.api.messages.list({
           userId: 'me',
-          maxResults: 15,
+          maxResults: 100,
         });
 
         if (messagesList.messages && messagesList.messages.length > 0) {
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
       try {
         const eventsList = await tenant.googlecalendar.api.events.getMany({
           calendarId: 'primary',
-          maxResults: 20,
+          maxResults: 100,
         });
         
         if (eventsList.items) {
