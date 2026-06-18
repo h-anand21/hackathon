@@ -1,0 +1,150 @@
+[
+  {
+    "id": "1",
+    "name": "Aarav Mehta",
+    "email": "aarav@example.com",
+    "company": "Exxample Inc.",
+    "phone": "+91 98765 43210",
+    "tags": ["Client"],
+    "favorite": true,
+    "role": "CEO at Exxample Inc.",
+    "address": "Mumbai, India",
+    "website": "www.exxample.com",
+    "notes": [
+      {
+        "text": "Discussed Q2 project roadmap. Interested in AI automation features. Follow up next week.",
+        "date": "Apr 28, 2024",
+        "author": "Himanshu"
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "name": "Riya Sharma",
+    "email": "riya@example.com",
+    "company": "PixelCraft",
+    "phone": "+91 91234 56789",
+    "tags": ["Team"],
+    "favorite": true,
+    "role": "Lead UI Designer",
+    "address": "Bangalore, India",
+    "website": "www.pixelcraft.io",
+    "notes": [
+      {
+        "text": "Sent UI design drafts for onboarding and dashboard review. Waiting for feedback.",
+        "date": "Jun 12, 2026",
+        "author": "Himanshu"
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "name": "Corsair Team",
+    "email": "team@corsair.com",
+    "company": "Corsair",
+    "phone": "+91 99876 54321",
+    "tags": ["Client"],
+    "favorite": false,
+    "role": "Integration Engineers",
+    "address": "San Francisco, USA",
+    "website": "www.corsair-api.com",
+    "notes": [
+      {
+        "text": "Gmail and Calendar sync integration successfully deployed via public proxy tunnel.",
+        "date": "Jun 15, 2026",
+        "author": "Himanshu"
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "name": "Himanshu Patel",
+    "email": "himanshu@doot.ai",
+    "company": "DootAI",
+    "phone": "+91 90012 34567",
+    "tags": ["Team"],
+    "favorite": true,
+    "role": "Co-Founder & Developer",
+    "address": "New Delhi, India",
+    "website": "doot.ai",
+    "notes": []
+  },
+  {
+    "id": "5",
+    "name": "Neha Verma",
+    "email": "neha@zenith.com",
+    "company": "Zenith Solutions",
+    "phone": "+91 97654 32109",
+    "tags": ["Vendor"],
+    "favorite": false,
+    "role": "Account Manager",
+    "address": "Hyderabad, India",
+    "website": "zenith-solutions.com",
+    "notes": []
+  },
+  {
+    "id": "6",
+    "name": "Akira Tanaka",
+    "email": "akira@tokyotech.co.jp",
+    "company": "Tokyo Tech",
+    "phone": "+81 90 1234 5678",
+    "tags": ["Partner"],
+    "favorite": true,
+    "role": "Research Partner",
+    "address": "Kyoto, Japan",
+    "website": "www.tokyotech.ac.jp",
+    "notes": []
+  },
+  {
+    "id": "7",
+    "name": "Sophie Laurent",
+    "email": "sophie@bluepeak.fr",
+    "company": "BluePeak",
+    "phone": "+33 6 12 34 56 78",
+    "tags": ["Client"],
+    "favorite": false,
+    "role": "VP of Operations",
+    "address": "Paris, France",
+    "website": "bluepeak.fr",
+    "notes": []
+  },
+  {
+    "id": "8",
+    "name": "David Miller",
+    "email": "david@nextgen.io",
+    "company": "NextGen",
+    "phone": "+1 415-555-0198",
+    "tags": ["Lead"],
+    "favorite": false,
+    "role": "Product Manager",
+    "address": "New York, USA",
+    "website": "nextgen.io",
+    "notes": []
+  },
+  {
+    "id": "9",
+    "name": "Mei Lin",
+    "email": "meilin@dragonsoft.cn",
+    "company": "DragonSoft",
+    "phone": "+86 138 0013 8000",
+    "tags": ["Vendor"],
+    "favorite": false,
+    "role": "Database Architect",
+    "address": "Shenzhen, China",
+    "website": "dragonsoft.com.cn",
+    "notes": []
+  },
+  {
+    "id": "10",
+    "name": "Takeshi Kimura",
+    "email": "takeshi@kyoto.co.jp",
+    "company": "Kyoto Works",
+    "phone": "+81 80 2345 6789",
+    "tags": ["Partner"],
+    "favorite": false,
+    "role": "Operations Director",
+    "address": "Kyoto, Japan",
+    "website": "kyotoworks.co.jp",
+    "notes": []
+  }
+]

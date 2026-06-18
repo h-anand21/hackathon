@@ -110,15 +110,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: Home, color: "text-[#f5b041]" },
     { name: "Inbox", path: "/dashboard/inbox", icon: Mail, color: "text-[#b83227]", badge: 12 },
-    { name: "Compose", path: "#compose", icon: PenTool, color: "text-[#3c6382]" },
+    { name: "Compose", path: "/dashboard/compose", icon: PenTool, color: "text-[#3c6382]" },
     { name: "Calendar", path: "/dashboard/calendar", icon: CalendarIcon, color: "text-[#388e3c]" },
     { name: "Tasks", path: "/dashboard/tasks", icon: CheckSquare, color: "text-[#b83227]", badge: 5 },
-    { name: "Contacts", path: "#contacts", icon: Users, color: "text-[#3c6382]" },
-    { name: "AI Assistant", path: "#ai-assistant", icon: Bot, color: "text-[#f5b041]" },
+    { name: "Contacts", path: "/dashboard/contacts", icon: Users, color: "text-[#3c6382]" },
+    { name: "AI Assistant", path: "/dashboard/ai-assistant", icon: Bot, color: "text-[#f5b041]" },
     { name: "Search", path: "#search", icon: Search, color: "text-[#2b2725]" },
     { name: "Notifications", path: "#notifications", icon: Bell, color: "text-[#b83227]", badge: 5 },
     { name: "Integrations", path: "#integrations", icon: Layers, color: "text-[#388e3c]" },
-    { name: "Settings", path: "#settings", icon: Settings, color: "text-[#2b2725]" }
+    { name: "Settings", path: "/dashboard/settings", icon: Settings, color: "text-[#2b2725]" }
   ];
 
   return (

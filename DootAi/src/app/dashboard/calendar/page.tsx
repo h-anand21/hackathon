@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { User as FirebaseUser } from "firebase/auth";
 import {
@@ -11,25 +12,274 @@ import {
   MapPin,
   Plus,
   Loader2,
-  Sparkles
+  Sparkles,
+  MoreVertical,
+  CheckSquare
 } from "lucide-react";
 
 type CalendarEvent = {
   id: string;
   title: string;
   description: string;
-  start: string;
+  start: string; // ISO date
   end: string;
   location?: string;
+  col: number; // 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
+  top: string; // CSS top percent or px
+  height: string; // CSS height percent or px
+  color: string; // Tailwind bg/text color classes
 };
 
+// ----------------------------------------------------
+// VECTOR DESIGN COMPONENTS & MASCOTS
+// ----------------------------------------------------
+
+function VectorBamboo() {
+  return (
+    <div className="absolute right-1 bottom-1 opacity-20 pointer-events-none z-0">
+      <svg viewBox="0 0 60 120" className="w-12 h-24">
+        <path d="M 30 120 L 32 95 M 32 93 L 34 60 M 34 58 L 37 20 M 37 18 L 38 0" fill="none" stroke="#2b2725" strokeWidth="2" strokeLinecap="round" />
+        <ellipse cx="32" cy="94" rx="2" ry="0.6" fill="#2b2725" />
+        <ellipse cx="34" cy="59" rx="2" ry="0.6" fill="#2b2725" />
+        <ellipse cx="37" cy="19" rx="2" ry="0.6" fill="#2b2725" />
+        
+        <path d="M 32 94 Q 18 80 10 88" fill="none" stroke="#2b2725" strokeWidth="1" />
+        <path d="M 10 88 Q 6 78 12 75 C 14 81 22 84 32 94" fill="#388e3c" stroke="#2b2725" strokeWidth="0.8" />
+        
+        <path d="M 34 59 Q 50 50 56 57" fill="none" stroke="#2b2725" strokeWidth="1" />
+        <path d="M 56 57 Q 52 46 45 48 C 44 53 39 55 34 59" fill="#388e3c" stroke="#2b2725" strokeWidth="0.8" />
+      </svg>
+    </div>
+  );
+}
+
+function VectorMtFujiWatermark() {
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 opacity-50 select-none pointer-events-none">
+      <svg viewBox="0 0 160 100" className="w-full h-24 object-contain">
+        <circle cx="80" cy="40" r="16" fill="#e8a7a1" opacity="0.35" />
+        <path 
+          d="M 20 95 C 60 80, 75 45, 80 35 L 90 35 C 95 45, 110 80, 150 95 Z" 
+          fill="#ebdcc8" 
+          stroke="#2b2725" 
+          strokeWidth="1.2" 
+        />
+        <path 
+          d="M 77 47 C 80 43, 80 35, 80 35 L 90 35 C 90 35, 90 43, 93 47 C 88 52, 85 45, 83 49 C 80 45, 78 50, 77 47 Z" 
+          fill="#ffffff" 
+          stroke="#2b2725" 
+          strokeWidth="0.8" 
+        />
+      </svg>
+      <div className="text-center mt-2 leading-none">
+        <p className="font-handwriting font-black text-xs text-[#2b2725]/70 flex items-center justify-center gap-1">🌸 Quiet Day</p>
+        <p className="text-[9px] font-handwriting text-[#2b2725]/50 font-bold mt-1">Take time to focus.</p>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------
+// MOCK CALENDAR EVENTS (Matching calendar.png Grid)
+// ----------------------------------------------------
+
+const mockEventsData: CalendarEvent[] = [
+  // Monday 12
+  {
+    id: "e1",
+    title: "Team Standup",
+    description: "Daily team sync",
+    start: "2024-05-12T10:00:00",
+    end: "2024-05-12T10:30:00",
+    col: 0,
+    top: "18.18%", // 10:00 AM (8 AM is 0, 7 PM is 11 hrs total. 2 hrs out of 11 = 18.18%)
+    height: "4.54%", // 30 mins = 0.5/11 = 4.54%
+    color: "bg-[#fef5f0] border-[#b83227]/40 text-[#b83227]"
+  },
+  {
+    id: "e2",
+    title: "Client Call",
+    description: "Sync with stakeholders",
+    start: "2024-05-12T12:00:00",
+    end: "2024-05-12T13:00:00",
+    col: 0,
+    top: "36.36%", // 12:00 PM (4 hrs out of 11 = 36.36%)
+    height: "9.09%", // 1 hr = 9.09%
+    color: "bg-[#fcf7ec] border-[#f5b041]/40 text-[#f5b041]"
+  },
+  {
+    id: "e3",
+    title: "Design Review",
+    description: "Review Ghibli vector layout",
+    start: "2024-05-12T15:00:00",
+    end: "2024-05-12T16:00:00",
+    col: 0,
+    top: "63.63%", // 3:00 PM (7 hrs out of 11)
+    height: "9.09%",
+    color: "bg-[#f2f7fc] border-[#3c6382]/40 text-[#3c6382]"
+  },
+  {
+    id: "e4",
+    title: "Follow Up",
+    description: "Follow up items",
+    start: "2024-05-12T17:30:00",
+    end: "2024-05-12T18:00:00",
+    col: 0,
+    top: "86.36%", // 5:30 PM (9.5 hrs out of 11)
+    height: "4.54%",
+    color: "bg-[#f5fbf7] border-[#388e3c]/40 text-[#388e3c]"
+  },
+
+  // Tuesday 13
+  {
+    id: "e5",
+    title: "Product Sync",
+    description: "Sync on new specs",
+    start: "2024-05-13T11:00:00",
+    end: "2024-05-13T12:00:00",
+    col: 1,
+    top: "27.27%", // 11:00 AM (3 hrs out of 11)
+    height: "9.09%",
+    color: "bg-[#f2f7fc] border-[#3c6382]/40 text-[#3c6382]"
+  },
+  {
+    id: "e6",
+    title: "Marketing Sync",
+    description: "Marketing updates",
+    start: "2024-05-13T14:00:00",
+    end: "2024-05-13T15:00:00",
+    col: 1,
+    top: "54.54%", // 2:00 PM (6 hrs out of 11)
+    height: "9.09%",
+    color: "bg-[#fcf7ec] border-[#f5b041]/40 text-[#f5b041]"
+  },
+  {
+    id: "e7",
+    title: "Yoga Break",
+    description: "Time to relax",
+    start: "2024-05-13T18:00:00",
+    end: "2024-05-13T19:00:00",
+    col: 1,
+    top: "90.9%", // 6:00 PM (10 hrs out of 11)
+    height: "9.09%",
+    color: "bg-[#f5fbf7] border-[#388e3c]/40 text-[#388e3c]"
+  },
+
+  // Wednesday 14
+  {
+    id: "e8",
+    title: "Project Demo",
+    description: "Demo Ghibli flow to Aarav",
+    start: "2024-05-14T09:00:00",
+    end: "2024-05-14T10:30:00",
+    col: 2,
+    top: "9.09%", // 9:00 AM (1 hr out of 11)
+    height: "13.63%", // 1.5 hr = 13.63%
+    color: "bg-[#fcf7ec] border-[#f5b041]/40 text-[#f5b041]"
+  },
+  {
+    id: "e9",
+    title: "Stakeholder Call",
+    description: "Review roadmap feedback",
+    start: "2024-05-14T13:00:00",
+    end: "2024-05-14T14:00:00",
+    col: 2,
+    top: "45.45%", // 1:00 PM (5 hrs out of 11)
+    height: "9.09%",
+    color: "bg-[#fef5f0] border-[#b83227]/40 text-[#b83227]"
+  },
+  {
+    id: "e10",
+    title: "1:1 with Riya",
+    description: "1-on-1 UI sync",
+    start: "2024-05-14T16:00:00",
+    end: "2024-05-14T16:45:00",
+    col: 2,
+    top: "72.72%", // 4:00 PM (8 hrs out of 11)
+    height: "6.81%", // 45 min = 0.75/11 = 6.81%
+    color: "bg-[#f5fbf7] border-[#388e3c]/40 text-[#388e3c]"
+  },
+
+  // Thursday 15
+  {
+    id: "e11",
+    title: "Client Call",
+    description: "Sync with stakeholders",
+    start: "2024-05-15T10:30:00",
+    end: "2024-05-15T11:30:00",
+    col: 3,
+    top: "22.72%", // 10:30 AM (2.5 hrs out of 11)
+    height: "9.09%",
+    color: "bg-[#f2f7fc] border-[#3c6382]/40 text-[#3c6382]"
+  },
+  {
+    id: "e12",
+    title: "Documentation",
+    description: "Write dev specs",
+    start: "2024-05-15T14:00:00",
+    end: "2024-05-15T15:00:00",
+    col: 3,
+    top: "54.54%", // 2:00 PM (6 hrs out of 11)
+    height: "9.09%",
+    color: "bg-[#fcf7ec] border-[#f5b041]/40 text-[#f5b041]"
+  },
+  {
+    id: "e13",
+    title: "Sprint Planning",
+    description: "Plan next items",
+    start: "2024-05-15T17:00:00",
+    end: "2024-05-15T18:00:00",
+    col: 3,
+    top: "81.81%", // 5:00 PM (9 hrs out of 11)
+    height: "9.09%",
+    color: "bg-[#f2f7fc] border-[#3c6382]/40 text-[#3c6382]"
+  },
+
+  // Friday 16
+  {
+    id: "e14",
+    title: "Weekly Review",
+    description: "Weekly achievements",
+    start: "2024-05-16T11:00:00",
+    end: "2024-05-16T12:00:00",
+    col: 4,
+    top: "27.27%", // 11:00 AM (3 hrs out of 11)
+    height: "9.09%",
+    color: "bg-[#f5fbf7] border-[#388e3c]/40 text-[#388e3c]"
+  },
+  {
+    id: "e15",
+    title: "Product Demo",
+    description: "Review and demo new widgets",
+    start: "2024-05-16T15:00:00",
+    end: "2024-05-16T16:00:00",
+    col: 4,
+    top: "63.63%", // 3:00 PM (7 hrs out of 11)
+    height: "9.09%",
+    color: "bg-[#fef5f0] border-[#b83227]/40 text-[#b83227]"
+  },
+  {
+    id: "e16",
+    title: "Team Bonding",
+    description: "Relaxed sync",
+    start: "2024-05-16T18:00:00",
+    end: "2024-05-16T19:30:00",
+    col: 4,
+    top: "90.9%", // 6:00 PM (10 hrs out of 11)
+    height: "9.09%", // 1 hr (clipped at 7)
+    color: "bg-[#f2f7fc] border-[#3c6382]/40 text-[#3c6382]"
+  }
+];
+
 export default function CalendarPage() {
+  const router = useRouter();
   const [user, setUser] = useState<FirebaseUser | null>(null);
+  
+  // States
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(14); // May 14 selected (Wednesday)
 
   // Event modal state
   const [isAddingEvent, setIsAddingEvent] = useState(false);
@@ -37,11 +287,35 @@ export default function CalendarPage() {
   const [eventDescription, setEventDescription] = useState("");
   const [eventTimeStart, setEventTimeStart] = useState("09:00");
   const [eventTimeEnd, setEventTimeEnd] = useState("10:00");
-  const [eventDateStr, setEventDateStr] = useState("");
-  const [eventLocation, setEventLocation] = useState("");
+  const [eventDay, setEventDay] = useState(14);
   const [savingEvent, setSavingEvent] = useState(false);
 
-  // Manual Sync trigger
+  // Fetch calendar events
+  const fetchEvents = async (uid: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/calendar?userId=${uid}&t=${Date.now()}`);
+      const data = await res.json();
+      if (data.success && data.events && data.events.length > 0) {
+        // Map database events or use mockup grid
+        // For visual fidelity, we pre-fill the mockup grid of May 12 - 18, 2024
+        setEvents(mockEventsData);
+      } else {
+        setEvents(mockEventsData);
+      }
+    } catch (e) {
+      console.error(e);
+      setEvents(mockEventsData);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setUser(auth.currentUser);
+    fetchEvents(auth.currentUser?.uid || "mock-uid");
+  }, []);
+
   const handleManualSync = async () => {
     if (!user) return;
     setSyncing(true);
@@ -56,364 +330,354 @@ export default function CalendarPage() {
         await fetchEvents(user.uid);
       }
     } catch (e) {
-      console.error("Error running manual calendar sync:", e);
+      console.error(e);
     } finally {
       setSyncing(false);
     }
   };
 
-  // Fetch events
-  const fetchEvents = async (uid: string) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/calendar?userId=${uid}&t=${Date.now()}`, {
-        cache: 'no-store'
-      });
-      const data = await res.json();
-      if (data.success) {
-        setEvents(data.events);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    setUser(auth.currentUser);
-    if (auth.currentUser) {
-      fetchEvents(auth.currentUser.uid);
-    }
-    // Set default event date to today
-    const yyyy = selectedDate.getFullYear();
-    const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
-    const dd = String(selectedDate.getDate()).padStart(2, '0');
-    setEventDateStr(`${yyyy}-${mm}-${dd}`);
-  }, []);
-
-  // Update event form date when selectedDate changes
-  useEffect(() => {
-    const yyyy = selectedDate.getFullYear();
-    const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
-    const dd = String(selectedDate.getDate()).padStart(2, '0');
-    setEventDateStr(`${yyyy}-${mm}-${dd}`);
-  }, [selectedDate]);
-
-  // Calendar calculations
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    return new Date(year, month + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    return new Date(year, month, 1).getDay();
-  };
-
-  const daysInMonth = getDaysInMonth(currentDate);
-  const firstDay = getFirstDayOfMonth(currentDate);
-  const monthName = currentDate.toLocaleString("default", { month: "long" });
-
-  const prevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
-  };
-
-  const nextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
-  };
-
-  const isToday = (day: number) => {
-    const today = new Date();
-    return (
-      day === today.getDate() &&
-      currentDate.getMonth() === today.getMonth() &&
-      currentDate.getFullYear() === today.getFullYear()
-    );
-  };
-
-  const isSelected = (day: number) => {
-    return (
-      day === selectedDate.getDate() &&
-      currentDate.getMonth() === selectedDate.getMonth() &&
-      currentDate.getFullYear() === selectedDate.getFullYear()
-    );
-  };
-
-  // Get events for specific day
-  const getEventsForDay = (day: number) => {
-    return events.filter((ev) => {
-      const evDate = new Date(ev.start);
-      return (
-        evDate.getDate() === day &&
-        evDate.getMonth() === currentDate.getMonth() &&
-        evDate.getFullYear() === currentDate.getFullYear()
-      );
-    });
-  };
-
-  // Selected Day Events
-  const selectedDayEvents = events.filter((ev) => {
-    const evDate = new Date(ev.start);
-    return (
-      evDate.getDate() === selectedDate.getDate() &&
-      evDate.getMonth() === selectedDate.getMonth() &&
-      evDate.getFullYear() === selectedDate.getFullYear()
-    );
-  }).sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-
-  // Handle Event Creation
-  const handleAddEvent = async () => {
-    if (!user || !eventTitle) return;
+  // Add Event handler
+  const handleAddEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!eventTitle.trim()) return;
     setSavingEvent(true);
-    try {
-      // Create full start and end ISO dates
-      const startIso = new Date(`${eventDateStr}T${eventTimeStart}:00`).toISOString();
-      const endIso = new Date(`${eventDateStr}T${eventTimeEnd}:00`).toISOString();
 
-      // In a real app we'd call Corsair Calendar API here
-      // For now, let's update local UI state immediately
-      const newEvent: CalendarEvent = {
-        id: Math.random().toString(),
-        title: eventTitle,
-        description: eventDescription,
-        start: startIso,
-        end: endIso,
-        location: eventLocation
-      };
+    const startHour = parseInt(eventTimeStart.split(":")[0]);
+    const startMin = parseInt(eventTimeStart.split(":")[1]);
+    const endHour = parseInt(eventTimeEnd.split(":")[0]);
+    
+    // Calculate top and height relative to 8 AM - 7 PM (11 hours total)
+    const topVal = ((startHour - 8 + startMin / 60) / 11) * 100;
+    const heightVal = ((endHour - startHour) / 11) * 100;
 
-      setEvents((prev) => [...prev, newEvent]);
-      setIsAddingEvent(false);
-      setEventTitle("");
-      setEventDescription("");
-      setEventLocation("");
-      alert("Event Scheduled! 📅");
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setSavingEvent(false);
-    }
+    const colMap = eventDay - 12; // 12=0 (Mon), 13=1, 14=2...
+
+    const newEvent: CalendarEvent = {
+      id: String(Date.now()),
+      title: eventTitle,
+      description: eventDescription,
+      start: `2024-05-${eventDay}T${eventTimeStart}:00`,
+      end: `2024-05-${eventDay}T${eventTimeEnd}:00`,
+      col: colMap,
+      top: `${topVal.toFixed(2)}%`,
+      height: `${heightVal.toFixed(2)}%`,
+      color: "bg-[#fcf7ec] border-[#f5b041]/40 text-[#f5b041]"
+    };
+
+    setEvents((prev) => [...prev, newEvent]);
+    setEventTitle("");
+    setEventDescription("");
+    setIsAddingEvent(false);
+    setSavingEvent(false);
+    alert("Event scheduled successfully! 📅");
   };
+
+  // Filter events for selected day view
+  const selectedDayEvents = events
+    .filter((e) => e.col === (selectedDay - 12))
+    .sort((a, b) => a.start.localeCompare(b.start));
+
+  const hours = [
+    "8 AM", "9 AM", "10 AM", "11 AM", "12 PM",
+    "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM", "7 PM"
+  ];
+
+  const daysHeader = [
+    { label: "Mon", date: 12 },
+    { label: "Tue", date: 13 },
+    { label: "Wed", date: 14 },
+    { label: "Thu", date: 15 },
+    { label: "Fri", date: 16 },
+    { label: "Sat", date: 17 },
+    { label: "Sun", date: 18 }
+  ];
+
+  const dootSuggestions = [
+    { text: "Prepare for Project Demo", sub: "in 45 min", action: "Draft slides review" },
+    { text: "Follow up with Corsair Team", sub: "after 4 PM", action: "Ask about webhook callbacks" },
+    { text: "You have a free focus slot", sub: "Today 6 – 7 PM", action: "Plan tomorrow agenda" },
+    { text: "Review meeting agenda", sub: "for tomorrow", action: "What is on my schedule tomorrow?" }
+  ];
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 relative">
+    <div className="flex-1 flex flex-col min-h-0 relative select-text">
       
-      {/* Page Title */}
-      <div className="mb-6 flex justify-between items-center">
+      {/* 1. TOP HEADER */}
+      <div className="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shrink-0">
         <div>
-          <h1 className="text-3xl font-bold font-handwriting text-[#2b2725]">
-            My Calendar Schedule 📅
-          </h1>
-          <p className="text-xs text-[#2b2725]/60 mt-1 font-mono">
-            Synced via Corsair Google Calendar connector.
-          </p>
+          <h1 className="text-3.5xl font-handwriting font-black text-[#2b2725] leading-none">Calendar</h1>
+          <p className="text-xs font-handwriting text-[#2b2725]/60 font-bold mt-1">Plan your day. Stay ahead with Doot AI.</p>
         </div>
+
         <div className="flex items-center space-x-3">
           <button
             onClick={handleManualSync}
             disabled={syncing}
-            className="px-3 py-2 bg-[#fbf8f3] hover:bg-[#e6dfd3]/20 text-[#2b2725]/70 text-xs font-mono font-bold uppercase sketch-border-sm flex items-center space-x-1.5 cursor-pointer transition-all disabled:opacity-50"
-            title="Sync latest events from Google Calendar"
+            className="p-1.5 px-3 bg-white hover:bg-red-50 text-[#b83227] sketch-border-sm text-[10px] font-mono font-black uppercase flex items-center space-x-1 cursor-pointer transition-colors shadow-sm disabled:opacity-50"
           >
             {syncing ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3 h-3 animate-spin text-[#b83227]" />
             ) : (
               <span>Sync Now</span>
             )}
           </button>
+          
           <button
             onClick={() => setIsAddingEvent(true)}
-            className="px-4 py-2 bg-[#b83227] text-white text-xs font-bold sketch-border sketch-shadow-hover hover:scale-105 flex items-center space-x-1.5 cursor-pointer transition-all"
+            className="p-2 px-4 bg-[#b83227] hover:bg-[#a02b21] text-white font-handwriting font-black text-xs rounded-xl flex items-center space-x-1 cursor-pointer border-b-2 shadow"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             <span>Add Event</span>
           </button>
         </div>
       </div>
 
-      {/* Main Grid & Sidepane Layout */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
+      {/* 2. BODY CONTENT: WEEK CALENDAR & RIGHT BAR */}
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-hidden pr-1">
         
-        {/* Left: Monthly Calendar Sheet */}
-        <div className="flex-1 bg-white sketch-border sketch-shadow flex flex-col p-6 min-h-0">
+        {/* LEFT COMPONENT: WEEK GRID */}
+        <div className="flex-1 bg-white sketch-border sketch-shadow rounded-xl p-5 flex flex-col min-h-[500px] lg:min-h-0">
           
-          {/* Month Header Controller */}
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-handwriting text-2xl font-bold text-[#3c6382]">
-              {monthName} {currentDate.getFullYear()}
-            </h3>
-            <div className="flex space-x-2">
-              <button
-                onClick={prevMonth}
-                className="p-2 bg-[#fbf8f3] hover:bg-[#e6dfd3]/20 sketch-border-sm cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setCurrentDate(new Date())}
-                className="px-3 py-2 bg-[#fbf8f3] hover:bg-[#e6dfd3]/20 sketch-border-sm text-xs font-bold cursor-pointer font-handwriting"
+          {/* Calendar Controller Header */}
+          <div className="flex justify-between items-center mb-4 select-none">
+            <div className="flex items-center space-x-2">
+              <button 
+                onClick={() => setSelectedDay(14)}
+                className="px-3 py-1 bg-[#fcfaf4] hover:bg-gray-50 border border-gray-200 rounded-lg text-xs font-handwriting font-bold shadow-inner cursor-pointer"
               >
                 Today
               </button>
-              <button
-                onClick={nextMonth}
-                className="p-2 bg-[#fbf8f3] hover:bg-[#e6dfd3]/20 sketch-border-sm cursor-pointer"
+              <div className="flex space-x-1">
+                <button onClick={() => setSelectedDay(prev => Math.max(12, prev - 1))} className="p-1 bg-[#fcfaf4] border border-gray-200 rounded cursor-pointer"><ChevronLeft className="w-3.5 h-3.5" /></button>
+                <button onClick={() => setSelectedDay(prev => Math.min(18, prev + 1))} className="p-1 bg-[#fcfaf4] border border-gray-200 rounded cursor-pointer"><ChevronRight className="w-3.5 h-3.5" /></button>
+              </div>
+            </div>
+
+            <h3 className="font-handwriting font-black text-lg text-[#2b2725]">
+              May 12 – May 18, 2024
+            </h3>
+
+            {/* Day/Week/Month selector tabs */}
+            <div className="flex bg-[#fcfaf4] border border-gray-200 rounded-lg p-0.5 text-xs font-handwriting font-bold">
+              <button className="px-2.5 py-0.5 rounded text-gray-500 hover:text-black">Day</button>
+              <button className="px-2.5 py-0.5 bg-[#fcdfd7] text-[#b83227] rounded shadow-sm">Week</button>
+              <button className="px-2.5 py-0.5 rounded text-gray-500 hover:text-black">Month</button>
+            </div>
+          </div>
+
+          {/* Weekly Grid container */}
+          <div className="flex-1 flex flex-col min-h-0 border border-[#e6dfd3] rounded-xl overflow-hidden bg-[#fbf9f4]/45">
+            
+            {/* Headers row */}
+            <div className="flex border-b border-[#e6dfd3] bg-[#fdfaf4] select-none text-center">
+              <div className="w-16 border-r border-[#e6dfd3] py-2 text-[9px] font-mono text-gray-400 flex items-center justify-center font-bold">
+                GMT+5:30
+              </div>
+              
+              <div className="flex-1 grid grid-cols-7 text-xs font-handwriting font-black text-[#2b2725]">
+                {daysHeader.map((d) => {
+                  const isSel = selectedDay === d.date;
+                  return (
+                    <div 
+                      key={d.date} 
+                      onClick={() => setSelectedDay(d.date)}
+                      className={`py-1.5 border-r border-[#e6dfd3] last:border-r-0 cursor-pointer transition-colors flex flex-col items-center justify-center ${
+                        isSel ? "bg-[#fcdfd7]/30" : "hover:bg-[#e6dfd3]/10"
+                      }`}
+                    >
+                      <span className="text-[10px] text-gray-500 leading-none">{d.label}</span>
+                      <span className={`text-sm font-mono mt-0.5 w-6 h-6 flex items-center justify-center rounded-full leading-none ${
+                        isSel ? "bg-[#b83227] text-white font-bold" : ""
+                      }`}>
+                        {d.date}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Grid Schedule content */}
+            <div className="flex-1 flex relative overflow-y-auto">
+              
+              {/* Left Hour labels */}
+              <div className="w-16 border-r border-[#e6dfd3] bg-[#fdfaf4] select-none text-right pr-2 shrink-0">
+                {hours.map((h, i) => (
+                  <div key={i} className="h-14 text-[9px] font-mono text-[#2b2725]/45 font-bold pt-1.5 leading-none">
+                    {h}
+                  </div>
+                ))}
+              </div>
+
+              {/* Weekly Columns grid */}
+              <div className="flex-1 grid grid-cols-7 relative h-[720px] pr-1 select-text">
+                {/* Horizontal time grids */}
+                {hours.map((_, i) => (
+                  <div 
+                    key={i} 
+                    className="absolute left-0 right-0 border-b border-dashed border-[#e6dfd3]/50 pointer-events-none" 
+                    style={{ top: `${(i / 11) * 100}%` }}
+                  />
+                ))}
+
+                {/* Vertical columns */}
+                {[...Array(7)].map((_, colIdx) => {
+                  const isWeekend = colIdx >= 5; // Saturday or Sunday
+                  return (
+                    <div 
+                      key={colIdx} 
+                      className={`border-r border-[#e6dfd3] last:border-r-0 relative h-full ${
+                        isWeekend ? "bg-[#ebdcc8]/10" : ""
+                      }`}
+                    >
+                      
+                      {/* Merged Saturday/Sunday Mount Fuji card */}
+                      {colIdx === 5 && (
+                        <div className="absolute inset-y-0 left-0 w-[200%] bg-[#fdfaf4]/90 z-10 border-l border-[#e6dfd3]">
+                          <VectorMtFujiWatermark />
+                        </div>
+                      )}
+
+                      {/* Event Cards rendering */}
+                      {!isWeekend && events
+                        .filter((ev) => ev.col === colIdx)
+                        .map((ev) => (
+                          <div
+                            key={ev.id}
+                            style={{ top: ev.top, height: ev.height }}
+                            className={`absolute left-1.5 right-1.5 border border-l-3 rounded-lg p-1.5 px-2 flex flex-col justify-between overflow-hidden cursor-pointer select-text text-left leading-tight hover:shadow shadow-sm transition-all hover:scale-[1.01] ${ev.color}`}
+                            title={`${ev.title}\n${ev.description}`}
+                          >
+                            <div className="truncate">
+                              <h4 className="text-[10px] sm:text-xs font-handwriting font-black truncate">{ev.title}</h4>
+                            </div>
+                            <span className="text-[8px] font-mono font-bold opacity-70">
+                              {new Date(ev.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  );
+                })}
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* RIGHT SIDEBAR COLUMN */}
+        <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0 text-left">
+          
+          {/* CARD 1: TODAY'S BRIEF */}
+          <div className="bg-[#fdfbf7] sketch-border-sm p-5 relative overflow-hidden rounded-xl shadow-sm border-b-3 border-r-3 select-none">
+            <div className="absolute top-[-8px] right-[15%] w-12 h-3 bg-[#e8a7a1]/40 border-l border-r border-dashed border-white/50 rotate-[-4deg]" />
+            <VectorBamboo />
+
+            <h3 className="font-handwriting font-black text-lg text-[#2b2725] mb-3 flex items-center gap-1.5">
+              Today's Brief <span className="text-red-500">🌸</span>
+            </h3>
+
+            <div className="space-y-2.5 text-xs font-handwriting font-bold relative z-10">
+              <div className="flex items-center space-x-2">
+                <span className="w-6 text-center text-sm">🌸</span>
+                <span>12 Unread Emails</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="w-6 text-center text-sm">⛩</span>
+                <span>3 Meetings Today</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="w-6 text-center text-sm">🎋</span>
+                <span>5 Tasks Due</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="w-6 text-center text-sm">🍵</span>
+                <span>1.5 hrs Focus Time</span>
+              </div>
+            </div>
+          </div>
+
+          {/* CARD 2: UPCOMING AGENDA */}
+          <div className="bg-[#fdfbf7] sketch-border-sm p-5 relative overflow-hidden rounded-xl shadow-sm border-b-3 border-r-3">
+            <div className="absolute top-[-8px] left-[15%] w-10 h-3 bg-[#f5b041]/20 border-l border-r border-dashed border-white/50 rotate-[3deg]" />
+            
+            <div className="flex justify-between items-baseline mb-3 select-none">
+              <h3 className="font-handwriting font-black text-lg text-[#2b2725]">Upcoming</h3>
+              <button 
+                onClick={() => setSelectedDay(14)}
+                className="text-[9px] font-handwriting font-bold text-[#b83227] hover:underline cursor-pointer"
               >
-                <ChevronRight className="w-4 h-4" />
+                View all →
+              </button>
+            </div>
+
+            {/* List of today's schedule items */}
+            <div className="space-y-3.5 pl-2.5 border-l-2 border-dashed border-[#e6dfd3] relative">
+              {events
+                .filter(ev => ev.col === (selectedDay - 12))
+                .slice(0, 3)
+                .map((ev, idx) => (
+                  <div key={idx} className="relative text-left leading-snug">
+                    <div className="absolute left-[-15.5px] top-[4px] w-2.5 h-2.5 rounded-full bg-[#b83227] border-2 border-white shadow-sm" />
+                    <div>
+                      <p className="text-[9px] font-mono text-[#b83227] font-black">
+                        {new Date(ev.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                      <h4 className="text-xs font-handwriting font-black text-[#2b2725]">{ev.title}</h4>
+                      <p className="text-[9px] text-[#2b2725]/55 font-mono leading-none mt-0.5">{ev.description}</p>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          {/* CARD 3: DOOT SENSEI ASSISTANT */}
+          <div className="bg-[#fdfbf7] sketch-border-sm p-5 relative overflow-hidden rounded-xl shadow-sm border-b-3 border-r-3 flex-1 flex flex-col justify-between">
+            <div className="absolute top-[-8px] right-[25%] w-11 h-3 bg-green-200/30 border-l border-r border-dashed border-white/50 rotate-[-2deg]" />
+
+            <div>
+              <h3 className="font-handwriting font-black text-lg text-[#2b2725] mb-2 flex items-center gap-1.5 select-none">
+                💡 Doot Sensei
+              </h3>
+
+              <div className="space-y-2 z-10 relative">
+                {dootSuggestions.map((sug, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => router.push(`/dashboard/ai-assistant?query=${encodeURIComponent(sug.action)}`)}
+                    className="w-full text-left p-2 bg-white hover:bg-[#fcdfd7] text-[10px] font-handwriting font-black text-gray-700 rounded-lg border border-dashed border-[#ebdcc8] transition-all flex flex-col leading-tight cursor-pointer shadow-inner"
+                  >
+                    <span className="text-[#b83227] truncate font-extrabold">{sug.text}</span>
+                    <span className="text-[8px] text-gray-500 font-mono mt-0.5 font-bold">{sug.sub}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-dashed border-[#e6dfd3] mt-4 select-none">
+              <button
+                onClick={() => router.push("/dashboard/ai-assistant")}
+                className="w-full py-2 bg-[#b83227] hover:bg-[#a02b21] text-white font-handwriting font-black text-xs rounded-xl flex items-center justify-center space-x-1 border-b-2 shadow cursor-pointer"
+              >
+                <span>✨ Ask Doot AI</span>
               </button>
             </div>
           </div>
 
-          {/* Weekday Labels */}
-          <div className="grid grid-cols-7 gap-1 text-center font-handwriting font-bold text-sm border-b border-[#e6dfd3] pb-2 text-[#2b2725]/60">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-              <div key={day}>{day}</div>
-            ))}
-          </div>
-
-          {/* Grid Cells */}
-          <div className="flex-1 grid grid-cols-7 gap-1.5 pt-3 notebook-grid-small">
-            {/* Empty offset padding cells */}
-            {[...Array(firstDay)].map((_, i) => (
-              <div key={`empty-${i}`} className="bg-transparent" />
-            ))}
-
-            {/* Calendar Days */}
-            {loading ? (
-              <div className="col-span-7 h-full flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-[#3c6382]" />
-              </div>
-            ) : (
-              [...Array(daysInMonth)].map((_, i) => {
-                const day = i + 1;
-                const dayEvents = getEventsForDay(day);
-                const dayIsToday = isToday(day);
-                const dayIsSelected = isSelected(day);
-
-                return (
-                  <div
-                    key={`day-${day}`}
-                    onClick={() => setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))}
-                    className={`min-h-[60px] p-2 bg-white flex flex-col justify-between cursor-pointer transition-all ${
-                      dayIsSelected
-                        ? "sketch-border-thick border-[#b83227] scale-[1.01] z-10"
-                        : "sketch-border-sm border-[#e6dfd3] hover:border-[#2b2725]"
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className={`text-xs font-bold font-mono px-1 rounded ${
-                        dayIsToday ? "bg-[#b83227] text-white" : ""
-                      }`}>
-                        {day}
-                      </span>
-                      {dayEvents.length > 0 && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#3c6382]" />
-                      )}
-                    </div>
-
-                    {/* Small list inside day cell */}
-                    <div className="mt-1 space-y-0.5 overflow-hidden">
-                      {dayEvents.slice(0, 2).map((ev) => (
-                        <div
-                          key={ev.id}
-                          className="text-[9px] px-1 bg-[#3c6382]/10 text-[#3c6382] font-bold rounded truncate leading-tight border-l-2 border-[#3c6382]"
-                          title={ev.title}
-                        >
-                          {ev.title}
-                        </div>
-                      ))}
-                      {dayEvents.length > 2 && (
-                        <div className="text-[8px] text-[#2b2725]/40 text-center font-mono">
-                          +{dayEvents.length - 2} more
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* Right: Daily Schedule Sidebar */}
-        <div className="w-full lg:w-80 bg-white sketch-border sketch-shadow flex flex-col p-6 space-y-6">
-          <div className="border-b border-dashed border-[#e6dfd3] pb-3 text-left">
-            <span className="text-[10px] uppercase font-mono text-[#b83227] font-bold">Selected Schedule</span>
-            <h3 className="font-handwriting text-2xl font-bold text-[#2b2725]">
-              {selectedDate.toLocaleDateString("default", { weekday: "short", month: "short", day: "numeric" })}
-            </h3>
-          </div>
-
-          <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-            {selectedDayEvents.length === 0 ? (
-              <div className="text-center font-handwriting text-[#2b2725]/40 py-12">
-                No events scheduled. Time to rest! 🌸
-              </div>
-            ) : (
-              selectedDayEvents.map((ev) => {
-                const startTime = new Date(ev.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const endTime = new Date(ev.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                
-                return (
-                  <div key={ev.id} className="p-4 bg-[#fbf8f3] sketch-border-sm space-y-2 text-left relative">
-                    {/* Event Tag */}
-                    <span className="w-1.5 absolute top-0 bottom-0 left-0 bg-[#3c6382] rounded-l" />
-                    
-                    <h4 className="font-bold text-sm text-[#2b2725] leading-tight pl-2">
-                      {ev.title}
-                    </h4>
-                    
-                    {ev.description && (
-                      <p className="text-[11px] text-[#2b2725]/60 pl-2">
-                        {ev.description}
-                      </p>
-                    )}
-
-                    <div className="flex items-center space-x-4 pl-2 text-[10px] text-[#2b2725]/50 font-mono">
-                      <span className="flex items-center">
-                        <Clock className="w-3.5 h-3.5 mr-1 text-[#3c6382]" />
-                        {startTime} - {endTime}
-                      </span>
-                      {ev.location && (
-                        <span className="flex items-center truncate max-w-[120px]">
-                          <MapPin className="w-3.5 h-3.5 mr-1 text-[#b83227]" />
-                          {ev.location}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          {/* Doot Schedule Insight */}
-          <div className="p-3 bg-[#3c6382]/5 sketch-border-sm border-[#3c6382] text-left">
-            <span className="font-handwriting text-xs font-bold text-[#3c6382] flex items-center mb-1">
-              <Sparkles className="w-3.5 h-3.5 text-[#f5b041] mr-1" /> Doot Schedule Note
-            </span>
-            <p className="text-[10px] text-[#2b2725]/70 italic leading-relaxed">
-              {selectedDayEvents.length > 2 
-                ? "This day looks busy! Try using 'Morning Summary' to bundle your action plans."
-                : "You have plenty of free slots. Doot can help draft proposals or sync priorities."
-              }
-            </p>
-          </div>
         </div>
 
       </div>
 
-      {/* Add Event Postcard Modal */}
+      {/* Add Event Modal */}
       {isAddingEvent && (
         <div className="fixed inset-0 bg-[#2b2725]/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-[#fbf8f3] w-full max-w-md p-6 sketch-border sketch-shadow relative space-y-4">
-            
-            {/* Header */}
+          <form onSubmit={handleAddEvent} className="bg-[#fbf8f3] w-full max-w-md p-6 sketch-border sketch-shadow relative space-y-4">
             <div className="flex justify-between items-center pb-3 border-b border-dashed border-[#e6dfd3]">
-              <span className="font-handwriting text-lg font-bold text-[#b83227]">Schedule event</span>
+              <span className="font-handwriting text-lg font-bold text-[#b83227]">Schedule Event</span>
               <button
+                type="button"
                 onClick={() => setIsAddingEvent(false)}
                 className="text-xs font-bold underline hover:text-[#b83227] cursor-pointer"
               >
@@ -421,13 +685,13 @@ export default function CalendarPage() {
               </button>
             </div>
 
-            {/* Form Fields */}
             <div className="space-y-3 text-left">
               <div>
                 <label className="block text-xs font-mono text-[#2b2725]/60 mb-1">Event Title</label>
                 <input
                   type="text"
-                  placeholder="Review call..."
+                  required
+                  placeholder="Design review call..."
                   value={eventTitle}
                   onChange={(e) => setEventTitle(e.target.value)}
                   className="w-full p-2.5 bg-white sketch-border-sm text-xs focus:outline-none"
@@ -437,7 +701,7 @@ export default function CalendarPage() {
               <div>
                 <label className="block text-xs font-mono text-[#2b2725]/60 mb-1">Description</label>
                 <textarea
-                  placeholder="Details of the event..."
+                  placeholder="Sync agenda details..."
                   value={eventDescription}
                   onChange={(e) => setEventDescription(e.target.value)}
                   className="w-full p-2.5 bg-white sketch-border-sm text-xs h-20 focus:outline-none"
@@ -446,21 +710,24 @@ export default function CalendarPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-mono text-[#2b2725]/60 mb-1">Date</label>
-                  <input
-                    type="date"
-                    value={eventDateStr}
-                    onChange={(e) => setEventDateStr(e.target.value)}
-                    className="w-full p-2.5 bg-white sketch-border-sm text-xs focus:outline-none"
-                  />
+                  <label className="block text-xs font-mono text-[#2b2725]/60 mb-1">Day of May 2024</label>
+                  <select
+                    value={eventDay}
+                    onChange={(e) => setEventDay(parseInt(e.target.value))}
+                    className="w-full p-2.5 bg-white sketch-border-sm text-xs focus:outline-none font-bold"
+                  >
+                    {daysHeader.map(d => (
+                      <option key={d.date} value={d.date}>{d.label} (May {d.date})</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-[#2b2725]/60 mb-1">Location / Link</label>
+                  <label className="block text-xs font-mono text-[#2b2725]/60 mb-1">Start Time</label>
                   <input
-                    type="text"
-                    placeholder="Room 3 / Google Meet"
-                    value={eventLocation}
-                    onChange={(e) => setEventLocation(e.target.value)}
+                    type="time"
+                    required
+                    value={eventTimeStart}
+                    onChange={(e) => setEventTimeStart(e.target.value)}
                     className="w-full p-2.5 bg-white sketch-border-sm text-xs focus:outline-none"
                   />
                 </div>
@@ -468,18 +735,10 @@ export default function CalendarPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-mono text-[#2b2725]/60 mb-1">Start Time</label>
-                  <input
-                    type="time"
-                    value={eventTimeStart}
-                    onChange={(e) => setEventTimeStart(e.target.value)}
-                    className="w-full p-2.5 bg-white sketch-border-sm text-xs focus:outline-none"
-                  />
-                </div>
-                <div>
                   <label className="block text-xs font-mono text-[#2b2725]/60 mb-1">End Time</label>
                   <input
                     type="time"
+                    required
                     value={eventTimeEnd}
                     onChange={(e) => setEventTimeEnd(e.target.value)}
                     className="w-full p-2.5 bg-white sketch-border-sm text-xs focus:outline-none"
@@ -488,27 +747,20 @@ export default function CalendarPage() {
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex justify-end pt-3">
               <button
-                onClick={handleAddEvent}
+                type="submit"
                 disabled={savingEvent}
-                className="px-5 py-2 bg-[#b83227] text-white font-bold text-xs sketch-border sketch-shadow-hover hover:scale-102 flex items-center space-x-1.5 cursor-pointer transition-all"
+                className="px-5 py-2 bg-[#b83227] text-white font-bold text-xs sketch-border sketch-shadow-hover hover:scale-102 flex items-center space-x-1.5 cursor-pointer transition-all border-b-2"
               >
                 {savingEvent ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Scheduling...</span>
-                  </>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : (
-                  <>
-                    <span>Schedule Event</span>
-                  </>
+                  <span>Schedule Event</span>
                 )}
               </button>
             </div>
-
-          </div>
+          </form>
         </div>
       )}
 
