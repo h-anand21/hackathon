@@ -285,6 +285,7 @@ export async function POST(request: NextRequest) {
 
     let reply = "";
     let actions: any[] = [];
+    let modelUsed = "";
 
     // 1. Context retrieval via embedding
     let emailContext = "";
@@ -374,7 +375,7 @@ User query: "${message}"`;
 
     if (isGeminiConfigured) {
       try {
-        console.log('[Chat] Generating response using Gemini...');
+        console.log('[Chat] Generating response using Gemini 2.5 Flash...');
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
           {
@@ -395,15 +396,52 @@ User query: "${message}"`;
         if (response.ok) {
           const data = await response.json();
           aiResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          if (aiResponseText) {
+            modelUsed = "Gemini 2.5 Flash";
+          }
+        } else {
+          console.warn(`Gemini 2.5 Flash call failed with status ${response.status}. Trying Gemini 1.5 Flash fallback...`);
         }
       } catch (err) {
-        console.error("Gemini API call failed, trying OpenAI fallback:", err);
+        console.error("Gemini 2.5 Flash API call failed:", err);
+      }
+    }
+
+    if (!aiResponseText && isGeminiConfigured) {
+      try {
+        console.log('[Chat Fallback] Generating response using Gemini 1.5 Flash...');
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: promptText
+                }]
+              }],
+              generationConfig: {
+                responseMimeType: "application/json"
+              }
+            })
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          aiResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          if (aiResponseText) {
+            modelUsed = "Gemini 1.5 Flash";
+          }
+        }
+      } catch (err) {
+        console.error("Gemini 1.5 Flash API call failed:", err);
       }
     }
 
     if (!aiResponseText && isOpenAIConfigured) {
       try {
-        console.log('[Chat Fallback] Generating response using OpenAI...');
+        console.log('[Chat Fallback] Generating response using OpenAI GPT-4o-mini...');
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -419,6 +457,9 @@ User query: "${message}"`;
         if (response.ok) {
           const data = await response.json();
           aiResponseText = data.choices?.[0]?.message?.content || "";
+          if (aiResponseText) {
+            modelUsed = "OpenAI GPT-4o-mini";
+          }
         }
       } catch (err) {
         console.error("OpenAI API call failed:", err);
@@ -446,6 +487,7 @@ User query: "${message}"`;
 
     // If no reply was generated, execute rule-based fallback
     if (!reply) {
+      modelUsed = "Doot Local Rule-Based Engine";
       let fallbackReply = "";
       
       // Load contacts to find names/emails
@@ -1022,6 +1064,10 @@ User query: "${message}"`;
           console.error("Failed executing email action:", emailErr);
         }
       }
+    }
+
+    if (modelUsed) {
+      reply += `\n\n*(Powered by ${modelUsed})*`;
     }
 
     // Save messages in history
