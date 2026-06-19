@@ -213,26 +213,37 @@ export async function POST(request: NextRequest) {
             }
 
             if (gmailAccount) {
-              const tenant = corsair.withTenant(targetTenantId);
-              const mimeMessage = [
-                `To: ${to}`,
-                `Subject: ${subject}`,
-                'Content-Type: text/plain; charset=utf-8',
-                'MIME-Version: 1.0',
-                '',
-                body,
-              ].join('\r\n');
+              const toLower = to.toLowerCase();
+              const isMockEmail = toLower.includes('@doot.ai') || 
+                                  toLower.includes('@tokyobento.com') || 
+                                  toLower.includes('@sketchy.dev') || 
+                                  toLower.includes('@example.com') || 
+                                  toLower.includes('recipient@example.com');
 
-              const raw = Buffer.from(mimeMessage)
-                .toString('base64')
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
-                .replace(/=+$/, '');
+              if (!isMockEmail) {
+                const tenant = corsair.withTenant(targetTenantId);
+                const mimeMessage = [
+                  `To: ${to}`,
+                  `Subject: ${subject}`,
+                  'Content-Type: text/plain; charset=utf-8',
+                  'MIME-Version: 1.0',
+                  '',
+                  body,
+                ].join('\r\n');
 
-              await tenant.gmail.api.messages.send({
-                userId: 'me',
-                raw,
-              });
+                const raw = Buffer.from(mimeMessage)
+                  .toString('base64')
+                  .replace(/\+/g, '-')
+                  .replace(/\//g, '_')
+                  .replace(/=+$/, '');
+
+                await tenant.gmail.api.messages.send({
+                  userId: 'me',
+                  raw,
+                });
+              } else {
+                console.log(`[Chat Send] Mock recipient detected: ${to}. Skipping actual Google Gmail delivery.`);
+              }
             }
           } catch (gmailErr) {
             console.warn("Could not send real Gmail on confirmation, logging mock instead:", gmailErr);

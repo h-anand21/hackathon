@@ -111,11 +111,22 @@ export async function POST(request: NextRequest) {
     // Get the plugin-enabled tenant client
     const tenant = corsair.withTenant(targetTenantId);
 
-    // Send the message using Gmail plugin API
-    await tenant.gmail.api.messages.send({
-      userId: 'me',
-      raw,
-    });
+    const toLower = to.toLowerCase();
+    const isMockEmail = toLower.includes('@doot.ai') || 
+                        toLower.includes('@tokyobento.com') || 
+                        toLower.includes('@sketchy.dev') || 
+                        toLower.includes('@example.com') || 
+                        toLower.includes('recipient@example.com');
+
+    if (!isMockEmail) {
+      // Send the message using Gmail plugin API
+      await tenant.gmail.api.messages.send({
+        userId: 'me',
+        raw,
+      });
+    } else {
+      console.log(`[Send Email API] Mock recipient detected: ${to}. Skipping actual Google Gmail delivery.`);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
