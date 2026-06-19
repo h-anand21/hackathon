@@ -196,18 +196,28 @@ export default function AIAssistantPage() {
             if (data.success && data.messages && data.messages.length > 0) {
               setMessages(data.messages);
             }
+            // Read initial query if passed via url params and execute immediately
+            const initialQuery = searchParams.get("query");
+            if (initialQuery) {
+              handleSend(initialQuery, currentUser);
+              // Clean the query parameter from URL to prevent resending on page refresh
+              const newUrl = window.location.pathname;
+              window.history.replaceState({ path: newUrl }, '', newUrl);
+            }
           })
-          .catch((err) => console.error("Error loading chat history:", err));
+          .catch((err) => {
+            console.error("Error loading chat history:", err);
+            const initialQuery = searchParams.get("query");
+            if (initialQuery) {
+              handleSend(initialQuery, currentUser);
+              const newUrl = window.location.pathname;
+              window.history.replaceState({ path: newUrl }, '', newUrl);
+            }
+          });
       } else {
         router.push("/onboarding");
       }
     });
-
-    // Read initial query if passed via url params
-    const initialQuery = searchParams.get("query");
-    if (initialQuery) {
-      setInput(initialQuery);
-    }
 
     return () => unsubscribe();
   }, [searchParams, router]);
@@ -218,8 +228,9 @@ export default function AIAssistantPage() {
   }, [messages, sending]);
 
   // Send message
-  const handleSend = async (textToSend: string) => {
-    if (!textToSend.trim() || !user) return;
+  const handleSend = async (textToSend: string, overrideUser?: FirebaseUser) => {
+    const activeUser = overrideUser || user;
+    if (!textToSend.trim() || !activeUser) return;
 
     const userMsg: Message = {
       id: Math.random().toString(),
@@ -247,7 +258,7 @@ export default function AIAssistantPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: user.uid,
+          userId: activeUser.uid,
           message: promptMessage
         })
       });

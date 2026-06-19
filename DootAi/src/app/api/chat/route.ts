@@ -539,59 +539,91 @@ User query: "${message}"`;
 
       if (isSummaryRequest) {
         try {
-          let filterConditions: any = {
-            userId,
-            category: { notIn: ['Sent', 'Drafts'] }
-          };
+          // Fetch any database emails first
+          let dbEmails = await prisma.priorityEmail.findMany({
+            where: {
+              userId,
+              category: { notIn: ['Sent', 'Drafts'] }
+            },
+            orderBy: { receivedAt: 'desc' },
+            take: 10
+          });
 
-          // Try to filter by sender if a contact name is mentioned in query
-          for (const contact of contacts) {
-            const nameParts = contact.name.toLowerCase().split(' ');
-            if (query.includes(contact.name.toLowerCase()) || (nameParts[0] && nameParts[0].length > 2 && query.includes(nameParts[0]))) {
-              filterConditions.sender = { contains: nameParts[0], mode: 'insensitive' };
+          const mockEmails = [
+            {
+              sender: 'Aarav Patel <aarav@doot.ai>',
+              subject: '🌸 Urgent: Schedule review for Japanese Sketchbook Design System',
+              summary: 'Aarav requests a meeting this Friday morning at 9:00 AM to review the Japanese Sketchbook Design System features, including paper styles and ring physics.',
+              snippet: 'Hi there, we need to finalize the paper border styles and the spiral ring physics for the web view. Can we meet this Friday morning at 9:00 AM?'
+            },
+            {
+              sender: 'Yuki Sato <yuki@tokyobento.com>',
+              subject: '🍱 Bento Catering for the Hackathon Party',
+              summary: 'Yuki confirms the order of 50 Kyoto-style lunch boxes to be delivered on Saturday at 12:00 PM for the hackathon.',
+              snippet: 'Hello! Confirming your order for 50 Kyoto-style lunch boxes. We will deliver them directly to your workspace on Saturday at 12 PM.'
+            },
+            {
+              sender: 'Sketchy Weekly <news@sketchy.dev>',
+              subject: '🔥 Newsletter: 10 design tips for handwritten interfaces',
+              summary: 'Weekly newsletter discussing 10 design tips for hand-drawn interfaces, highlighting SVG filters and border-radius properties.',
+              snippet: 'In this week\'s issue: how to make web cards look hand-drawn using SVG filters and custom border-radius properties. Check it out!'
+            }
+          ] as any[];
+
+          // Combine db and mock emails for search/display
+          // Filter mocks that have identical subjects to db emails to avoid duplicates
+          const filteredMocks = mockEmails.filter(
+            (mock) => !dbEmails.some((dbE) => dbE.subject.toLowerCase().trim() === mock.subject.toLowerCase().trim())
+          );
+          const combinedEmails = [...dbEmails, ...filteredMocks];
+
+          // Check if user is asking to summarize a specific email from the inbox list
+          let targetEmailObj: any = null;
+          let isSpecificEmail = false;
+
+          for (const email of combinedEmails) {
+            const emailSub = email.subject.toLowerCase();
+            // Remove emojis to prevent match failures
+            const cleanSub = emailSub.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, "").trim().toLowerCase();
+            if (query.includes(cleanSub) || (cleanSub.length > 10 && query.includes(cleanSub.substring(0, 15)))) {
+              targetEmailObj = email;
+              isSpecificEmail = true;
               break;
             }
           }
 
-          let inboxEmails = await prisma.priorityEmail.findMany({
-            where: filterConditions,
-            orderBy: { receivedAt: 'desc' },
-            take: 5
-          });
-
-          // Fallback to the same mock emails shown on the inbox page if db is empty
-          if (!inboxEmails || inboxEmails.length === 0) {
-            inboxEmails = [
-              {
-                sender: 'Aarav Patel <aarav@doot.ai>',
-                subject: '🌸 Urgent: Schedule review for Japanese Sketchbook Design System',
-                summary: 'Aarav requests a meeting this Friday morning at 9:00 AM to review the Japanese Sketchbook Design System features, including paper styles and ring physics.',
-                snippet: 'Hi there, we need to finalize the paper border styles and the spiral ring physics for the web view. Can we meet this Friday morning at 9:00 AM?'
-              },
-              {
-                sender: 'Yuki Sato <yuki@tokyobento.com>',
-                subject: '🍱 Bento Catering for the Hackathon Party',
-                summary: 'Yuki confirms the order of 50 Kyoto-style lunch boxes to be delivered on Saturday at 12:00 PM for the hackathon.',
-                snippet: 'Hello! Confirming your order for 50 Kyoto-style lunch boxes. We will deliver them directly to your workspace on Saturday at 12 PM.'
-              },
-              {
-                sender: 'Sketchy Weekly <news@sketchy.dev>',
-                subject: '🔥 Newsletter: 10 design tips for handwritten interfaces',
-                summary: 'Weekly newsletter discussing 10 design tips for hand-drawn interfaces, highlighting SVG filters and border-radius properties.',
-                snippet: 'In this week\'s issue: how to make web cards look hand-drawn using SVG filters and custom border-radius properties. Check it out!'
-              }
-            ] as any[];
-          }
-
-          if (inboxEmails && inboxEmails.length > 0) {
-            fallbackReply = "🌸 **Inbox Scroll Summary:**\nHere is a summary of your latest email scrolls:\n\n";
-            inboxEmails.forEach((email: any, idx: number) => {
-              const emailSummary = email.summary || email.snippet || "No summary available.";
-              fallbackReply += `${idx + 1}. **From:** ${email.sender}\n   **Subject:** ${email.subject}\n   **Summary:** ${emailSummary}\n\n`;
-            });
-            fallbackReply += "Let me know if you want me to draft replies to any of these! 🍱";
+          if (isSpecificEmail && targetEmailObj) {
+            const emailSummary = targetEmailObj.summary || targetEmailObj.snippet || "No summary available.";
+            fallbackReply = `🌸 **Email Summary:**\n\n- **From:** ${targetEmailObj.sender}\n- **Subject:** ${targetEmailObj.subject}\n\n**Summary:**\n${emailSummary}\n\nLet me know if you would like me to draft a reply or schedule a meeting for this! 🍱`;
           } else {
-            fallbackReply = "🌸 Your inbox scrolls are currently clean and empty! No new messages to summarize. ⛩️";
+            // Otherwise give general inbox scroll summary
+            // If the query specified a sender, filter the combined list
+            let displayList = combinedEmails;
+            let filteredBySender = false;
+            for (const contact of contacts) {
+              const nameParts = contact.name.toLowerCase().split(' ');
+              if (query.includes(contact.name.toLowerCase()) || (nameParts[0] && nameParts[0].length > 2 && query.includes(nameParts[0]))) {
+                displayList = combinedEmails.filter(e => e.sender.toLowerCase().includes(nameParts[0]));
+                filteredBySender = true;
+                break;
+              }
+            }
+
+            // Fallback to top 5 if not filtered
+            if (!filteredBySender) {
+              displayList = combinedEmails.slice(0, 5);
+            }
+
+            if (displayList.length > 0) {
+              fallbackReply = "🌸 **Inbox Scroll Summary:**\nHere is a summary of your latest email scrolls:\n\n";
+              displayList.forEach((email: any, idx: number) => {
+                const emailSummary = email.summary || email.snippet || "No summary available.";
+                fallbackReply += `${idx + 1}. **From:** ${email.sender}\n   **Subject:** ${email.subject}\n   **Summary:** ${emailSummary}\n\n`;
+              });
+              fallbackReply += "Let me know if you want me to draft replies to any of these! 🍱";
+            } else {
+              fallbackReply = "🌸 Your inbox scrolls are currently clean and empty! No new messages to summarize. ⛩️";
+            }
           }
         } catch (dbErr) {
           console.error("Failed to fetch inbox emails for summary:", dbErr);
