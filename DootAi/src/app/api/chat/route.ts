@@ -462,7 +462,34 @@ User query: "${message}"`;
           }
         }
       } catch (err) {
-        console.error("OpenAI API call failed:", err);
+        console.error("OpenAI API call failed (gpt-4o-mini):", err);
+      }
+    }
+
+    if (!aiResponseText && isOpenAIConfigured) {
+      try {
+        console.log('[Chat Fallback] Generating response using OpenAI GPT-3.5-turbo...');
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${openaiKey}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [{ role: 'user', content: promptText }],
+            response_format: { type: "json_object" }
+          })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          aiResponseText = data.choices?.[0]?.message?.content || "";
+          if (aiResponseText) {
+            modelUsed = "OpenAI GPT-3.5-turbo";
+          }
+        }
+      } catch (err) {
+        console.error("OpenAI API call failed (gpt-3.5-turbo):", err);
       }
     }
 
