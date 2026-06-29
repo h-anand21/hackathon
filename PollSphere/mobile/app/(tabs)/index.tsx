@@ -68,19 +68,29 @@ export default function DashboardScreen() {
     }
   }, [isLoaded, userId]);
 
+  const extractPollId = (input: string): string => {
+    const trimmed = input.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      const parts = trimmed.split('/');
+      return parts[parts.length - 1] || trimmed;
+    }
+    return trimmed;
+  };
+
   const handleSearchPoll = () => {
     if (!searchPollId.trim()) {
-      Alert.alert('Error', 'Please enter a valid Poll ID/Code');
+      Alert.alert('Error', 'Please enter a valid Poll ID/Code or URL');
       return;
     }
-    // Route directly to voting page
-    router.push(`/poll/${searchPollId.trim()}`);
+    const cleanId = extractPollId(searchPollId);
+    router.push(`/poll/${cleanId}`);
   };
 
   const handleShare = async (pollId: string, title: string) => {
     try {
+      const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://pollsphere.vercel.app';
       await Share.share({
-        message: `Vote on this Poll: "${title}"\nLink: http://localhost:5173/poll/slug/${pollId}`,
+        message: `Vote on this Poll: "${title}"\nLink: ${webUrl}/poll/slug/${pollId}`,
       });
     } catch (error) {
       console.error(error);

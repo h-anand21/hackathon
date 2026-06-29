@@ -20,12 +20,22 @@ export default function VoteScreen() {
   const [pollId, setPollId] = useState('');
   const router = useRouter();
 
+  const extractPollId = (input: string): string => {
+    const trimmed = input.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      const parts = trimmed.split('/');
+      return parts[parts.length - 1] || trimmed;
+    }
+    return trimmed;
+  };
+
   const handleJoinRoom = () => {
     if (!pollId.trim()) {
-      Alert.alert('Error', 'Please enter a valid Poll ID/Code');
+      Alert.alert('Error', 'Please enter a valid Poll ID/Code or URL');
       return;
     }
-    router.push(`/poll/${pollId.trim()}`);
+    const cleanId = extractPollId(pollId);
+    router.push(`/poll/${cleanId}`);
   };
 
   return (
