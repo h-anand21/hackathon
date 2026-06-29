@@ -26,8 +26,12 @@ export default function LoginScreen() {
   const router = useRouter();
 
   const [isSignUpMode, setIsSignUpMode] = useState(false);
+  const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
+  const [forgotPasswordStep, setForgotPasswordStep] = useState(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [resetCode, setResetCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -116,6 +120,55 @@ export default function LoginScreen() {
     }
   };
 
+  const handleForgotPasswordRequest = async () => {
+    if (!email) {
+      setError('Please enter your email address first');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      await signIn.create({
+        strategy: 'reset_password_email_code',
+        identifier: email,
+      });
+      setForgotPasswordStep(2);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.errors?.[0]?.longMessage || 'Could not send verification code.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPasswordReset = async () => {
+    if (!resetCode || !newPassword) {
+      setError('Please fill in all fields');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const attempt = await signIn.attemptFirstFactor({
+        strategy: 'reset_password_email_code',
+        code: resetCode,
+        password: newPassword,
+      });
+
+      if (attempt.status === 'complete') {
+        await setActive({ session: attempt.createdSessionId });
+        router.replace('/(tabs)');
+      } else {
+        setError('Failed to complete reset. Try again.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.errors?.[0]?.longMessage || 'Failed to reset password.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGuestMode = () => {
     setAuthToken(null);
     router.replace('/(tabs)');
@@ -163,14 +216,88 @@ export default function LoginScreen() {
         {/* Interactive Login/Signup Card */}
         <BrutalCard variant="primary" style={styles.card}>
           <Text style={styles.cardTitle}>
-            {pendingVerification 
-              ? 'Verify Email' 
-              : isSignUpMode ? 'Create Account' : 'Welcome Back'}
+            {isForgotPasswordMode 
+              ? 'Reset Password' 
+              : pendingVerification 
+                ? 'Verify Email' 
+                : isSignUpMode ? 'Create Account' : 'Welcome Back'}
           </Text>
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          {pendingVerification ? (
+          {isForgotPasswordMode ? (
+            forgotPasswordStep === 1 ? (
+              <View>
+                <Text style={styles.infoText}>
+                  Enter your email address to receive a password reset verification code.
+                </Text>
+                <BrutalInput
+                  label="Email Address"
+                  placeholder="yourname@example.com"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+                {loading ? (
+                  <ActivityIndicator size="large" color={Colors.primary} style={{ marginVertical: 15 }} />
+                ) : (
+                  <BrutalButton
+                    title="Send Reset Code"
+                    variant="accent"
+                    onPress={handleForgotPasswordRequest}
+                  />
+                )}
+                <Pressable 
+                  onPress={() => {
+                    setIsForgotPasswordMode(false);
+                    setError('');
+                  }}
+                  style={styles.toggleMode}
+                >
+                  <Text style={styles.toggleText}>Back to Sign In</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <View>
+                <Text style={styles.infoText}>
+                  Enter the code sent to your email and select your new password.
+                </Text>
+                <BrutalInput
+                  label="Reset Code"
+                  placeholder="123456"
+                  value={resetCode}
+                  onChangeText={setResetCode}
+                  keyboardType="number-pad"
+                />
+                <BrutalInput
+                  label="New Password"
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  secureTextEntry
+                />
+                {loading ? (
+                  <ActivityIndicator size="large" color={Colors.primary} style={{ marginVertical: 15 }} />
+                ) : (
+                  <BrutalButton
+                    title="Reset Password"
+                    variant="accent"
+                    onPress={handleForgotPasswordReset}
+                  />
+                )}
+                <Pressable 
+                  onPress={() => {
+                    setForgotPasswordStep(1);
+                    setError('');
+                  }}
+                  style={styles.toggleMode}
+                >
+                  <Text style={styles.toggleText}>Back to Email Entry</Text>
+                </Pressable>
+              </View>
+            )
+          ) : pendingVerification ? (
             <View>
               <Text style={styles.infoText}>
                 We sent a verification code to your email. Enter it below.
@@ -212,6 +339,19 @@ export default function LoginScreen() {
                 onChangeText={setPassword}
                 secureTextEntry
               />
+
+              {!isSignUpMode && (
+                <Pressable 
+                  onPress={() => {
+                    setIsForgotPasswordMode(true);
+                    setForgotPasswordStep(1);
+                    setError('');
+                  }}
+                  style={styles.forgotPasswordLink}
+                >
+                  <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                </Pressable>
+              )}
 
               {loading ? (
                 <ActivityIndicator size="large" color={Colors.primary} style={{ marginVertical: 15 }} />
@@ -380,5 +520,17 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textTransform: 'uppercase',
     letterSpacing: 1.2,
+  },
+  forgotPasswordLink: {
+    alignSelf: 'flex-end',
+    marginTop: -4,
+    marginBottom: 16,
+  },
+  forgotPasswordText: {
+    color: '#a1a1aa',
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    textDecorationLine: 'underline',
   },
 });

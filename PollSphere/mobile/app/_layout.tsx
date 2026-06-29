@@ -75,7 +75,7 @@ function NavigationWrapper() {
         router.replace('/login');
       }
     }
-  }, [isLoaded]);
+  }, [isLoaded, isSignedIn]);
 
   return (
     <Stack>
