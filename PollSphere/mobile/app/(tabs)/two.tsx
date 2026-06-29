@@ -30,26 +30,27 @@ export default function CreatePollScreen() {
   const [questionText, setQuestionText] = useState('');
   const [isMandatory, setIsMandatory] = useState(true);
   const [allowMultiple, setAllowMultiple] = useState(false);
-  const [options, setOptions] = useState<string[]>(['', '']); // Default 2 options
+  const [options, setOptions] = useState<{ id: string; text: string }[]>([
+    { id: '1', text: '' },
+    { id: '2', text: '' }
+  ]);
 
   const [loading, setLoading] = useState(false);
 
-  const handleOptionChange = (text: string, index: number) => {
-    const updated = [...options];
-    updated[index] = text;
-    setOptions(updated);
+  const handleOptionChange = (text: string, id: string) => {
+    setOptions(options.map(opt => opt.id === id ? { ...opt, text } : opt));
   };
 
   const addOptionField = () => {
-    setOptions([...options, '']);
+    setOptions([...options, { id: Math.random().toString(), text: '' }]);
   };
 
-  const removeOptionField = (index: number) => {
+  const removeOptionField = (id: string) => {
     if (options.length <= 2) {
       Alert.alert('Error', 'A question must have at least 2 options');
       return;
     }
-    setOptions(options.filter((_, idx) => idx !== index));
+    setOptions(options.filter(opt => opt.id !== id));
   };
 
   const handleCreatePoll = async () => {
@@ -65,7 +66,7 @@ export default function CreatePollScreen() {
       return;
     }
     
-    const validOptions = options.filter(opt => opt.trim().length > 0);
+    const validOptions = options.map(o => o.text).filter(opt => opt.trim().length > 0);
     if (validOptions.length < 2) {
       Alert.alert('Validation Error', 'Please fill in at least 2 options for the question');
       return;
@@ -124,7 +125,10 @@ export default function CreatePollScreen() {
       setTitle('');
       setDescription('');
       setQuestionText('');
-      setOptions(['', '']);
+      setOptions([
+        { id: '1', text: '' },
+        { id: '2', text: '' }
+      ]);
       
       router.push('/(tabs)');
     } catch (err: any) {
@@ -237,20 +241,19 @@ export default function CreatePollScreen() {
               />
             </View>
 
-            {/* Options list */}
             <Text style={styles.inputLabel}>Choices</Text>
             {options.map((opt, idx) => (
-              <View key={idx} style={styles.optionInputRow}>
+              <View key={opt.id} style={styles.optionInputRow}>
                 <BrutalInput
                   placeholder={`Option ${idx + 1}`}
-                  value={opt}
-                  onChangeText={(text) => handleOptionChange(text, idx)}
+                  value={opt.text}
+                  onChangeText={(text) => handleOptionChange(text, opt.id)}
                   style={styles.optionInput}
                 />
                 <BrutalButton
                   title="X"
                   variant="destructive"
-                  onPress={() => removeOptionField(idx)}
+                  onPress={() => removeOptionField(opt.id)}
                   style={styles.optionDeleteBtn}
                   textStyle={styles.optionDeleteBtnText}
                 />

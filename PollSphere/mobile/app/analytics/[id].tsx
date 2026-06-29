@@ -224,7 +224,7 @@ export default function PollAnalyticsScreen() {
           let cumulativePercentage = 0;
 
           return (
-            <BrutalCard key={q._id} variant="default" style={styles.chartCard}>
+            <BrutalCard key={q.questionId} variant="default" style={styles.chartCard}>
               <Text style={styles.chartCardTitle}>Q{qIdx + 1}. Option Distribution</Text>
               
               <View style={styles.donutWrapper}>

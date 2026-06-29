@@ -3,7 +3,7 @@ import { Platform, Pressable, View } from 'react-native';
 import { Colors } from '../../constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
-import { BarChart3, PlusSquare } from 'lucide-react-native';
+import { BarChart3, PlusSquare, CheckSquare } from 'lucide-react-native';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -40,6 +40,15 @@ export default function TabLayout() {
           title: 'Polls',
           tabBarIcon: ({ color }) => (
             <BarChart3 size={22} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="three"
+        options={{
+          title: 'Vote',
+          tabBarIcon: ({ color }) => (
+            <CheckSquare size={22} color={color} />
           ),
         }}
       />
