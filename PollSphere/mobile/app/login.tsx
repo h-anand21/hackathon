@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Pressable
 } from 'react-native';
-import { useSignIn, useSignUp, useClerk, useAuth } from '@clerk/expo';
+import { useSignIn, useSignUp } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { BrutalCard, BrutalButton, BrutalInput } from '../components/Brutal';
 import { Colors } from '../constants/Theme';
@@ -21,9 +21,7 @@ const ShieldIcon = Shield as any;
 const BarChartIcon = BarChart3 as any;
 
 export default function LoginScreen() {
-  const clerk = useClerk();
-  const { isLoaded } = useAuth();
-  const { signIn } = useSignIn() as any;
+  const { signIn, setActive, isLoaded } = useSignIn() as any;
   const { signUp } = useSignUp() as any;
   const router = useRouter();
 
@@ -53,7 +51,7 @@ export default function LoginScreen() {
         password,
       });
 
-      await clerk.setActive({ session: completeSignIn.createdSessionId });
+      await setActive({ session: completeSignIn.createdSessionId });
       router.replace('/(tabs)');
     } catch (err: any) {
       console.error(err);
@@ -105,7 +103,7 @@ export default function LoginScreen() {
       });
 
       if (completeSignUp.status === 'complete') {
-        await clerk.setActive({ session: completeSignUp.createdSessionId });
+        await setActive({ session: completeSignUp.createdSessionId });
         router.replace('/(tabs)');
       } else {
         setError('Verification status incomplete. Please try again.');

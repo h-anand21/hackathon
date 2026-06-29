@@ -10,7 +10,7 @@ import {
   Alert,
   SafeAreaView
 } from 'react-native';
-import { useAuth } from '@clerk/expo';
+import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { BrutalCard, BrutalButton, BrutalInput } from '../../components/Brutal';
 import { Colors } from '../../constants/Theme';

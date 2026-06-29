@@ -43,7 +43,7 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
-import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/expo';
+import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { tokenCache } from '../utils/tokenCache';
 

@@ -10,7 +10,7 @@ import {
   Alert
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useAuth } from '@clerk/expo';
+import { useAuth } from '@clerk/clerk-expo';
 import { BrutalCard, BrutalButton } from '../../components/Brutal';
 import { Colors } from '../../constants/Theme';
 import { api } from '../../utils/api';
