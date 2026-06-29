@@ -141,7 +141,7 @@ export const BrutalButton: React.FC<BrutalButtonProps> = ({
 
 interface BrutalInputProps extends TextInputProps {
   label?: string;
-  style?: ViewStyle;
+  style?: TextStyle;
 }
 
 export const BrutalInput: React.FC<BrutalInputProps> = ({ label, style, ...props }) => {
