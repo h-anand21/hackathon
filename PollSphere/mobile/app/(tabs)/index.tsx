@@ -9,14 +9,17 @@ import {
   Platform,
   RefreshControl,
   Share,
-  Alert
+  Alert,
+  Pressable
 } from 'react-native';
 import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { BrutalCard, BrutalButton, BrutalInput } from '../../components/Brutal';
 import { Colors } from '../../constants/Theme';
 import { api, setAuthToken } from '../../utils/api';
-import { Search, LogOut, Plus, RefreshCw, BarChart2 } from 'lucide-react-native';
+import { Search, LogOut, Plus, RefreshCw, BarChart2, Trash2 } from 'lucide-react-native';
+
+const TrashIcon = Trash2 as any;
 
 export default function DashboardScreen() {
   const { isLoaded, userId, getToken, signOut } = useAuth();
@@ -90,6 +93,36 @@ export default function DashboardScreen() {
     router.replace('/login');
   };
 
+  const handleDeletePoll = async (pollId: string, title: string) => {
+    Alert.alert(
+      'Delete Poll Campaign',
+      `Are you sure you want to delete "${title}" permanently? This action cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete Permanently', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await getToken();
+              setAuthToken(token);
+              const res = await api.delete(`/polls/${pollId}`);
+              if (res.data.success) {
+                Alert.alert('Success', 'Campaign deleted successfully.');
+                setPolls(prev => prev.filter(p => p._id !== pollId));
+              } else {
+                Alert.alert('Error', 'Failed to delete poll.');
+              }
+            } catch (err) {
+              console.error(err);
+              Alert.alert('Error', 'An error occurred while deleting.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -109,24 +142,26 @@ export default function DashboardScreen() {
           )}
         </View>
 
-        {/* Guest Search bar */}
-        <BrutalCard variant="accent" style={styles.searchCard}>
-          <Text style={styles.searchTitle}>Join A Poll Room</Text>
-          <View style={styles.searchRow}>
-            <BrutalInput
-              placeholder="Paste Poll ID here..."
-              value={searchPollId}
-              onChangeText={setSearchPollId}
-              style={styles.searchInput}
-            />
-            <BrutalButton
-              title="Go"
-              variant="primary"
-              onPress={handleSearchPoll}
-              style={styles.searchBtn}
-            />
-          </View>
-        </BrutalCard>
+        {/* Guest Search bar - ONLY show for guest users */}
+        {!userId && (
+          <BrutalCard variant="accent" style={styles.searchCard}>
+            <Text style={styles.searchTitle}>Join A Poll Room</Text>
+            <View style={styles.searchRow}>
+              <BrutalInput
+                placeholder="Paste Poll ID here..."
+                value={searchPollId}
+                onChangeText={setSearchPollId}
+                style={styles.searchInput}
+              />
+              <BrutalButton
+                title="Go"
+                variant="primary"
+                onPress={handleSearchPoll}
+                style={styles.searchBtn}
+              />
+            </View>
+          </BrutalCard>
+        )}
 
         {/* User's Polls Title */}
         {userId && (
@@ -188,9 +223,20 @@ export default function DashboardScreen() {
                     ]}>
                       {item.status}
                     </Text>
-                    <Text style={styles.dateText}>
-                      {new Date(item.createdAt).toLocaleDateString()}
-                    </Text>
+                    <View style={styles.rightBadgeRow}>
+                      <Text style={styles.dateText}>
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </Text>
+                      <Pressable 
+                        onPress={() => handleDeletePoll(item._id, item.title)}
+                        style={({ pressed }) => [
+                          styles.deleteIconBtn,
+                          pressed && { opacity: 0.6 }
+                        ]}
+                      >
+                        <TrashIcon size={16} color={Colors.destructive} />
+                      </Pressable>
+                    </View>
                   </View>
 
                   <Text style={styles.pollTitle}>{item.title}</Text>
@@ -235,9 +281,15 @@ export default function DashboardScreen() {
 
 // Icon helper
 const PressableIcon = ({ icon: Icon, onPress }: { icon: any, onPress: () => void }) => (
-  <View style={styles.iconContainer}>
-    <Icon size={20} color="#ffffff" onPress={onPress} />
-  </View>
+  <Pressable 
+    onPress={onPress} 
+    style={({ pressed }) => [
+      styles.iconContainer,
+      pressed && { opacity: 0.7, transform: [{ scale: 0.95 }] }
+    ]}
+  >
+    <Icon size={20} color="#ffffff" />
+  </Pressable>
 );
 
 const styles = StyleSheet.create({
@@ -325,6 +377,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  rightBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  deleteIconBtn: {
+    marginLeft: 6,
+    padding: 4,
   },
   statusBadge: {
     fontFamily: 'SpaceMono',
