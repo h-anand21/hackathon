@@ -19,6 +19,8 @@ export const api = axios.create({
   },
 });
 
+console.log('Mobile App API URL Loaded:', getBaseUrl());
+
 export const setAuthToken = (token: string | null) => {
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
