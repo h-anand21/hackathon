@@ -54,7 +54,7 @@ export default function PollVotingScreen() {
           
           // If poll is already expired or published, redirect directly to results
           if (pollData.status === 'published' || pollData.status === 'expired') {
-            router.replace(`/analytics/${id}` as any);
+            router.replace(`/published/${id}` as any);
             return;
           }
           
@@ -124,7 +124,7 @@ export default function PollVotingScreen() {
 
       if (res.data.success) {
         Alert.alert('Success', 'Vote submitted successfully!', [
-          { text: 'View Results', onPress: () => router.replace(`/analytics/${id}` as any) }
+          { text: 'View Results', onPress: () => router.replace(`/published/${id}` as any) }
         ]);
       }
     } catch (err: any) {

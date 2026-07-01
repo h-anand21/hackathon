@@ -83,6 +83,7 @@ function NavigationWrapper() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="poll/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="analytics/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="published/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
     </Stack>
   );

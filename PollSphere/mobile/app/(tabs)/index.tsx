@@ -279,7 +279,7 @@ export default function DashboardScreen() {
                         variant="primary"
                         onPress={() => {
                           if (item.status === 'published') {
-                            router.push(`/analytics/${item._id}` as any);
+                            router.push(`/published/${item._id}` as any);
                           } else {
                             router.push(`/poll/${item._id}` as any);
                           }
