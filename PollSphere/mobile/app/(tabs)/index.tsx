@@ -269,24 +269,50 @@ export default function DashboardScreen() {
                     <BrutalButton
                       title="Stats"
                       variant="default"
-                      onPress={() => router.push(`/analytics/${item._id}`)}
+                      onPress={() => router.push(`/analytics/${item._id}` as any)}
                       style={styles.cardActionBtn}
                       textStyle={styles.cardActionBtnText}
                     />
-                    <BrutalButton
-                      title="Vote"
-                      variant="primary"
-                      onPress={() => router.push(`/poll/${item._id}`)}
-                      style={styles.cardActionBtn}
-                      textStyle={styles.cardActionBtnText}
-                    />
-                    <BrutalButton
-                      title="Share"
-                      variant="accent"
-                      onPress={() => handleShare(item._id, item.title)}
-                      style={styles.cardActionBtn}
-                      textStyle={styles.cardActionBtnText}
-                    />
+                    {item.status !== 'draft' ? (
+                      <BrutalButton
+                        title={item.status === 'published' ? "Final Results" : "Vote Now"}
+                        variant="primary"
+                        onPress={() => {
+                          if (item.status === 'published') {
+                            router.push(`/analytics/${item._id}` as any);
+                          } else {
+                            router.push(`/poll/${item._id}` as any);
+                          }
+                        }}
+                        style={styles.cardActionBtn}
+                        textStyle={styles.cardActionBtnText}
+                      />
+                    ) : (
+                      <BrutalButton
+                        title="Pending"
+                        variant="default"
+                        disabled
+                        style={StyleSheet.flatten([styles.cardActionBtn, { opacity: 0.5 }])}
+                        textStyle={styles.cardActionBtnText}
+                      />
+                    )}
+                    {item.status !== 'draft' ? (
+                      <BrutalButton
+                        title="Share"
+                        variant="accent"
+                        onPress={() => handleShare(item._id, item.title)}
+                        style={styles.cardActionBtn}
+                        textStyle={styles.cardActionBtnText}
+                      />
+                    ) : (
+                      <BrutalButton
+                        title="Share"
+                        variant="accent"
+                        disabled
+                        style={StyleSheet.flatten([styles.cardActionBtn, { opacity: 0.5 }])}
+                        textStyle={styles.cardActionBtnText}
+                      />
+                    )}
                   </View>
                 </BrutalCard>
               );

@@ -83,8 +83,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const isDark = mode === 'dark';
   const colors = isDark ? DarkColors : LightColors;
 
-  if (!ready) return null;
-
   return (
     <ThemeContext.Provider value={{ mode, isDark, toggleTheme, colors }}>
       {children}

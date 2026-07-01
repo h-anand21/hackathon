@@ -153,15 +153,15 @@ export default function PollAnalyticsScreen() {
 
         {/* Response Summary Overview */}
         <BrutalCard variant="default">
-          <Text style={styles.sectionTitle}>Response Summary</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground, borderBottomColor: colors.border }]}>Response Summary</Text>
           
           {analytics.questions.map((q: any) => {
             return (
               <View key={q.questionId} style={styles.summaryQuestionBlock}>
-                <Text style={styles.summaryQuestionText}>{q.text}</Text>
+                <Text style={[styles.summaryQuestionText, { color: colors.foreground }]}>{q.text}</Text>
                 
                 {/* Horizontal cumulative bar */}
-                <View style={styles.barContainer}>
+                <View style={[styles.barContainer, { borderColor: colors.border, backgroundColor: colors.muted }]}>
                   {q.options.map((opt: any, optIdx: number) => {
                     const percentage = parseFloat(opt.percentage);
                     if (percentage === 0) return null;
@@ -189,7 +189,7 @@ export default function PollAnalyticsScreen() {
                     return (
                       <View key={opt.optionId} style={styles.legendItem}>
                         <View style={[styles.legendIndicator, { backgroundColor: color }]} />
-                        <Text style={styles.legendText}>
+                        <Text style={[styles.legendText, { color: colors.foreground }]}>
                           {opt.text} ({opt.percentage}%)
                         </Text>
                       </View>
@@ -204,17 +204,17 @@ export default function PollAnalyticsScreen() {
         {/* Live Tracking Cards */}
         <View style={styles.statsGrid}>
           <BrutalCard variant="default" style={styles.gridCard}>
-            <TrophyIcon size={20} color="#ffffff" style={styles.trophyIcon} />
-            <Text style={[styles.gridCardTitle, { color: '#ffffff' }]}>Crowd Fav</Text>
-            <Text style={[styles.gridCardValue, { color: Colors.primary }]} numberOfLines={1}>
+            <TrophyIcon size={20} color={colors.foreground} style={styles.trophyIcon} />
+            <Text style={[styles.gridCardTitle, { color: colors.foreground }]}>Crowd Fav</Text>
+            <Text style={[styles.gridCardValue, { color: colors.primary }]} numberOfLines={1}>
               {analytics.mostVotedOption?.text || 'N/A'}
             </Text>
           </BrutalCard>
 
           <BrutalCard variant="default" style={styles.gridCard}>
-            <UsersIcon size={20} color="#ffffff" style={styles.trophyIcon} />
-            <Text style={[styles.gridCardTitle, { color: '#ffffff' }]}>Active Now</Text>
-            <Text style={[styles.gridCardValue, { color: Colors.accent }]}>{activeUsers}</Text>
+            <UsersIcon size={20} color={colors.foreground} style={styles.trophyIcon} />
+            <Text style={[styles.gridCardTitle, { color: colors.foreground }]}>Active Now</Text>
+            <Text style={[styles.gridCardValue, { color: colors.accent }]}>{activeUsers}</Text>
           </BrutalCard>
         </View>
 
@@ -226,12 +226,12 @@ export default function PollAnalyticsScreen() {
 
           return (
             <BrutalCard key={q.questionId} variant="default" style={styles.chartCard}>
-              <Text style={styles.chartCardTitle}>Q{qIdx + 1}. Option Distribution</Text>
+              <Text style={[styles.chartCardTitle, { color: colors.foreground }]}>Q{qIdx + 1}. Option Distribution</Text>
               
               <View style={styles.donutWrapper}>
                 {totalVotes === 0 ? (
-                  <View style={styles.noVotesBox}>
-                    <Text style={styles.noVotesText}>No votes recorded yet</Text>
+                  <View style={[styles.noVotesBox, { borderColor: colors.border }]}>
+                    <Text style={[styles.noVotesText, { color: colors.mutedForeground }]}>No votes recorded yet</Text>
                   </View>
                 ) : (
                   <Svg width={180} height={180} viewBox="0 0 120 120">
@@ -264,13 +264,13 @@ export default function PollAnalyticsScreen() {
                       })}
                     </G>
                     {/* Inner Label */}
-                    <Circle cx="60" cy="60" r="28" fill="#09090b" stroke="#ffffff" strokeWidth="1" />
+                    <Circle cx="60" cy="60" r="28" fill={colors.card} stroke={colors.border} strokeWidth="1" />
                   </Svg>
                 )}
 
                 <View style={styles.donutTextContainer}>
-                  <Text style={styles.donutTextSub}>Total</Text>
-                  <Text style={styles.donutTextMain}>{totalVotes}</Text>
+                  <Text style={[styles.donutTextSub, { color: colors.mutedForeground }]}>Total</Text>
+                  <Text style={[styles.donutTextMain, { color: colors.foreground }]}>{totalVotes}</Text>
                 </View>
               </View>
 
@@ -279,12 +279,12 @@ export default function PollAnalyticsScreen() {
                 {q.options.map((opt: any, optIdx: number) => {
                   const color = Colors.chartColors[optIdx % Colors.chartColors.length];
                   return (
-                    <View key={opt.optionId} style={styles.detailsRow}>
+                    <View key={opt.optionId} style={[styles.detailsRow, { borderBottomColor: colors.muted }]}>
                       <View style={styles.detailsLeft}>
                         <View style={[styles.legendIndicator, { backgroundColor: color }]} />
-                        <Text style={styles.detailsName}>{opt.text}</Text>
+                        <Text style={[styles.detailsName, { color: colors.foreground }]}>{opt.text}</Text>
                       </View>
-                      <Text style={styles.detailsCount}>{opt.voteCount} Votes</Text>
+                      <Text style={[styles.detailsCount, { color: colors.foreground }]}>{opt.voteCount} Votes</Text>
                     </View>
                   );
                 })}
