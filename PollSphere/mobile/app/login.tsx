@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -7,23 +7,209 @@ import {
   KeyboardAvoidingView, 
   Platform, 
   ActivityIndicator,
-  Pressable
+  Pressable,
+  Animated,
+  Easing
 } from 'react-native';
 import { useSignIn, useSignUp } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { BrutalCard, BrutalButton, BrutalInput } from '../components/Brutal';
 import { Colors } from '../constants/Theme';
 import { setAuthToken } from '../utils/api';
-import { Zap, Shield, BarChart3 } from 'lucide-react-native';
+import { Zap, Shield, BarChart3, Users, Trophy, ArrowRight, Plus } from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ZapIcon = Zap as any;
 const ShieldIcon = Shield as any;
 const BarChartIcon = BarChart3 as any;
+const UsersIcon = Users as any;
+const TrophyIcon = Trophy as any;
+const ArrowRightIcon = ArrowRight as any;
+const PlusIcon = Plus as any;
+
+// --- Animation Components for 6 Onboarding Screens ---
+const LiveSocketsAnim = () => {
+  const scale = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scale, { toValue: 1.3, duration: 800, useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 1, duration: 800, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+  return (
+    <View style={animStyles.center}>
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <ZapIcon size={48} color="#2dd4bf" />
+      </Animated.View>
+    </View>
+  );
+};
+
+const SpamShieldAnim = () => {
+  const opacity = useRef(new Animated.Value(0.4)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 1, duration: 1000, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.4, duration: 1000, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+  return (
+    <View style={animStyles.center}>
+      <Animated.View style={{ opacity }}>
+        <ShieldIcon size={48} color="#fbbf24" />
+      </Animated.View>
+    </View>
+  );
+};
+
+const AnalyticsChartAnim = () => {
+  const height1 = useRef(new Animated.Value(20)).current;
+  const height2 = useRef(new Animated.Value(40)).current;
+  const height3 = useRef(new Animated.Value(30)).current;
+  useEffect(() => {
+    const makeAnim = (val: Animated.Value, max: number) => {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.timing(val, { toValue: max, duration: 1000, useNativeDriver: false }),
+          Animated.timing(val, { toValue: 20, duration: 1000, useNativeDriver: false }),
+        ])
+      );
+    };
+    Animated.parallel([
+      makeAnim(height1, 60),
+      makeAnim(height2, 80),
+      makeAnim(height3, 70),
+    ]).start();
+  }, []);
+  return (
+    <View style={[animStyles.center, { flexDirection: 'row', alignItems: 'flex-end', gap: 10 }]}>
+      <Animated.View style={{ width: 12, height: height1, backgroundColor: '#60a5fa', borderRadius: 4 }} />
+      <Animated.View style={{ width: 12, height: height2, backgroundColor: '#c084fc', borderRadius: 4 }} />
+      <Animated.View style={{ width: 12, height: height3, backgroundColor: '#f43f5e', borderRadius: 4 }} />
+    </View>
+  );
+};
+
+const ResponseModesAnim = () => {
+  const posX = useRef(new Animated.Value(-30)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(posX, { toValue: 30, duration: 1200, useNativeDriver: true }),
+        Animated.timing(posX, { toValue: -30, duration: 1200, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+  return (
+    <View style={animStyles.center}>
+      <Animated.View style={{ transform: [{ translateX: posX }] }}>
+        <UsersIcon size={48} color="#34d399" />
+      </Animated.View>
+    </View>
+  );
+};
+
+const CampaignWizardAnim = () => {
+  const rotate = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(rotate, { toValue: 1, duration: 1000, useNativeDriver: true }),
+        Animated.timing(rotate, { toValue: 0, duration: 1000, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+  const spin = rotate.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['-25deg', '25deg']
+  });
+  return (
+    <View style={animStyles.center}>
+      <Animated.View style={{ transform: [{ rotate: spin }] }}>
+        <PlusIcon size={48} color="#f472b6" />
+      </Animated.View>
+    </View>
+  );
+};
+
+const TrophyInsightsAnim = () => {
+  const posY = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(posY, { toValue: -15, duration: 600, useNativeDriver: true }),
+        Animated.timing(posY, { toValue: 0, duration: 600, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+  return (
+    <View style={animStyles.center}>
+      <Animated.View style={{ transform: [{ translateY: posY }] }}>
+        <TrophyIcon size={48} color="#fbbf24" />
+      </Animated.View>
+    </View>
+  );
+};
+
+const animStyles = StyleSheet.create({
+  center: {
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  }
+});
 
 export default function LoginScreen() {
   const { signIn, setActive, isLoaded } = useSignIn() as any;
   const { signUp } = useSignUp() as any;
   const router = useRouter();
+
+  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const onboardingSlides = [
+    {
+      title: "Real-time Sockets",
+      desc: "Live voting progress updates with zero latency. Watch options tick dynamically.",
+      renderAnim: () => <LiveSocketsAnim />,
+      color: '#115e59',
+    },
+    {
+      title: "Secure Verification",
+      desc: "Prevent spam voting using strict IP gating and Clerk authentication controls.",
+      renderAnim: () => <SpamShieldAnim />,
+      color: '#78350f',
+    },
+    {
+      title: "Deep Analytics",
+      desc: "Premium donut charts and distribution visualizers responsive on all phone screens.",
+      renderAnim: () => <AnalyticsChartAnim />,
+      color: '#1e3a8a',
+    },
+    {
+      title: "Flexible Access",
+      desc: "Run completely anonymous voting rooms or Clerk-authenticated secure polls.",
+      renderAnim: () => <ResponseModesAnim />,
+      color: '#064e3b',
+    },
+    {
+      title: "Campaign Wizard",
+      desc: "Draft campaigns, define questions, and publish customized choices in 60 seconds.",
+      renderAnim: () => <CampaignWizardAnim />,
+      color: '#831843',
+    },
+    {
+      title: "Peak Insights",
+      desc: "Live trends, total votes, and real-time winner highlights visualised cleanly.",
+      renderAnim: () => <TrophyInsightsAnim />,
+      color: '#701a75',
+    },
+  ];
 
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
@@ -174,43 +360,74 @@ export default function LoginScreen() {
     router.replace('/(tabs)');
   };
 
+  if (showOnboarding) {
+    const slide = onboardingSlides[currentSlide];
+    return (
+      <SafeAreaView style={styles.onboardingContainer}>
+        <View style={styles.onboardingWrapper}>
+          {/* Logo Header */}
+          <View style={styles.header}>
+            <Text style={styles.logo}>📊 PollSphere</Text>
+            <Text style={styles.subtitle}>Real-time feedback & polling platform</Text>
+          </View>
+
+          {/* Onboarding Slide Card */}
+          <BrutalCard variant="default" style={StyleSheet.flatten([styles.onboardingCard, { backgroundColor: slide.color }])}>
+            {slide.renderAnim()}
+            <Text style={styles.slideTitle}>{slide.title}</Text>
+            <Text style={styles.slideDesc}>{slide.desc}</Text>
+          </BrutalCard>
+
+          {/* Dot Indicators */}
+          <View style={styles.dotRow}>
+            {onboardingSlides.map((_, idx) => (
+              <View 
+                key={idx} 
+                style={[
+                  styles.dot, 
+                  idx === currentSlide ? styles.dotActive : styles.dotInactive
+                ]} 
+              />
+            ))}
+          </View>
+
+          {/* Controls */}
+          <View style={styles.onboardingControls}>
+            <Pressable 
+              onPress={() => setShowOnboarding(false)} 
+              style={styles.skipBtn}
+            >
+              <Text style={styles.skipText}>Skip</Text>
+            </Pressable>
+
+            <BrutalButton
+              title={currentSlide === 5 ? "Get Started" : "Next"}
+              variant="primary"
+              onPress={() => {
+                if (currentSlide < 5) {
+                  setCurrentSlide(currentSlide + 1);
+                } else {
+                  setShowOnboarding(false);
+                }
+              }}
+              style={styles.nextBtn}
+            />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Onboarding Hero Header */}
+        {/* Logo Header */}
         <View style={styles.header}>
           <Text style={styles.logo}>📊 PollSphere</Text>
           <Text style={styles.subtitle}>Real-time feedback & polling platform</Text>
-        </View>
-
-        {/* Feature Cards mimicking Web Landing page */}
-        <View style={styles.featuresContainer}>
-          <View style={[styles.miniFeatureCard, { backgroundColor: '#115e59' }]}>
-            <ZapIcon size={20} color="#2dd4bf" />
-            <View style={styles.featureTextWrapper}>
-              <Text style={styles.featureTitle}>Real-time Sockets</Text>
-              <Text style={styles.featureDesc}>Live voting progress updates with zero latency.</Text>
-            </View>
-          </View>
-
-          <View style={[styles.miniFeatureCard, { backgroundColor: '#78350f' }]}>
-            <ShieldIcon size={20} color="#fbbf24" />
-            <View style={styles.featureTextWrapper}>
-              <Text style={styles.featureTitle}>Secure Voting</Text>
-              <Text style={styles.featureDesc}>Prevent spam with strict IP and Clerk auth guards.</Text>
-            </View>
-          </View>
-
-          <View style={[styles.miniFeatureCard, { backgroundColor: '#1e3a8a' }]}>
-            <BarChartIcon size={20} color="#60a5fa" />
-            <View style={styles.featureTextWrapper}>
-              <Text style={styles.featureTitle}>Deep Analytics</Text>
-              <Text style={styles.featureDesc}>Interactive dashboards and charts on-the-go.</Text>
-            </View>
-          </View>
         </View>
 
         {/* Interactive Login/Signup Card */}
@@ -532,5 +749,77 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '900',
     textDecorationLine: 'underline',
+  },
+  onboardingContainer: {
+    flex: 1,
+    backgroundColor: '#09090b',
+  },
+  onboardingWrapper: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+  },
+  onboardingCard: {
+    padding: 24,
+    minHeight: 320,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  slideTitle: {
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    fontSize: 22,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  slideDesc: {
+    color: '#f4f4f5',
+    fontSize: 14,
+    lineHeight: 22,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  dotRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 32,
+  },
+  dot: {
+    height: 8,
+    borderRadius: 4,
+  },
+  dotActive: {
+    width: 24,
+    backgroundColor: '#ffffff',
+  },
+  dotInactive: {
+    width: 8,
+    backgroundColor: '#3f3f46',
+  },
+  onboardingControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+  },
+  skipBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  skipText: {
+    color: '#a1a1aa',
+    fontFamily: 'SpaceMono',
+    fontWeight: '900',
+    fontSize: 16,
+    textTransform: 'uppercase',
+    textDecorationLine: 'underline',
+  },
+  nextBtn: {
+    minWidth: 140,
   },
 });
