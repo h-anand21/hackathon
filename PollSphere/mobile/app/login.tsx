@@ -909,7 +909,7 @@ export default function LoginScreen() {
   if (showOnboarding) {
     const slide = onboardingSlides[currentSlide];
     return (
-      <SafeAreaView style={styles.onboardingContainer}>
+      <SafeAreaView style={styles.onboardingContainer} edges={['top', 'bottom', 'left', 'right']}>
         <View style={styles.onboardingWrapper}>
           {/* Header Row with Logo and Skip button at top-right */}
           <View style={styles.onboardingHeaderRow}>
@@ -973,10 +973,21 @@ export default function LoginScreen() {
             <Text style={styles.slideDescText}>{slide.desc}</Text>
           </View>
 
-          {/* Controls with centered full-width next button */}
-          <View style={styles.onboardingControlsCentered}>
+          {/* Controls with Back and Next buttons */}
+          <View style={styles.onboardingControlsRow}>
+            {currentSlide > 0 ? (
+              <BrutalButton
+                title="← Back"
+                variant="accent"
+                onPress={() => {
+                  setCurrentSlide(currentSlide - 1);
+                }}
+                style={styles.backBtnOnboarding}
+              />
+            ) : null}
+
             <BrutalButton
-              title={currentSlide === 5 ? "Get Started 🚀" : "Next Slide →"}
+              title={currentSlide === 5 ? "Get Started 🚀" : "Next →"}
               variant="primary"
               onPress={() => {
                 if (currentSlide < 5) {
@@ -985,7 +996,7 @@ export default function LoginScreen() {
                   setShowOnboarding(false);
                 }
               }}
-              style={styles.fullNextBtn}
+              style={currentSlide > 0 ? styles.nextBtnWithBack : styles.fullNextBtn}
             />
           </View>
         </View>
@@ -1570,5 +1581,20 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontFamily: 'SpaceMono',
     letterSpacing: -1,
+  },
+  onboardingControlsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 12,
+  },
+  backBtnOnboarding: {
+    flex: 1,
+    borderColor: '#ffffff',
+    backgroundColor: '#18181b',
+  },
+  nextBtnWithBack: {
+    flex: 2,
   },
 });
