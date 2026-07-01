@@ -12,7 +12,7 @@ import {
   Easing,
   Image
 } from 'react-native';
-import { useSignIn, useSignUp } from '@clerk/clerk-expo';
+import { useSignIn, useSignUp, useOAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { BrutalCard, BrutalButton, BrutalInput } from '../components/Brutal';
 import { Colors } from '../constants/Theme';
@@ -21,6 +21,9 @@ import { Zap, Shield, BarChart3, Users, Trophy, ArrowRight, Plus } from 'lucide-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import { useTheme } from '../contexts/ThemeContext';
+import * as WebBrowser from 'expo-web-browser';
+
+WebBrowser.maybeCompleteAuthSession();
 
 const ONBOARDING_KEY = 'pollsphere_onboarding_done';
 
@@ -705,6 +708,7 @@ const animStyles = StyleSheet.create({
 export default function LoginScreen() {
   const { signIn, setActive, isLoaded } = useSignIn() as any;
   const { signUp } = useSignUp() as any;
+  const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
   const router = useRouter();
   const { colors } = useTheme();
 
@@ -796,6 +800,24 @@ export default function LoginScreen() {
       // ignore parse errors
     }
     return fallback;
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (!isLoaded) return;
+    setLoading(true);
+    setError('');
+    try {
+      const { createdSessionId, setActive: setOAuthActive } = await startOAuthFlow();
+      if (createdSessionId && setOAuthActive) {
+        await setOAuthActive({ session: createdSessionId });
+        router.replace('/(tabs)');
+      }
+    } catch (err: any) {
+      console.error('Google Sign In Error:', err);
+      setError(parseClerkError(err, 'Failed to sign in with Google'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignIn = async () => {
@@ -1195,13 +1217,20 @@ export default function LoginScreen() {
               )}
 
               {loading ? (
-                <ActivityIndicator size="large" color={Colors.primary} style={{ marginVertical: 15 }} />
+                <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: 15 }} />
               ) : (
-                <BrutalButton
-                  title={isSignUpMode ? 'Sign Up' : 'Sign In'}
-                  variant="primary"
-                  onPress={isSignUpMode ? handleSignUp : handleSignIn}
-                />
+                <View style={{ gap: 10 }}>
+                  <BrutalButton
+                    title={isSignUpMode ? 'Sign Up' : 'Sign In'}
+                    variant="primary"
+                    onPress={isSignUpMode ? handleSignUp : handleSignIn}
+                  />
+                  <BrutalButton
+                    title="Continue with Google"
+                    variant="accent"
+                    onPress={handleGoogleSignIn}
+                  />
+                </View>
               )}
 
               <Pressable 
