@@ -16,14 +16,16 @@ import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { BrutalCard, BrutalButton, BrutalInput } from '../../components/Brutal';
 import { Colors } from '../../constants/Theme';
-import { api, setAuthToken } from '../../utils/api';
+import { api, setAuthToken, initTokenGetter } from '../../utils/api';
 import { Search, LogOut, Plus, RefreshCw, BarChart2, Trash2 } from 'lucide-react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const TrashIcon = Trash2 as any;
 
 export default function DashboardScreen() {
   const { isLoaded, userId, getToken, signOut } = useAuth();
   const router = useRouter();
+  const { colors } = useTheme();
 
   const [polls, setPolls] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -32,6 +34,14 @@ export default function DashboardScreen() {
   
   // Search state for guest/direct voting
   const [searchPollId, setSearchPollId] = useState('');
+
+  // Wire up the axios interceptor with Clerk's getToken so every API
+  // request automatically carries a fresh JWT — no manual setAuthToken needed.
+  useEffect(() => {
+    if (isLoaded && getToken) {
+      initTokenGetter(getToken);
+    }
+  }, [isLoaded, getToken]);
 
   const fetchPolls = async (isRef = false) => {
     if (!userId) {
@@ -46,16 +56,14 @@ export default function DashboardScreen() {
     setError('');
 
     try {
-      const token = await getToken();
-      setAuthToken(token);
-
+      // Token is now injected automatically by the axios interceptor
       const res = await api.get('/polls');
       if (res.data.success) {
         setPolls(res.data.polls || []);
       }
     } catch (err: any) {
-      console.error(err);
-      setError('Failed to load polls. Pull to refresh.');
+      const msg = err?.response?.data?.error || 'Failed to load polls. Pull to refresh.';
+      setError(msg);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -134,13 +142,13 @@ export default function DashboardScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <View style={styles.container}>
         {/* App Title & Logout (if logged in) */}
         <View style={styles.header}>
-          <Text style={styles.title}>Dashboard</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>Dashboard</Text>
           {userId ? (
-            <PressableIcon icon={LogOut} onPress={handleLogout} />
+            <PressableIcon icon={LogOut} onPress={handleLogout} color={colors.foreground} />
           ) : (
             <BrutalButton 
               title="Sign In" 
@@ -176,16 +184,16 @@ export default function DashboardScreen() {
         {/* User's Polls Title */}
         {userId && (
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>My Poll Campaigns</Text>
-            <PressableIcon icon={RefreshCw} onPress={() => fetchPolls(true)} />
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>My Poll Campaigns</Text>
+            <PressableIcon icon={RefreshCw} onPress={() => fetchPolls(true)} color={colors.foreground} />
           </View>
         )}
 
         {/* Dynamic Polls list */}
         {!userId ? (
           <View style={styles.guestInfoContainer}>
-            <BarChart2 size={64} color={Colors.mutedForeground} />
-            <Text style={styles.guestInfoText}>
+            <BarChart2 size={64} color={colors.mutedForeground} />
+            <Text style={[styles.guestInfoText, { color: colors.mutedForeground }]}>
               You are currently browsing as a Guest. Sign in to create your own live polling rooms!
             </Text>
             <BrutalButton
@@ -195,18 +203,18 @@ export default function DashboardScreen() {
             />
           </View>
         ) : loading ? (
-          <ActivityIndicator size="large" color={Colors.primary} style={styles.loader} />
+          <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
         ) : error ? (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
+            <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
           </View>
         ) : polls.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No polls created yet.</Text>
+            <Text style={[styles.emptyText, { color: colors.foreground }]}>No polls created yet.</Text>
             <BrutalButton
               title="Create First Poll"
               variant="primary"
-              onPress={() => router.push('/(tabs)/two')} // Tab two is creation page
+              onPress={() => router.push('/(tabs)/two')}
             />
           </View>
         ) : (
@@ -218,7 +226,7 @@ export default function DashboardScreen() {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={() => fetchPolls(true)}
-                tintColor="#ffffff"
+                tintColor={colors.foreground}
               />
             }
             renderItem={({ item }) => {
@@ -227,14 +235,15 @@ export default function DashboardScreen() {
                   <View style={styles.badgeRow}>
                     <Text style={[
                       styles.statusBadge,
+                      { borderColor: colors.border, color: colors.foreground },
                       item.status === 'published' && styles.publishedBadge,
                       item.status === 'active' && styles.activeBadge,
-                      item.status === 'draft' && styles.draftBadge
+                      item.status === 'draft' && { backgroundColor: colors.muted, color: colors.mutedForeground, borderColor: colors.muted },
                     ]}>
                       {item.status}
                     </Text>
                     <View style={styles.rightBadgeRow}>
-                      <Text style={styles.dateText}>
+                      <Text style={[styles.dateText, { color: colors.mutedForeground }]}>
                         {new Date(item.createdAt).toLocaleDateString()}
                       </Text>
                       <Pressable 
@@ -244,14 +253,14 @@ export default function DashboardScreen() {
                           pressed && { opacity: 0.6 }
                         ]}
                       >
-                        <TrashIcon size={16} color={Colors.destructive} />
+                        <TrashIcon size={16} color={colors.destructive} />
                       </Pressable>
                     </View>
                   </View>
 
-                  <Text style={styles.pollTitle}>{item.title}</Text>
+                  <Text style={[styles.pollTitle, { color: colors.foreground }]}>{item.title}</Text>
                   {item.description ? (
-                    <Text style={styles.pollDesc} numberOfLines={2}>
+                    <Text style={[styles.pollDesc, { color: colors.mutedForeground }]} numberOfLines={2}>
                       {item.description}
                     </Text>
                   ) : null}
@@ -290,15 +299,16 @@ export default function DashboardScreen() {
 }
 
 // Icon helper
-const PressableIcon = ({ icon: Icon, onPress }: { icon: any, onPress: () => void }) => (
+const PressableIcon = ({ icon: Icon, onPress, color }: { icon: any, onPress: () => void, color: string }) => (
   <Pressable 
     onPress={onPress} 
     style={({ pressed }) => [
       styles.iconContainer,
+      { borderColor: color },
       pressed && { opacity: 0.7, transform: [{ scale: 0.95 }] }
     ]}
   >
-    <Icon size={20} color="#ffffff" />
+    <Icon size={20} color={color} />
   </Pressable>
 );
 

@@ -13,12 +13,14 @@ import { useRouter } from 'expo-router';
 import { BrutalCard, BrutalButton, BrutalInput } from '../../components/Brutal';
 import { Colors } from '../../constants/Theme';
 import { CheckSquare } from 'lucide-react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const CheckSquareIcon = CheckSquare as any;
 
 export default function VoteScreen() {
   const [pollId, setPollId] = useState('');
   const router = useRouter();
+  const { colors } = useTheme();
 
   const extractPollId = (input: string): string => {
     const trimmed = input.trim();
@@ -39,13 +41,13 @@ export default function VoteScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardContainer}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-          <Text style={styles.headerTitle}>Direct Voting</Text>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Direct Voting</Text>
 
           <BrutalCard variant="accent" style={styles.card}>
             <View style={styles.iconWrapper}>
@@ -59,7 +61,7 @@ export default function VoteScreen() {
 
             <BrutalInput
               label="Poll ID / Code"
-              placeholder="e.g., 609c12345e8..."
+              placeholder="e.g., 609c12345e..."
               value={pollId}
               onChangeText={setPollId}
               style={styles.inputField}

@@ -46,6 +46,7 @@ export default function RootLayout() {
 import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo';
 import { useRouter, useSegments } from 'expo-router';
 import { tokenCache } from '../utils/tokenCache';
+import { ThemeProvider as AppThemeProvider } from '../contexts/ThemeContext';
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_YnJpZ2h0LW9jdG9wdXMtNDIuY2xlcmsuYWNjb3VudHMuZGV2JA';
 
@@ -53,32 +54,40 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-      <ClerkLoaded>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <NavigationWrapper />
-        </ThemeProvider>
-      </ClerkLoaded>
-    </ClerkProvider>
+    <AppThemeProvider>
+      <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
+        <ClerkLoaded>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <NavigationWrapper />
+          </ThemeProvider>
+        </ClerkLoaded>
+      </ClerkProvider>
+    </AppThemeProvider>
   );
 }
+
+import { useRef } from 'react';
 
 function NavigationWrapper() {
   const { isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
   const segments = useSegments();
+  const hasHandled = useRef(false);
 
   useEffect(() => {
-    if (isLoaded) {
-      const inTabsGroup = segments[0] === '(tabs)';
+    if (!isLoaded) return;
 
-      if (isSignedIn && !inTabsGroup) {
-        router.replace('/(tabs)');
-      } else if (!isSignedIn && inTabsGroup) {
-        router.replace('/login');
-      }
+    const inTabsGroup = segments[0] === '(tabs)';
+    const inLoginScreen = segments[0] === 'login';
+
+    // Only redirect when on the wrong screen — avoids re-firing mid-transition
+    if (isSignedIn && inLoginScreen) {
+      router.replace('/(tabs)');
+    } else if (!isSignedIn && inTabsGroup) {
+      router.replace('/login');
     }
-  }, [isLoaded, isSignedIn, segments]);
+    // If already on the right screen, do nothing
+  }, [isLoaded, isSignedIn]); // ← segments intentionally excluded to prevent mid-transition flicker
 
   return (
     <Stack>

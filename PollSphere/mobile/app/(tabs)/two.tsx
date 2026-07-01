@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -14,12 +14,21 @@ import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { BrutalCard, BrutalButton, BrutalInput } from '../../components/Brutal';
 import { Colors } from '../../constants/Theme';
-import { api, setAuthToken } from '../../utils/api';
+import { api, initTokenGetter } from '../../utils/api';
 import { Lock, Plus, Trash } from 'lucide-react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function CreatePollScreen() {
   const { isLoaded, userId, getToken } = useAuth();
   const router = useRouter();
+  const { colors } = useTheme();
+
+  // Register Clerk's token getter with the axios interceptor
+  useEffect(() => {
+    if (isLoaded && getToken) {
+      initTokenGetter(getToken);
+    }
+  }, [isLoaded, getToken]);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -81,10 +90,7 @@ export default function CreatePollScreen() {
     setLoading(true);
 
     try {
-      const token = await getToken();
-      setAuthToken(token);
-
-      // 1. Create Poll in draft mode
+      // Token injected automatically by axios interceptor — no manual call needed
       const expiresAtDate = new Date();
       expiresAtDate.setHours(expiresAtDate.getHours() + hours);
 
@@ -141,11 +147,11 @@ export default function CreatePollScreen() {
 
   if (!userId) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <View style={styles.guestContainer}>
-          <Lock size={64} color={Colors.destructive} />
-          <Text style={styles.guestTextHeader}>Login Required</Text>
-          <Text style={styles.guestTextSub}>
+          <Lock size={64} color={colors.destructive} />
+          <Text style={[styles.guestTextHeader, { color: colors.foreground }]}>Login Required</Text>
+          <Text style={[styles.guestTextSub, { color: colors.mutedForeground }]}>
             Only authenticated creators can design and publish custom polls.
           </Text>
           <BrutalButton
@@ -159,13 +165,13 @@ export default function CreatePollScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardContainer}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-          <Text style={styles.headerTitle}>Create New Poll</Text>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Create New Poll</Text>
 
           {/* Section 1: Poll General Metadata */}
           <BrutalCard variant="default">

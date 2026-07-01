@@ -19,6 +19,10 @@ import { Colors } from '../constants/Theme';
 import { setAuthToken } from '../utils/api';
 import { Zap, Shield, BarChart3, Users, Trophy, ArrowRight, Plus } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as SecureStore from 'expo-secure-store';
+import { useTheme } from '../contexts/ThemeContext';
+
+const ONBOARDING_KEY = 'pollsphere_onboarding_done';
 
 const ZapIcon = Zap as any;
 const ShieldIcon = Shield as any;
@@ -702,9 +706,19 @@ export default function LoginScreen() {
   const { signIn, setActive, isLoaded } = useSignIn() as any;
   const { signUp } = useSignUp() as any;
   const router = useRouter();
+  const { colors } = useTheme();
 
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null); // null = loading
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Check if user has already seen onboarding before
+  useEffect(() => {
+    SecureStore.getItemAsync(ONBOARDING_KEY).then((val) => {
+      setShowOnboarding(val !== 'true'); // Show only if NOT done before
+    }).catch(() => {
+      setShowOnboarding(true); // On error, show onboarding
+    });
+  }, []);
 
   const onboardingSlides = [
     {
@@ -771,6 +785,19 @@ export default function LoginScreen() {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
 
+  // Safely extract a human-readable message from any Clerk error
+  const parseClerkError = (err: any, fallback: string): string => {
+    try {
+      if (err?.errors && Array.isArray(err.errors) && err.errors.length > 0) {
+        return err.errors[0]?.longMessage || err.errors[0]?.message || fallback;
+      }
+      if (typeof err?.message === 'string') return err.message;
+    } catch {
+      // ignore parse errors
+    }
+    return fallback;
+  };
+
   const handleSignIn = async () => {
     if (!isLoaded) return;
     if (!email || !password) {
@@ -790,8 +817,7 @@ export default function LoginScreen() {
       await setActive({ session: completeSignIn.createdSessionId });
       router.replace('/(tabs)');
     } catch (err: any) {
-      console.error(err);
-      setError(err.errors?.[0]?.longMessage || 'Invalid email or password');
+      setError(parseClerkError(err, 'Invalid email or password'));
     } finally {
       setLoading(false);
     }
@@ -816,8 +842,7 @@ export default function LoginScreen() {
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
       setPendingVerification(true);
     } catch (err: any) {
-      console.error(err);
-      setError(err.errors?.[0]?.longMessage || 'Failed to sign up');
+      setError(parseClerkError(err, 'Failed to sign up'));
     } finally {
       setLoading(false);
     }
@@ -845,8 +870,7 @@ export default function LoginScreen() {
         setError('Verification status incomplete. Please try again.');
       }
     } catch (err: any) {
-      console.error(err);
-      setError(err.errors?.[0]?.longMessage || 'Verification failed');
+      setError(parseClerkError(err, 'Verification failed'));
     } finally {
       setLoading(false);
     }
@@ -866,8 +890,7 @@ export default function LoginScreen() {
       });
       setForgotPasswordStep(2);
     } catch (err: any) {
-      console.error(err);
-      setError(err.errors?.[0]?.longMessage || 'Could not send verification code.');
+      setError(parseClerkError(err, 'Could not send verification code.'));
     } finally {
       setLoading(false);
     }
@@ -894,8 +917,7 @@ export default function LoginScreen() {
         setError('Failed to complete reset. Try again.');
       }
     } catch (err: any) {
-      console.error(err);
-      setError(err.errors?.[0]?.longMessage || 'Failed to reset password.');
+      setError(parseClerkError(err, 'Failed to reset password.'));
     } finally {
       setLoading(false);
     }
@@ -906,10 +928,15 @@ export default function LoginScreen() {
     router.replace('/(tabs)');
   };
 
+  // Still loading stored onboarding preference
+  if (showOnboarding === null) {
+    return null;
+  }
+
   if (showOnboarding) {
     const slide = onboardingSlides[currentSlide];
     return (
-      <SafeAreaView style={styles.onboardingContainer} edges={['top', 'bottom', 'left', 'right']}>
+      <SafeAreaView style={[styles.onboardingContainer, { backgroundColor: colors.background }]} edges={['top', 'bottom', 'left', 'right']}>
         <View style={styles.onboardingWrapper}>
           {/* Header Row with Logo and Skip button at top-right */}
           <View style={styles.onboardingHeaderRow}>
@@ -925,7 +952,10 @@ export default function LoginScreen() {
               <Text style={styles.subtitleMini}>Real-time polling</Text>
             </View>
             <Pressable 
-              onPress={() => setShowOnboarding(false)} 
+              onPress={() => {
+                SecureStore.setItemAsync(ONBOARDING_KEY, 'true');
+                setShowOnboarding(false);
+              }} 
               style={styles.topSkipBtn}
             >
               <Text style={styles.topSkipText}>Skip</Text>
@@ -982,6 +1012,7 @@ export default function LoginScreen() {
                 if (currentSlide < 5) {
                   setCurrentSlide(currentSlide + 1);
                 } else {
+                  SecureStore.setItemAsync(ONBOARDING_KEY, 'true');
                   setShowOnboarding(false);
                 }
               }}
@@ -1009,7 +1040,7 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Logo Header */}

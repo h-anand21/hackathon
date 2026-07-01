@@ -16,8 +16,8 @@ import { Colors } from '../../constants/Theme';
 import { api } from '../../utils/api';
 import { socket } from '../../utils/socket';
 import { Users, TrendingUp, Trophy, Activity, ArrowLeft } from 'lucide-react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 import Svg, { Circle, G } from 'react-native-svg';
-
 const UsersIcon = Users as any;
 const TrendingUpIcon = TrendingUp as any;
 const TrophyIcon = Trophy as any;
@@ -28,6 +28,7 @@ export default function PollAnalyticsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { isLoaded: isAuthLoaded, userId } = useAuth();
   const router = useRouter();
+  const { colors } = useTheme();
 
   const [data, setData] = useState<any>(null);
   const [activeUsers, setActiveUsers] = useState(0);
@@ -89,10 +90,10 @@ export default function PollAnalyticsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-          <Text style={styles.loadingText}>Fetching Live Stats...</Text>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.foreground }]}>Fetching Live Stats...</Text>
         </View>
       </SafeAreaView>
     );
@@ -100,10 +101,10 @@ export default function PollAnalyticsScreen() {
 
   if (error || !data) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <View style={styles.centerContainer}>
-          <Text style={styles.errorText}>Stats Locked</Text>
-          <Text style={styles.errorSub}>{error || 'Poll data is not public yet.'}</Text>
+          <Text style={[styles.errorText, { color: colors.foreground }]}>Stats Locked</Text>
+          <Text style={[styles.errorSub, { color: colors.mutedForeground }]}>{error || 'Poll data is not public yet.'}</Text>
           <BrutalButton
             title="Back to Dashboard"
             variant="default"
@@ -118,9 +119,9 @@ export default function PollAnalyticsScreen() {
   const analytics = data.analytics;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <BrutalButton
           title="< Exit"
           variant="default"
@@ -128,12 +129,12 @@ export default function PollAnalyticsScreen() {
           style={styles.backBtn}
           textStyle={styles.backBtnText}
         />
-        <Text style={styles.headerTitle}>Analytics Room</Text>
+        <Text style={[styles.headerTitle, { color: colors.foreground }]}>Analytics Room</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Title */}
-        <Text style={styles.pollTitle}>{poll.title}</Text>
+        <Text style={[styles.pollTitle, { color: colors.foreground }]}>{poll.title}</Text>
 
         {/* Global Reach Stats Grid */}
         <View style={styles.statsGrid}>

@@ -18,6 +18,7 @@ import { Colors } from '../../constants/Theme';
 import { api } from '../../utils/api';
 import { socket } from '../../utils/socket';
 import { Clock, AlertTriangle, CheckCircle, ArrowLeft, Lock } from 'lucide-react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const ClockIcon = Clock as any;
 const AlertTriangleIcon = AlertTriangle as any;
@@ -29,6 +30,7 @@ export default function PollVotingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { isLoaded: isAuthLoaded, userId, isSignedIn } = useAuth();
   const router = useRouter();
+  const { colors } = useTheme();
 
   const [poll, setPoll] = useState<any>(null);
   const [questions, setQuestions] = useState<any[]>([]);
@@ -137,10 +139,10 @@ export default function PollVotingScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-          <Text style={styles.loadingText}>Entering Poll Room...</Text>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.foreground }]}>Entering Poll Room...</Text>
         </View>
       </SafeAreaView>
     );
@@ -148,11 +150,11 @@ export default function PollVotingScreen() {
 
   if (error || !poll) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <View style={styles.centerContainer}>
-          <AlertTriangleIcon size={48} color={Colors.destructive} />
-          <Text style={styles.errorText}>Room Error</Text>
-          <Text style={styles.errorSub}>{error || 'Poll not found'}</Text>
+          <AlertTriangleIcon size={48} color={colors.destructive} />
+          <Text style={[styles.errorText, { color: colors.foreground }]}>Room Error</Text>
+          <Text style={[styles.errorSub, { color: colors.mutedForeground }]}>{error || 'Poll not found'}</Text>
           <BrutalButton
             title="Go back to Dashboard"
             variant="default"
@@ -163,14 +165,13 @@ export default function PollVotingScreen() {
     );
   }
 
-  // Authenticated Mode check
   if (poll.responseMode === 'authenticated' && isAuthLoaded && !isSignedIn) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <View style={styles.centerContainer}>
-          <LockIcon size={48} color={Colors.accent} />
-          <Text style={styles.errorText}>Login Required</Text>
-          <Text style={styles.errorSub}>
+          <LockIcon size={48} color={colors.accent} />
+          <Text style={[styles.errorText, { color: colors.foreground }]}>Login Required</Text>
+          <Text style={[styles.errorSub, { color: colors.mutedForeground }]}>
             The creator of this poll requires voters to sign in to participate.
           </Text>
           <BrutalButton
@@ -184,13 +185,13 @@ export default function PollVotingScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flexContainer}
       >
         {/* Simple Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <BrutalButton
             title="< Back"
             variant="default"
@@ -198,7 +199,7 @@ export default function PollVotingScreen() {
             style={styles.backBtn}
             textStyle={styles.backBtnText}
           />
-          <Text style={styles.headerTitle}>Voting Room</Text>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Voting Room</Text>
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
