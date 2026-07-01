@@ -28,129 +28,321 @@ const ArrowRightIcon = ArrowRight as any;
 const PlusIcon = Plus as any;
 
 // --- Animation Components for 6 Onboarding Screens ---
-const LiveSocketsAnim = () => {
-  const scale = useRef(new Animated.Value(1)).current;
+const FloatingPlusOne = ({ delay, left }: { delay: number; left: number }) => {
+  const animatedY = useRef(new Animated.Value(0)).current;
+  const animatedOpacity = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
-    Animated.loop(
+    const run = () => {
+      animatedY.setValue(0);
+      animatedOpacity.setValue(0);
       Animated.sequence([
-        Animated.timing(scale, { toValue: 1.3, duration: 800, useNativeDriver: true }),
-        Animated.timing(scale, { toValue: 1, duration: 800, useNativeDriver: true }),
-      ])
-    ).start();
+        Animated.delay(delay),
+        Animated.parallel([
+          Animated.timing(animatedY, { toValue: -80, duration: 1800, useNativeDriver: true }),
+          Animated.sequence([
+            Animated.timing(animatedOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+            Animated.timing(animatedOpacity, { toValue: 0, duration: 1500, useNativeDriver: true }),
+          ])
+        ])
+      ]).start(() => run());
+    };
+    run();
   }, []);
+
   return (
-    <View style={animStyles.center}>
-      <Animated.View style={{ transform: [{ scale }] }}>
-        <ZapIcon size={48} color="#2dd4bf" />
-      </Animated.View>
+    <Animated.Text style={[animStyles.plusOneText, { left, transform: [{ translateY: animatedY }], opacity: animatedOpacity }]}>
+      +1
+    </Animated.Text>
+  );
+};
+
+const LiveSocketsAnim = () => {
+  const widthReact = useRef(new Animated.Value(0)).current;
+  const widthNext = useRef(new Animated.Value(0)).current;
+  const widthVue = useRef(new Animated.Value(0)).current;
+  const widthSvelte = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(widthReact, { toValue: 45, duration: 1500, useNativeDriver: false }),
+      Animated.timing(widthNext, { toValue: 32, duration: 1500, useNativeDriver: false }),
+      Animated.timing(widthVue, { toValue: 15, duration: 1500, useNativeDriver: false }),
+      Animated.timing(widthSvelte, { toValue: 8, duration: 1500, useNativeDriver: false }),
+    ]).start();
+  }, []);
+
+  return (
+    <View style={animStyles.slideInner}>
+      {/* Mock Poll Options */}
+      <View style={animStyles.pollOption}>
+        <View style={animStyles.optionTextRow}>
+          <Text style={animStyles.optionLabel}>React</Text>
+          <Text style={[animStyles.optionValue, { color: '#2dd4bf' }]}>45% 🔥</Text>
+        </View>
+        <View style={animStyles.track}>
+          <Animated.View style={[animStyles.bar, { width: widthReact.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), backgroundColor: '#2dd4bf' }]} />
+        </View>
+      </View>
+
+      <View style={animStyles.pollOption}>
+        <View style={animStyles.optionTextRow}>
+          <Text style={animStyles.optionLabel}>Next.js</Text>
+          <Text style={[animStyles.optionValue, { color: '#fbbf24' }]}>32%</Text>
+        </View>
+        <View style={animStyles.track}>
+          <Animated.View style={[animStyles.bar, { width: widthNext.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), backgroundColor: '#fbbf24' }]} />
+        </View>
+      </View>
+
+      <View style={animStyles.pollOption}>
+        <View style={animStyles.optionTextRow}>
+          <Text style={animStyles.optionLabel}>Vue.js</Text>
+          <Text style={[animStyles.optionValue, { color: '#c084fc' }]}>15%</Text>
+        </View>
+        <View style={animStyles.track}>
+          <Animated.View style={[animStyles.bar, { width: widthVue.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), backgroundColor: '#c084fc' }]} />
+        </View>
+      </View>
+
+      <View style={animStyles.pollOption}>
+        <View style={animStyles.optionTextRow}>
+          <Text style={animStyles.optionLabel}>Svelte</Text>
+          <Text style={[animStyles.optionValue, { color: '#f43f5e' }]}>8%</Text>
+        </View>
+        <View style={animStyles.track}>
+          <Animated.View style={[animStyles.bar, { width: widthSvelte.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), backgroundColor: '#f43f5e' }]} />
+        </View>
+      </View>
+
+      {/* Floating +1 elements */}
+      <FloatingPlusOne delay={100} left={80} />
+      <FloatingPlusOne delay={600} left={180} />
+      <FloatingPlusOne delay={1200} left={120} />
+      <FloatingPlusOne delay={1800} left={220} />
     </View>
   );
 };
 
 const SpamShieldAnim = () => {
-  const opacity = useRef(new Animated.Value(0.4)).current;
+  const shieldScale = useRef(new Animated.Value(1)).current;
+  const statusOpacity = useRef(new Animated.Value(0)).current;
+  const spamOpacity = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
-    Animated.loop(
+    const run = () => {
+      statusOpacity.setValue(0);
+      spamOpacity.setValue(0);
+      
       Animated.sequence([
-        Animated.timing(opacity, { toValue: 1, duration: 1000, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 0.4, duration: 1000, useNativeDriver: true }),
-      ])
-    ).start();
+        Animated.timing(spamOpacity, { toValue: 1, duration: 450, useNativeDriver: true }),
+        Animated.delay(400),
+        Animated.timing(shieldScale, { toValue: 1.25, duration: 250, useNativeDriver: true }),
+        Animated.parallel([
+          Animated.timing(shieldScale, { toValue: 1, duration: 250, useNativeDriver: true }),
+          Animated.timing(statusOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+        ]),
+        Animated.delay(1600),
+      ]).start(() => run());
+    };
+    run();
   }, []);
+
   return (
-    <View style={animStyles.center}>
-      <Animated.View style={{ opacity }}>
-        <ShieldIcon size={48} color="#fbbf24" />
+    <View style={[animStyles.slideInner, { justifyContent: 'center', alignItems: 'center' }]}>
+      <Animated.View style={{ transform: [{ scale: shieldScale }], marginBottom: 12 }}>
+        <ShieldIcon size={56} color="#fbbf24" />
       </Animated.View>
+
+      <View style={animStyles.logContainer}>
+        <Text style={animStyles.logTitle}>IP REQUEST GATEWAY LOG:</Text>
+        <Text style={animStyles.logItemAllowed}>IP 10.19.87.162: ✅ VOTE OK</Text>
+        <Animated.View style={{ opacity: spamOpacity }}>
+          <Text style={animStyles.logItemAttempt}>IP 10.19.87.162: ⏳ SENDING VOTE...</Text>
+        </Animated.View>
+        <Animated.View style={{ opacity: statusOpacity }}>
+          <Text style={animStyles.logItemBlocked}>IP 10.19.87.162: ❌ BLOCKED (SPAM GATED)</Text>
+        </Animated.View>
+      </View>
     </View>
   );
 };
 
 const AnalyticsChartAnim = () => {
-  const height1 = useRef(new Animated.Value(20)).current;
-  const height2 = useRef(new Animated.Value(40)).current;
-  const height3 = useRef(new Animated.Value(30)).current;
+  const bar1 = useRef(new Animated.Value(20)).current;
+  const bar2 = useRef(new Animated.Value(45)).current;
+  const bar3 = useRef(new Animated.Value(85)).current;
+  const bar4 = useRef(new Animated.Value(60)).current;
+  const bar5 = useRef(new Animated.Value(30)).current;
+
   useEffect(() => {
-    const makeAnim = (val: Animated.Value, max: number) => {
-      return Animated.loop(
+    const loop = (val: Animated.Value, to: number, duration: number) => {
+      Animated.loop(
         Animated.sequence([
-          Animated.timing(val, { toValue: max, duration: 1000, useNativeDriver: false }),
-          Animated.timing(val, { toValue: 20, duration: 1000, useNativeDriver: false }),
+          Animated.timing(val, { toValue: to, duration, useNativeDriver: false }),
+          Animated.timing(val, { toValue: 15, duration, useNativeDriver: false }),
         ])
-      );
+      ).start();
     };
-    Animated.parallel([
-      makeAnim(height1, 60),
-      makeAnim(height2, 80),
-      makeAnim(height3, 70),
-    ]).start();
+    loop(bar1, 70, 1100);
+    loop(bar2, 85, 900);
+    loop(bar3, 95, 1400);
+    loop(bar4, 75, 1000);
+    loop(bar5, 60, 1200);
   }, []);
+
   return (
-    <View style={[animStyles.center, { flexDirection: 'row', alignItems: 'flex-end', gap: 10 }]}>
-      <Animated.View style={{ width: 12, height: height1, backgroundColor: '#60a5fa', borderRadius: 4 }} />
-      <Animated.View style={{ width: 12, height: height2, backgroundColor: '#c084fc', borderRadius: 4 }} />
-      <Animated.View style={{ width: 12, height: height3, backgroundColor: '#f43f5e', borderRadius: 4 }} />
+    <View style={[animStyles.slideInner, { justifyContent: 'center' }]}>
+      <View style={animStyles.chartHeaderRow}>
+        <Text style={animStyles.chartHeaderText}>Live Analytics Feed</Text>
+        <Text style={animStyles.chartHeaderValue}>Voters: 2,492</Text>
+      </View>
+
+      <View style={animStyles.barChartContainer}>
+        <Animated.View style={[animStyles.chartBar, { height: bar1, backgroundColor: '#2dd4bf' }]} />
+        <Animated.View style={[animStyles.chartBar, { height: bar2, backgroundColor: '#fbbf24' }]} />
+        <Animated.View style={[animStyles.chartBar, { height: bar3, backgroundColor: '#60a5fa' }]} />
+        <Animated.View style={[animStyles.chartBar, { height: bar4, backgroundColor: '#c084fc' }]} />
+        <Animated.View style={[animStyles.chartBar, { height: bar5, backgroundColor: '#f43f5e' }]} />
+      </View>
     </View>
   );
 };
 
 const ResponseModesAnim = () => {
-  const posX = useRef(new Animated.Value(-30)).current;
+  const [isSecured, setIsSecured] = useState(false);
+  const togglePos = useRef(new Animated.Value(2)).current;
+
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(posX, { toValue: 30, duration: 1200, useNativeDriver: true }),
-        Animated.timing(posX, { toValue: -30, duration: 1200, useNativeDriver: true }),
-      ])
-    ).start();
+    let active = false;
+    const interval = setInterval(() => {
+      active = !active;
+      setIsSecured(active);
+      Animated.timing(togglePos, {
+        toValue: active ? 22 : 2,
+        duration: 300,
+        useNativeDriver: false
+      }).start();
+    }, 2000);
+
+    return () => clearInterval(interval);
   }, []);
+
   return (
-    <View style={animStyles.center}>
-      <Animated.View style={{ transform: [{ translateX: posX }] }}>
-        <UsersIcon size={48} color="#34d399" />
-      </Animated.View>
+    <View style={[animStyles.slideInner, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={animStyles.modeSwitchRow}>
+        <Text style={animStyles.modeSwitchLabel}>Voter Login Required</Text>
+        <View style={[animStyles.switchTrack, { backgroundColor: isSecured ? '#10b981' : '#3f3f46' }]}>
+          <Animated.View style={[animStyles.switchThumb, { left: togglePos }]} />
+        </View>
+      </View>
+
+      <View style={animStyles.modeStatusCard}>
+        <Text style={animStyles.modeStatusTitle}>Room Status:</Text>
+        <View style={[animStyles.modeIndicator, { backgroundColor: isSecured ? '#10b981' : '#ef4444' }]}>
+          <Text style={animStyles.modeIndicatorText}>
+            {isSecured ? 'CLERK SECURED ONLY' : 'ANONYMOUS GUESTS WELCOME'}
+          </Text>
+        </View>
+      </View>
     </View>
   );
 };
 
 const CampaignWizardAnim = () => {
-  const rotate = useRef(new Animated.Value(0)).current;
+  const [typingStage, setTypingStage] = useState(0);
+
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(rotate, { toValue: 1, duration: 1000, useNativeDriver: true }),
-        Animated.timing(rotate, { toValue: 0, duration: 1000, useNativeDriver: true }),
-      ])
-    ).start();
+    const interval = setInterval(() => {
+      setTypingStage((prev) => (prev + 1) % 4);
+    }, 1200);
+    return () => clearInterval(interval);
   }, []);
-  const spin = rotate.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['-25deg', '25deg']
-  });
+
   return (
-    <View style={animStyles.center}>
-      <Animated.View style={{ transform: [{ rotate: spin }] }}>
-        <PlusIcon size={48} color="#f472b6" />
-      </Animated.View>
+    <View style={[animStyles.slideInner, { justifyContent: 'center' }]}>
+      <View style={animStyles.wizardForm}>
+        <View style={animStyles.wizardField}>
+          <Text style={animStyles.wizardLabel}>Campaign Title</Text>
+          <Text style={animStyles.wizardInputText}>
+            {typingStage >= 1 ? 'Office Feedback Poll' : ' '}
+          </Text>
+        </View>
+        <View style={animStyles.wizardField}>
+          <Text style={animStyles.wizardLabel}>Choices</Text>
+          <Text style={animStyles.wizardInputText}>
+            {typingStage >= 2 ? 'Option 1: Espresso ☕\nOption 2: Latte 🥛' : ' '}
+          </Text>
+        </View>
+        <View style={[animStyles.wizardPublishBtn, { backgroundColor: typingStage >= 3 ? '#2dd4bf' : '#3f3f46' }]}>
+          <Text style={animStyles.wizardPublishBtnText}>
+            {typingStage >= 3 ? '✓ PUBLISHED LIVE' : 'PUBLISH NOW'}
+          </Text>
+        </View>
+      </View>
     </View>
   );
 };
 
+const ConfettiItem = ({ emoji, delay, left }: { emoji: string; delay: number; left: number }) => {
+  const animatedY = useRef(new Animated.Value(-20)).current;
+  const animatedOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const run = () => {
+      animatedY.setValue(-20);
+      animatedOpacity.setValue(0);
+      Animated.sequence([
+        Animated.delay(delay),
+        Animated.parallel([
+          Animated.timing(animatedY, { toValue: 80, duration: 2200, useNativeDriver: true }),
+          Animated.sequence([
+            Animated.timing(animatedOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
+            Animated.timing(animatedOpacity, { toValue: 0, duration: 1800, useNativeDriver: true }),
+          ])
+        ])
+      ]).start(() => run());
+    };
+    run();
+  }, []);
+
+  return (
+    <Animated.Text style={[animStyles.confettiText, { left, transform: [{ translateY: animatedY }], opacity: animatedOpacity }]}>
+      {emoji}
+    </Animated.Text>
+  );
+};
+
 const TrophyInsightsAnim = () => {
-  const posY = useRef(new Animated.Value(0)).current;
+  const trophyY = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(posY, { toValue: -15, duration: 600, useNativeDriver: true }),
-        Animated.timing(posY, { toValue: 0, duration: 600, useNativeDriver: true }),
+        Animated.timing(trophyY, { toValue: -20, duration: 500, useNativeDriver: true }),
+        Animated.timing(trophyY, { toValue: 0, duration: 400, useNativeDriver: true }),
+        Animated.delay(100),
       ])
     ).start();
   }, []);
+
   return (
-    <View style={animStyles.center}>
-      <Animated.View style={{ transform: [{ translateY: posY }] }}>
+    <View style={[animStyles.slideInner, { justifyContent: 'center', alignItems: 'center' }]}>
+      <Animated.View style={{ transform: [{ translateY: trophyY }], marginBottom: 8 }}>
         <TrophyIcon size={48} color="#fbbf24" />
       </Animated.View>
+
+      <Text style={animStyles.winnerTitle}>WINNER DECLARED 👑</Text>
+      <View style={animStyles.winnerBox}>
+        <Text style={animStyles.winnerLabel}>React.js</Text>
+        <Text style={animStyles.winnerValue}>842 Votes (64%)</Text>
+      </View>
+
+      {/* Confetti Spawners */}
+      <ConfettiItem emoji="🎉" delay={100} left={40} />
+      <ConfettiItem emoji="✨" delay={600} left={100} />
+      <ConfettiItem emoji="🎈" delay={1100} left={180} />
+      <ConfettiItem emoji="👑" delay={1600} left={240} />
     </View>
   );
 };
@@ -161,7 +353,246 @@ const animStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
-  }
+  },
+  slideInner: {
+    width: '100%',
+    height: 180,
+    position: 'relative',
+    justifyContent: 'center',
+    paddingVertical: 4,
+  },
+  pollOption: {
+    marginBottom: 6,
+  },
+  optionTextRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  optionLabel: {
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  optionValue: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  track: {
+    height: 6,
+    backgroundColor: '#18181b',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  bar: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  plusOneText: {
+    position: 'absolute',
+    color: '#2dd4bf',
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: 'SpaceMono',
+  },
+  logContainer: {
+    backgroundColor: '#09090b',
+    borderColor: '#ffffff',
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 8,
+    width: '100%',
+  },
+  logTitle: {
+    color: '#a1a1aa',
+    fontFamily: 'SpaceMono',
+    fontSize: 8,
+    fontWeight: '900',
+  },
+  logItemAllowed: {
+    color: '#10b981',
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    marginTop: 2,
+  },
+  logItemAttempt: {
+    color: '#fbbf24',
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    marginTop: 2,
+  },
+  logItemBlocked: {
+    color: '#ef4444',
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    marginTop: 2,
+  },
+  chartHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  chartHeaderText: {
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  chartHeaderValue: {
+    color: '#2dd4bf',
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  barChartContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-around',
+    height: 100,
+    backgroundColor: '#09090b',
+    borderColor: '#ffffff',
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 10,
+  },
+  chartBar: {
+    width: 16,
+    borderRadius: 3,
+  },
+  modeSwitchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    backgroundColor: '#09090b',
+    borderColor: '#ffffff',
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 12,
+  },
+  modeSwitchLabel: {
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  switchTrack: {
+    width: 44,
+    height: 22,
+    borderRadius: 11,
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  switchThumb: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#ffffff',
+    position: 'absolute',
+  },
+  modeStatusCard: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  modeStatusTitle: {
+    color: '#a1a1aa',
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '900',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  modeIndicator: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: '#09090b',
+  },
+  modeIndicatorText: {
+    color: '#09090b',
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  wizardForm: {
+    backgroundColor: '#09090b',
+    borderColor: '#ffffff',
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 10,
+    gap: 6,
+  },
+  wizardField: {
+    marginBottom: 2,
+  },
+  wizardLabel: {
+    color: '#a1a1aa',
+    fontFamily: 'SpaceMono',
+    fontSize: 8,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  wizardInputText: {
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    marginTop: 1,
+  },
+  wizardPublishBtn: {
+    paddingVertical: 6,
+    alignItems: 'center',
+    borderRadius: 6,
+    marginTop: 2,
+  },
+  wizardPublishBtnText: {
+    color: '#09090b',
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  winnerTitle: {
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  winnerBox: {
+    backgroundColor: '#fbbf24',
+    borderWidth: 1.5,
+    borderColor: '#09090b',
+    borderRadius: 12,
+    padding: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  winnerLabel: {
+    color: '#09090b',
+    fontFamily: 'SpaceMono',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  winnerValue: {
+    color: '#09090b',
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '900',
+    marginTop: 1,
+  },
+  confettiText: {
+    position: 'absolute',
+    fontSize: 16,
+  },
 });
 
 export default function LoginScreen() {
@@ -174,40 +605,52 @@ export default function LoginScreen() {
 
   const onboardingSlides = [
     {
-      title: "Real-time Sockets",
-      desc: "Live voting progress updates with zero latency. Watch options tick dynamically.",
+      badge: "LIVE BATTLE",
+      subBadge: "HIGH TRAFFIC POLL #482",
+      title: "What's your favorite frontend framework?",
+      desc: "Watch votes update in real-time with zero latency as participants submit choices.",
       renderAnim: () => <LiveSocketsAnim />,
-      color: '#115e59',
+      color: '#09090b',
     },
     {
-      title: "Secure Verification",
-      desc: "Prevent spam voting using strict IP gating and Clerk authentication controls.",
+      badge: "SECURITY GATE",
+      subBadge: "IP & AUTH GUARDS",
+      title: "Anti-Spam Shield Protection",
+      desc: "Prevent double-voting using strict IP gating and Clerk authentication controls.",
       renderAnim: () => <SpamShieldAnim />,
-      color: '#78350f',
+      color: '#09090b',
     },
     {
-      title: "Deep Analytics",
-      desc: "Premium donut charts and distribution visualizers responsive on all phone screens.",
+      badge: "ANALYTICS",
+      subBadge: "REALTIME FEED",
+      title: "Live Dashboard Metrics",
+      desc: "Premium charts and voter metrics visualised instantly as voting progress unfolds.",
       renderAnim: () => <AnalyticsChartAnim />,
-      color: '#1e3a8a',
+      color: '#09090b',
     },
     {
-      title: "Flexible Access",
-      desc: "Run completely anonymous voting rooms or Clerk-authenticated secure polls.",
+      badge: "VERSATILITY",
+      subBadge: "CONFIG OPTIONS",
+      title: "Flexible Access Gating",
+      desc: "Configure completely anonymous public rooms or Clerk-authenticated secure polls.",
       renderAnim: () => <ResponseModesAnim />,
-      color: '#064e3b',
+      color: '#09090b',
     },
     {
-      title: "Campaign Wizard",
-      desc: "Draft campaigns, define questions, and publish customized choices in 60 seconds.",
+      badge: "CREATOR WIZARD",
+      subBadge: "FAST PUBLISH",
+      title: "Design & Publish in 60s",
+      desc: "Draft options, customize settings, and launch live campaigns in a single click.",
       renderAnim: () => <CampaignWizardAnim />,
-      color: '#831843',
+      color: '#09090b',
     },
     {
-      title: "Peak Insights",
-      desc: "Live trends, total votes, and real-time winner highlights visualised cleanly.",
+      badge: "FINAL VERDICT",
+      subBadge: "WINNER PROJECTIONS",
+      title: "Auto Winner & Trends",
+      desc: "Capture crowd favorites, final trends, and projection outcomes automatically.",
       renderAnim: () => <TrophyInsightsAnim />,
-      color: '#701a75',
+      color: '#09090b',
     },
   ];
 
@@ -371,24 +814,45 @@ export default function LoginScreen() {
             <Text style={styles.subtitle}>Real-time feedback & polling platform</Text>
           </View>
 
-          {/* Onboarding Slide Card */}
-          <BrutalCard variant="default" style={StyleSheet.flatten([styles.onboardingCard, { backgroundColor: slide.color }])}>
-            {slide.renderAnim()}
-            <Text style={styles.slideTitle}>{slide.title}</Text>
-            <Text style={styles.slideDesc}>{slide.desc}</Text>
-          </BrutalCard>
+          {/* Neo-brutalist Onboarding Card Container */}
+          <View style={styles.brutalCardContainer}>
+            {/* Solid offset shadow layer */}
+            <View style={styles.brutalCardShadow} />
+            
+            {/* Main Card Body */}
+            <View style={styles.brutalCardBody}>
+              {/* Card Header Row matching the user's image */}
+              <View style={styles.cardHeaderRow}>
+                <View style={styles.liveBadge}>
+                  <Text style={styles.liveBadgeText}>{slide.badge}</Text>
+                </View>
+                <Text style={styles.trafficText}>{slide.subBadge}</Text>
+              </View>
 
-          {/* Dot Indicators */}
-          <View style={styles.dotRow}>
-            {onboardingSlides.map((_, idx) => (
-              <View 
-                key={idx} 
-                style={[
-                  styles.dot, 
-                  idx === currentSlide ? styles.dotActive : styles.dotInactive
-                ]} 
-              />
-            ))}
+              {/* Card Title */}
+              <Text style={styles.slideHeaderTitle}>{slide.title}</Text>
+
+              {/* Render animated custom visualizer */}
+              {slide.renderAnim()}
+
+              {/* Progress Line indicators inside the card matching user's image */}
+              <View style={styles.indicatorTrack}>
+                {onboardingSlides.map((_, idx) => (
+                  <View 
+                    key={idx} 
+                    style={[
+                      styles.indicatorBar, 
+                      idx === currentSlide ? styles.indicatorBarActive : styles.indicatorBarInactive
+                    ]} 
+                  />
+                ))}
+              </View>
+            </View>
+          </View>
+
+          {/* Description sub-card */}
+          <View style={styles.descCard}>
+            <Text style={styles.slideDescText}>{slide.desc}</Text>
           </View>
 
           {/* Controls */}
@@ -821,5 +1285,97 @@ const styles = StyleSheet.create({
   },
   nextBtn: {
     minWidth: 140,
+  },
+  brutalCardContainer: {
+    position: 'relative',
+    width: '100%',
+    marginVertical: 16,
+  },
+  brutalCardShadow: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    right: -6,
+    bottom: -6,
+    backgroundColor: '#ffffff',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+    borderRadius: 24,
+  },
+  brutalCardBody: {
+    backgroundColor: '#0c0c0e',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+    borderRadius: 24,
+    padding: 20,
+    minHeight: 330,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  liveBadge: {
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  liveBadgeText: {
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  trafficText: {
+    color: '#71717a',
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  slideHeaderTitle: {
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    fontSize: 16,
+    fontWeight: '900',
+    marginBottom: 14,
+  },
+  indicatorTrack: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 14,
+    alignItems: 'center',
+  },
+  indicatorBar: {
+    height: 4,
+    borderRadius: 2,
+  },
+  indicatorBarActive: {
+    width: 24,
+    backgroundColor: '#2dd4bf',
+  },
+  indicatorBarInactive: {
+    width: 12,
+    backgroundColor: '#27272a',
+  },
+  descCard: {
+    backgroundColor: '#18181b',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+  },
+  slideDescText: {
+    color: '#e4e4e7',
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    fontFamily: 'SpaceMono',
+    fontWeight: '700',
   },
 });
