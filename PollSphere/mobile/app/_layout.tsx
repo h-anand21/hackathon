@@ -1,6 +1,5 @@
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
@@ -14,7 +13,7 @@ export {
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: 'login',
+  initialRouteName: '(tabs)',
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -43,57 +42,15 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
-import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo';
-import { useRouter, useSegments } from 'expo-router';
-import { tokenCache } from '../utils/tokenCache';
-import { ThemeProvider as AppThemeProvider } from '../contexts/ThemeContext';
-
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_YnJpZ2h0LW9jdG9wdXMtNDIuY2xlcmsuYWNjb3VudHMuZGV2JA';
-
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <AppThemeProvider>
-      <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-        <ClerkLoaded>
-          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <NavigationWrapper />
-          </ThemeProvider>
-        </ClerkLoaded>
-      </ClerkProvider>
-    </AppThemeProvider>
-  );
-}
-
-import { useRef } from 'react';
-
-function NavigationWrapper() {
-  const { isSignedIn, isLoaded } = useAuth();
-  const router = useRouter();
-  const segments = useSegments();
-  const hasHandled = useRef(false);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-
-    const inTabsGroup = segments[0] === '(tabs)';
-    const inLoginScreen = segments[0] === 'login';
-
-    // Only redirect when on the wrong screen — avoids re-firing mid-transition
-    if (isSignedIn && inLoginScreen) {
-      router.replace('/(tabs)');
-    } else if (!isSignedIn && inTabsGroup) {
-      router.replace('/login');
-    }
-    // If already on the right screen, do nothing
-  }, [isLoaded, isSignedIn]); // ← segments intentionally excluded to prevent mid-transition flicker
-
-  return (
-    <Stack>
-      <Stack.Screen name="login" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-    </Stack>
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+      </Stack>
+    </ThemeProvider>
   );
 }
