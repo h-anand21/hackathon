@@ -98,7 +98,6 @@ export const BrutalButton: React.FC<BrutalButtonProps> = ({
 
   const vColors = getVariantStyles();
 
-  // Animating the button translation and shadow offset shift
   const translateY = animatedValue.interpolate({
     inputRange: [0, 1],
     outputRange: [0, 4],
@@ -108,30 +107,53 @@ export const BrutalButton: React.FC<BrutalButtonProps> = ({
     outputRange: [0, 4],
   });
 
+  const containerStyles: any[] = [styles.buttonContainer, { shadowColor: vColors.shadow }];
+  const bodyStyles: any[] = [
+    styles.buttonBody, 
+    { 
+      backgroundColor: vColors.bg,
+      transform: [{ translateY }, { translateX }]
+    }
+  ];
+
+  if (style) {
+    const flatStyle = StyleSheet.flatten(style);
+    const layoutKeys = [
+      'flex', 'margin', 'marginVertical', 'marginHorizontal', 
+      'marginTop', 'marginBottom', 'marginLeft', 'marginRight', 
+      'position', 'top', 'bottom', 'left', 'right', 'alignSelf'
+    ];
+    
+    const containerLayout: any = {};
+    const bodyStyleFiltered: any = {};
+
+    Object.keys(flatStyle).forEach((key) => {
+      if (layoutKeys.includes(key)) {
+        containerLayout[key] = (flatStyle as any)[key];
+      } else {
+        bodyStyleFiltered[key] = (flatStyle as any)[key];
+      }
+    });
+
+    containerStyles.push(containerLayout);
+    bodyStyles.push(bodyStyleFiltered);
+  }
+
+  if (disabled) {
+    bodyStyles.push(styles.disabled);
+  }
+
   return (
     <Pressable
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onPress={onPress}
       disabled={disabled}
-      style={({ pressed }) => [
-        styles.buttonContainer,
-        { shadowColor: vColors.shadow },
-        style
-      ]}
+      style={containerStyles}
       {...props}
     >
-      <Animated.View 
-        style={[
-          styles.buttonBody,
-          { 
-            backgroundColor: vColors.bg,
-            transform: [{ translateY }, { translateX }]
-          },
-          disabled && styles.disabled
-        ]}
-      >
-        <Text style={[styles.buttonText, { color: vColors.text }, textStyle]}>
+      <Animated.View style={bodyStyles}>
+        <Text style={[styles.buttonText, { color: vColors.text }, textStyle]} numberOfLines={1}>
           {title}
         </Text>
       </Animated.View>
@@ -141,15 +163,41 @@ export const BrutalButton: React.FC<BrutalButtonProps> = ({
 
 interface BrutalInputProps extends TextInputProps {
   label?: string;
-  style?: TextStyle;
+  style?: any;
 }
 
 export const BrutalInput: React.FC<BrutalInputProps> = ({ label, style, ...props }) => {
+  const containerStyles: any[] = [styles.inputWrapper];
+  const inputStyles: any[] = [styles.input];
+
+  if (style) {
+    const flatStyle = StyleSheet.flatten(style);
+    const layoutKeys = [
+      'flex', 'margin', 'marginVertical', 'marginHorizontal', 
+      'marginTop', 'marginBottom', 'marginLeft', 'marginRight', 
+      'width', 'height', 'alignSelf', 'position', 'top', 'bottom', 'left', 'right'
+    ];
+    
+    const containerLayout: any = {};
+    const inputStyleFiltered: any = {};
+
+    Object.keys(flatStyle).forEach((key) => {
+      if (layoutKeys.includes(key)) {
+        containerLayout[key] = (flatStyle as any)[key];
+      } else {
+        inputStyleFiltered[key] = (flatStyle as any)[key];
+      }
+    });
+
+    containerStyles.push(containerLayout);
+    inputStyles.push(inputStyleFiltered);
+  }
+
   return (
-    <View style={styles.inputWrapper}>
+    <View style={containerStyles}>
       {label && <Text style={styles.inputLabel}>{label}</Text>}
       <TextInput
-        style={[styles.input, style]}
+        style={inputStyles}
         placeholderTextColor="#71717a"
         {...props}
       />
@@ -178,10 +226,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#ffffff',
     borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'stretch',
   },
   buttonText: {
     fontFamily: 'SpaceMono',

@@ -973,21 +973,10 @@ export default function LoginScreen() {
             <Text style={styles.slideDescText}>{slide.desc}</Text>
           </View>
 
-          {/* Controls with Back and Next buttons */}
-          <View style={styles.onboardingControlsRow}>
-            {currentSlide > 0 ? (
-              <BrutalButton
-                title="← Back"
-                variant="accent"
-                onPress={() => {
-                  setCurrentSlide(currentSlide - 1);
-                }}
-                style={styles.backBtnOnboarding}
-              />
-            ) : null}
-
+          {/* Controls with stacked Back and Next buttons */}
+          <View style={styles.onboardingControlsStacked}>
             <BrutalButton
-              title={currentSlide === 5 ? "Get Started 🚀" : "Next →"}
+              title={currentSlide === 5 ? "Get Started 🚀" : "Next Slide →"}
               variant="primary"
               onPress={() => {
                 if (currentSlide < 5) {
@@ -996,8 +985,21 @@ export default function LoginScreen() {
                   setShowOnboarding(false);
                 }
               }}
-              style={currentSlide > 0 ? styles.nextBtnWithBack : styles.fullNextBtn}
+              style={styles.fullNextBtn}
             />
+
+            {currentSlide > 0 ? (
+              <Pressable 
+                onPress={() => {
+                  setCurrentSlide(currentSlide - 1);
+                }} 
+                style={styles.backLinkBtn}
+              >
+                <Text style={styles.backLinkText}>← Go to Previous Slide</Text>
+              </Pressable>
+            ) : (
+              <View style={styles.backLinkPlaceholder} />
+            )}
           </View>
         </View>
       </SafeAreaView>
@@ -1582,19 +1584,24 @@ const styles = StyleSheet.create({
     fontFamily: 'SpaceMono',
     letterSpacing: -1,
   },
-  onboardingControlsRow: {
-    flexDirection: 'row',
+  onboardingControlsStacked: {
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     width: '100%',
-    gap: 12,
   },
-  backBtnOnboarding: {
-    flex: 1,
-    borderColor: '#ffffff',
-    backgroundColor: '#18181b',
+  backLinkBtn: {
+    paddingVertical: 10,
+    marginTop: 4,
   },
-  nextBtnWithBack: {
-    flex: 2,
+  backLinkText: {
+    color: '#a1a1aa',
+    fontFamily: 'SpaceMono',
+    fontWeight: '900',
+    fontSize: 12,
+    textDecorationLine: 'underline',
+    textTransform: 'uppercase',
+  },
+  backLinkPlaceholder: {
+    height: 32,
   },
 });
