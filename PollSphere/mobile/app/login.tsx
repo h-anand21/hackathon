@@ -58,68 +58,120 @@ const FloatingPlusOne = ({ delay, left }: { delay: number; left: number }) => {
 };
 
 const LiveSocketsAnim = () => {
+  const [reactVotes, setReactVotes] = useState(45);
+  const [nextVotes, setNextVotes] = useState(32);
+  const [vueVotes, setVueVotes] = useState(15);
+  const [svelteVotes, setSvelteVotes] = useState(8);
+  const [hasVoted, setHasVoted] = useState(false);
+  const [statusText, setStatusText] = useState('👉 TAP AN OPTION TO CAST A LIVE TEST VOTE');
+
   const widthReact = useRef(new Animated.Value(0)).current;
   const widthNext = useRef(new Animated.Value(0)).current;
   const widthVue = useRef(new Animated.Value(0)).current;
   const widthSvelte = useRef(new Animated.Value(0)).current;
 
+  const [spawnReact, setSpawnReact] = useState(false);
+  const [spawnNext, setSpawnNext] = useState(false);
+
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(widthReact, { toValue: 45, duration: 1500, useNativeDriver: false }),
-      Animated.timing(widthNext, { toValue: 32, duration: 1500, useNativeDriver: false }),
-      Animated.timing(widthVue, { toValue: 15, duration: 1500, useNativeDriver: false }),
-      Animated.timing(widthSvelte, { toValue: 8, duration: 1500, useNativeDriver: false }),
+      Animated.timing(widthReact, { toValue: 45, duration: 1000, useNativeDriver: false }),
+      Animated.timing(widthNext, { toValue: 32, duration: 1000, useNativeDriver: false }),
+      Animated.timing(widthVue, { toValue: 15, duration: 1000, useNativeDriver: false }),
+      Animated.timing(widthSvelte, { toValue: 8, duration: 1000, useNativeDriver: false }),
     ]).start();
   }, []);
+
+  const handleVote = (option: string) => {
+    if (hasVoted) return;
+    setHasVoted(true);
+
+    if (option === 'React') {
+      setReactVotes(46);
+      setSpawnReact(true);
+      setStatusText('⚡ VOTE TRANSMITTED! SYNCING TO CLOUD...');
+      Animated.timing(widthReact, { toValue: 46, duration: 300, useNativeDriver: false }).start(() => {
+        setTimeout(() => {
+          setNextVotes(33);
+          setSpawnNext(true);
+          setStatusText('📢 USER_482 VOTED FOR NEXT.JS IN REAL-TIME!');
+          Animated.timing(widthNext, { toValue: 33, duration: 300, useNativeDriver: false }).start();
+        }, 1500);
+      });
+    } else if (option === 'Next') {
+      setNextVotes(33);
+      setSpawnNext(true);
+      setStatusText('⚡ VOTE TRANSMITTED! SYNCING TO CLOUD...');
+      Animated.timing(widthNext, { toValue: 33, duration: 300, useNativeDriver: false }).start(() => {
+        setTimeout(() => {
+          setReactVotes(46);
+          setSpawnReact(true);
+          setStatusText('📢 USER_913 VOTED FOR REACT IN REAL-TIME!');
+          Animated.timing(widthReact, { toValue: 46, duration: 300, useNativeDriver: false }).start();
+        }, 1500);
+      });
+    } else if (option === 'Vue') {
+      setVueVotes(16);
+      setStatusText('⚡ VOTE TRANSMITTED! SYNCING TO CLOUD...');
+      Animated.timing(widthVue, { toValue: 16, duration: 300, useNativeDriver: false }).start();
+    } else if (option === 'Svelte') {
+      setSvelteVotes(9);
+      setStatusText('⚡ VOTE TRANSMITTED! SYNCING TO CLOUD...');
+      Animated.timing(widthSvelte, { toValue: 9, duration: 300, useNativeDriver: false }).start();
+    }
+  };
 
   return (
     <View style={animStyles.slideInner}>
       {/* Mock Poll Options */}
-      <View style={animStyles.pollOption}>
+      <Pressable style={animStyles.pollOption} onPress={() => handleVote('React')}>
         <View style={animStyles.optionTextRow}>
           <Text style={animStyles.optionLabel}>React</Text>
-          <Text style={[animStyles.optionValue, { color: '#2dd4bf' }]}>45% 🔥</Text>
+          <Text style={[animStyles.optionValue, { color: '#2dd4bf' }]}>{reactVotes}% 🔥</Text>
         </View>
         <View style={animStyles.track}>
           <Animated.View style={[animStyles.bar, { width: widthReact.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), backgroundColor: '#2dd4bf' }]} />
         </View>
-      </View>
+      </Pressable>
 
-      <View style={animStyles.pollOption}>
+      <Pressable style={animStyles.pollOption} onPress={() => handleVote('Next')}>
         <View style={animStyles.optionTextRow}>
           <Text style={animStyles.optionLabel}>Next.js</Text>
-          <Text style={[animStyles.optionValue, { color: '#fbbf24' }]}>32%</Text>
+          <Text style={[animStyles.optionValue, { color: '#fbbf24' }]}>{nextVotes}%</Text>
         </View>
         <View style={animStyles.track}>
           <Animated.View style={[animStyles.bar, { width: widthNext.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), backgroundColor: '#fbbf24' }]} />
         </View>
-      </View>
+      </Pressable>
 
-      <View style={animStyles.pollOption}>
+      <Pressable style={animStyles.pollOption} onPress={() => handleVote('Vue')}>
         <View style={animStyles.optionTextRow}>
           <Text style={animStyles.optionLabel}>Vue.js</Text>
-          <Text style={[animStyles.optionValue, { color: '#c084fc' }]}>15%</Text>
+          <Text style={[animStyles.optionValue, { color: '#c084fc' }]}>{vueVotes}%</Text>
         </View>
         <View style={animStyles.track}>
           <Animated.View style={[animStyles.bar, { width: widthVue.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), backgroundColor: '#c084fc' }]} />
         </View>
-      </View>
+      </Pressable>
 
-      <View style={animStyles.pollOption}>
+      <Pressable style={animStyles.pollOption} onPress={() => handleVote('Svelte')}>
         <View style={animStyles.optionTextRow}>
           <Text style={animStyles.optionLabel}>Svelte</Text>
-          <Text style={[animStyles.optionValue, { color: '#f43f5e' }]}>8%</Text>
+          <Text style={[animStyles.optionValue, { color: '#f43f5e' }]}>{svelteVotes}%</Text>
         </View>
         <View style={animStyles.track}>
           <Animated.View style={[animStyles.bar, { width: widthSvelte.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), backgroundColor: '#f43f5e' }]} />
         </View>
-      </View>
+      </Pressable>
 
       {/* Floating +1 elements */}
-      <FloatingPlusOne delay={100} left={80} />
-      <FloatingPlusOne delay={600} left={180} />
-      <FloatingPlusOne delay={1200} left={120} />
-      <FloatingPlusOne delay={1800} left={220} />
+      {spawnReact && <FloatingPlusOne delay={0} left={80} />}
+      {spawnNext && <FloatingPlusOne delay={0} left={180} />}
+
+      {/* Status Box */}
+      <View style={animStyles.interactiveStatusBox}>
+        <Text style={animStyles.interactiveStatusText}>{statusText}</Text>
+      </View>
     </View>
   );
 };
@@ -381,14 +433,15 @@ const animStyles = StyleSheet.create({
     fontWeight: '900',
   },
   track: {
-    height: 6,
-    backgroundColor: '#18181b',
-    borderRadius: 3,
+    height: 12,
+    backgroundColor: '#27272a',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#ffffff',
     overflow: 'hidden',
   },
   bar: {
     height: '100%',
-    borderRadius: 3,
   },
   plusOneText: {
     position: 'absolute',
@@ -592,6 +645,25 @@ const animStyles = StyleSheet.create({
   confettiText: {
     position: 'absolute',
     fontSize: 16,
+  },
+  interactiveStatusBox: {
+    backgroundColor: '#18181b',
+    borderColor: '#ffffff',
+    borderWidth: 1.5,
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+  },
+  interactiveStatusText: {
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    textAlign: 'center',
+    textTransform: 'uppercase',
   },
 });
 
