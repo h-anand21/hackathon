@@ -74,13 +74,43 @@ const LiveSocketsAnim = () => {
   const [spawnNext, setSpawnNext] = useState(false);
 
   useEffect(() => {
+    // Initial grow animation
     Animated.parallel([
       Animated.timing(widthReact, { toValue: 45, duration: 1000, useNativeDriver: false }),
       Animated.timing(widthNext, { toValue: 32, duration: 1000, useNativeDriver: false }),
       Animated.timing(widthVue, { toValue: 15, duration: 1000, useNativeDriver: false }),
       Animated.timing(widthSvelte, { toValue: 8, duration: 1000, useNativeDriver: false }),
     ]).start();
-  }, []);
+
+    // Automated background fluctuation loop to show the graph is active/moving
+    let interval: any;
+    let tickCount = 0;
+
+    interval = setInterval(() => {
+      if (hasVoted) return;
+
+      tickCount++;
+      const deltaReact = Math.sin(tickCount) * 2;
+      const deltaNext = Math.cos(tickCount) * 2;
+      const deltaVue = Math.sin(tickCount * 1.5) * 1.5;
+
+      const newReact = Math.max(38, Math.min(52, 45 + Math.round(deltaReact)));
+      const newNext = Math.max(26, Math.min(38, 32 + Math.round(deltaNext)));
+      const newVue = Math.max(10, Math.min(20, 15 + Math.round(deltaVue)));
+
+      setReactVotes(newReact);
+      setNextVotes(newNext);
+      setVueVotes(newVue);
+
+      Animated.parallel([
+        Animated.timing(widthReact, { toValue: newReact, duration: 800, useNativeDriver: false }),
+        Animated.timing(widthNext, { toValue: newNext, duration: 800, useNativeDriver: false }),
+        Animated.timing(widthVue, { toValue: newVue, duration: 800, useNativeDriver: false }),
+      ]).start();
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [hasVoted]);
 
   const handleVote = (option: string) => {
     if (hasVoted) return;
@@ -880,10 +910,18 @@ export default function LoginScreen() {
     return (
       <SafeAreaView style={styles.onboardingContainer}>
         <View style={styles.onboardingWrapper}>
-          {/* Logo Header */}
-          <View style={styles.header}>
-            <Text style={styles.logo}>📊 PollSphere</Text>
-            <Text style={styles.subtitle}>Real-time feedback & polling platform</Text>
+          {/* Header Row with Logo and Skip button at top-right */}
+          <View style={styles.onboardingHeaderRow}>
+            <View style={styles.onboardingHeaderLeft}>
+              <Text style={styles.logoMini}>📊 PollSphere</Text>
+              <Text style={styles.subtitleMini}>Real-time polling</Text>
+            </View>
+            <Pressable 
+              onPress={() => setShowOnboarding(false)} 
+              style={styles.topSkipBtn}
+            >
+              <Text style={styles.topSkipText}>Skip</Text>
+            </Pressable>
           </View>
 
           {/* Neo-brutalist Onboarding Card Container */}
@@ -927,17 +965,10 @@ export default function LoginScreen() {
             <Text style={styles.slideDescText}>{slide.desc}</Text>
           </View>
 
-          {/* Controls */}
-          <View style={styles.onboardingControls}>
-            <Pressable 
-              onPress={() => setShowOnboarding(false)} 
-              style={styles.skipBtn}
-            >
-              <Text style={styles.skipText}>Skip</Text>
-            </Pressable>
-
+          {/* Controls with centered full-width next button */}
+          <View style={styles.onboardingControlsCentered}>
             <BrutalButton
-              title={currentSlide === 5 ? "Get Started" : "Next"}
+              title={currentSlide === 5 ? "Get Started 🚀" : "Next Slide →"}
               variant="primary"
               onPress={() => {
                 if (currentSlide < 5) {
@@ -946,7 +977,7 @@ export default function LoginScreen() {
                   setShowOnboarding(false);
                 }
               }}
-              style={styles.nextBtn}
+              style={styles.fullNextBtn}
             />
           </View>
         </View>
@@ -1449,5 +1480,53 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'SpaceMono',
     fontWeight: '700',
+  },
+  onboardingHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    marginTop: Platform.OS === 'ios' ? 0 : 10,
+  },
+  onboardingHeaderLeft: {
+    flex: 1,
+  },
+  logoMini: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    letterSpacing: -0.5,
+  },
+  subtitleMini: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: Colors.mutedForeground,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontFamily: 'SpaceMono',
+  },
+  topSkipBtn: {
+    borderColor: '#ffffff',
+    borderWidth: 2,
+    backgroundColor: '#000000',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  topSkipText: {
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    fontWeight: '900',
+    fontSize: 12,
+    textTransform: 'uppercase',
+  },
+  onboardingControlsCentered: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  fullNextBtn: {
+    width: '100%',
   },
 });
