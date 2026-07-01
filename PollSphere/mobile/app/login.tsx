@@ -1337,7 +1337,7 @@ const styles = StyleSheet.create({
   onboardingWrapper: {
     flex: 1,
     padding: 24,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
   onboardingCard: {
     padding: 24,
