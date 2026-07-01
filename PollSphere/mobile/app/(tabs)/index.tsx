@@ -148,7 +148,7 @@ export default function DashboardScreen() {
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.foreground }]}>Dashboard</Text>
           {userId ? (
-            <PressableIcon icon={LogOut} onPress={handleLogout} color={colors.foreground} />
+            <PressableIcon icon={LogOut} onPress={handleLogout} color={colors.foreground} bgColor={colors.card} />
           ) : (
             <BrutalButton 
               title="Sign In" 
@@ -185,7 +185,7 @@ export default function DashboardScreen() {
         {userId && (
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>My Poll Campaigns</Text>
-            <PressableIcon icon={RefreshCw} onPress={() => fetchPolls(true)} color={colors.foreground} />
+            <PressableIcon icon={RefreshCw} onPress={() => fetchPolls(true)} color={colors.foreground} bgColor={colors.card} />
           </View>
         )}
 
@@ -299,12 +299,12 @@ export default function DashboardScreen() {
 }
 
 // Icon helper
-const PressableIcon = ({ icon: Icon, onPress, color }: { icon: any, onPress: () => void, color: string }) => (
+const PressableIcon = ({ icon: Icon, onPress, color, bgColor }: { icon: any, onPress: () => void, color: string, bgColor: string }) => (
   <Pressable 
     onPress={onPress} 
     style={({ pressed }) => [
       styles.iconContainer,
-      { borderColor: color },
+      { borderColor: color, backgroundColor: bgColor },
       pressed && { opacity: 0.7, transform: [{ scale: 0.95 }] }
     ]}
   >

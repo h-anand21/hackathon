@@ -30,21 +30,21 @@ export const DarkColors = {
 };
 
 export const LightColors = {
-  background: '#f4f4f5',
+  background: '#ffffff',
   card: '#ffffff',
-  cardBorder: '#000000',
+  cardBorder: '#09090b',
   foreground: '#09090b',
-  muted: '#e4e4e7',
-  mutedForeground: '#52525b',
+  muted: '#f4f4f5',
+  mutedForeground: '#71717a',
   primary: '#0d9488',
   primaryForeground: '#ffffff',
-  accent: '#d97706',
+  accent: '#f59e0b',
   accentForeground: '#ffffff',
   destructive: '#e11d48',
-  border: '#000000',
+  border: '#09090b',
   tabBar: '#ffffff',
-  tabBarBorder: '#000000',
-  shadow: '#000000',
+  tabBarBorder: '#e4e4e7',
+  shadow: '#09090b',
 };
 
 const THEME_KEY = 'pollsphere_theme_mode';

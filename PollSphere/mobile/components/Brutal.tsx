@@ -11,7 +11,7 @@ import {
   TextInputProps,
   PressableProps
 } from 'react-native';
-import { Colors, BrutalStyles } from '../constants/Theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface BrutalCardProps {
   children: React.ReactNode;
@@ -20,12 +20,26 @@ interface BrutalCardProps {
 }
 
 export const BrutalCard: React.FC<BrutalCardProps> = ({ children, style, variant = 'default' }) => {
-  let shadowStyle = BrutalStyles.shadow;
-  if (variant === 'primary') shadowStyle = BrutalStyles.shadowPrimary;
-  if (variant === 'accent') shadowStyle = BrutalStyles.shadowAccent;
+  const { colors } = useTheme();
+
+  const getShadowColor = () => {
+    if (variant === 'primary') return colors.primary;
+    if (variant === 'accent') return colors.accent;
+    return colors.shadow;
+  };
 
   return (
-    <View style={[styles.card, shadowStyle, style]}>
+    <View 
+      style={[
+        styles.card, 
+        { 
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          shadowColor: getShadowColor()
+        },
+        style
+      ]}
+    >
       {children}
     </View>
   );
@@ -49,6 +63,7 @@ export const BrutalButton: React.FC<BrutalButtonProps> = ({
   disabled,
   ...props 
 }) => {
+  const { colors, mode } = useTheme();
   const animatedValue = useRef(new Animated.Value(0)).current;
 
   const handlePressIn = () => {
@@ -71,27 +86,27 @@ export const BrutalButton: React.FC<BrutalButtonProps> = ({
     switch (variant) {
       case 'primary':
         return {
-          bg: Colors.primary,
-          text: Colors.primaryForeground,
-          shadow: Colors.primary,
+          bg: colors.primary,
+          text: colors.primaryForeground,
+          shadow: colors.primary,
         };
       case 'accent':
         return {
-          bg: Colors.accent,
-          text: Colors.accentForeground,
-          shadow: Colors.accent,
+          bg: colors.accent,
+          text: colors.accentForeground,
+          shadow: colors.accent,
         };
       case 'destructive':
         return {
-          bg: Colors.destructive,
-          text: '#09090b',
-          shadow: Colors.destructive,
+          bg: colors.destructive,
+          text: mode === 'dark' ? '#09090b' : '#ffffff',
+          shadow: colors.destructive,
         };
       default:
         return {
-          bg: '#18181b',
-          text: '#ffffff',
-          shadow: '#ffffff',
+          bg: mode === 'dark' ? '#18181b' : '#ffffff',
+          text: colors.foreground,
+          shadow: colors.shadow,
         };
     }
   };
@@ -107,11 +122,17 @@ export const BrutalButton: React.FC<BrutalButtonProps> = ({
     outputRange: [0, 4],
   });
 
-  const containerStyles: any[] = [styles.buttonContainer, { shadowColor: vColors.shadow }];
+  const containerStyles: any[] = [
+    styles.buttonContainer, 
+    { 
+      shadowColor: vColors.shadow 
+    }
+  ];
   const bodyStyles: any[] = [
     styles.buttonBody, 
     { 
       backgroundColor: vColors.bg,
+      borderColor: colors.border,
       transform: [{ translateY }, { translateX }]
     }
   ];
@@ -167,8 +188,16 @@ interface BrutalInputProps extends TextInputProps {
 }
 
 export const BrutalInput: React.FC<BrutalInputProps> = ({ label, style, ...props }) => {
+  const { colors, mode } = useTheme();
   const containerStyles: any[] = [styles.inputWrapper];
-  const inputStyles: any[] = [styles.input];
+  const inputStyles: any[] = [
+    styles.input,
+    {
+      backgroundColor: mode === 'dark' ? '#18181b' : '#ffffff',
+      borderColor: colors.border,
+      color: colors.foreground,
+    }
+  ];
 
   if (style) {
     const flatStyle = StyleSheet.flatten(style);
@@ -195,10 +224,10 @@ export const BrutalInput: React.FC<BrutalInputProps> = ({ label, style, ...props
 
   return (
     <View style={containerStyles}>
-      {label && <Text style={styles.inputLabel}>{label}</Text>}
+      {label && <Text style={[styles.inputLabel, { color: colors.foreground }]}>{label}</Text>}
       <TextInput
         style={inputStyles}
-        placeholderTextColor="#71717a"
+        placeholderTextColor={colors.mutedForeground}
         {...props}
       />
     </View>
@@ -207,15 +236,16 @@ export const BrutalInput: React.FC<BrutalInputProps> = ({ label, style, ...props
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#09090b',
     borderWidth: 2,
-    borderColor: '#ffffff',
     borderRadius: 16,
     padding: 20,
     marginVertical: 10,
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4,
   },
   buttonContainer: {
-    shadowColor: '#ffffff',
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 0,
@@ -224,7 +254,6 @@ const styles = StyleSheet.create({
   },
   buttonBody: {
     borderWidth: 2,
-    borderColor: '#ffffff',
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 12,
@@ -247,7 +276,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   inputLabel: {
-    color: '#ffffff',
     fontFamily: 'SpaceMono',
     fontSize: 12,
     fontWeight: '900',
@@ -256,11 +284,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   input: {
-    backgroundColor: '#18181b',
     borderWidth: 2,
-    borderColor: '#ffffff',
     borderRadius: 12,
-    color: '#ffffff',
     paddingVertical: 12,
     paddingHorizontal: 16,
     fontFamily: 'SpaceMono',
