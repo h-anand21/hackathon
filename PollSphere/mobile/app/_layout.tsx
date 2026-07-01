@@ -44,7 +44,7 @@ export default function RootLayout() {
 }
 
 import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo';
-import { useRouter } from 'expo-router';
+import { useRouter, useSegments } from 'expo-router';
 import { tokenCache } from '../utils/tokenCache';
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_YnJpZ2h0LW9jdG9wdXMtNDIuY2xlcmsuYWNjb3VudHMuZGV2JA';
@@ -66,16 +66,19 @@ function RootLayoutNav() {
 function NavigationWrapper() {
   const { isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
+  const segments = useSegments();
 
   useEffect(() => {
     if (isLoaded) {
-      if (isSignedIn) {
+      const inTabsGroup = segments[0] === '(tabs)';
+
+      if (isSignedIn && !inTabsGroup) {
         router.replace('/(tabs)');
-      } else {
+      } else if (!isSignedIn && inTabsGroup) {
         router.replace('/login');
       }
     }
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, segments]);
 
   return (
     <Stack>

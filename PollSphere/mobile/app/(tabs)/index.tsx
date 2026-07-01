@@ -5,13 +5,13 @@ import {
   View, 
   FlatList, 
   ActivityIndicator, 
-  SafeAreaView, 
   Platform,
   RefreshControl,
   Share,
   Alert,
   Pressable
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { BrutalCard, BrutalButton, BrutalInput } from '../../components/Brutal';

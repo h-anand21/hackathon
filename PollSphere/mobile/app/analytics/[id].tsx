@@ -5,10 +5,10 @@ import {
   View, 
   ScrollView, 
   ActivityIndicator, 
-  SafeAreaView, 
   Platform,
   Alert
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
 import { BrutalCard, BrutalButton } from '../../components/Brutal';
