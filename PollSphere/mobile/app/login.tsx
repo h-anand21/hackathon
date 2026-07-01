@@ -9,7 +9,8 @@ import {
   ActivityIndicator,
   Pressable,
   Animated,
-  Easing
+  Easing,
+  Image
 } from 'react-native';
 import { useSignIn, useSignUp } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
@@ -913,7 +914,14 @@ export default function LoginScreen() {
           {/* Header Row with Logo and Skip button at top-right */}
           <View style={styles.onboardingHeaderRow}>
             <View style={styles.onboardingHeaderLeft}>
-              <Text style={styles.logoMini}>📊 PollSphere</Text>
+              <View style={styles.miniLogoRow}>
+                <Image 
+                  source={require('../assets/images/image.png')} 
+                  style={styles.miniLogoImage} 
+                  resizeMode="contain"
+                />
+                <Text style={styles.logoMiniText}>PollSphere</Text>
+              </View>
               <Text style={styles.subtitleMini}>Real-time polling</Text>
             </View>
             <Pressable 
@@ -993,7 +1001,12 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Logo Header */}
         <View style={styles.header}>
-          <Text style={styles.logo}>📊 PollSphere</Text>
+          <Image 
+            source={require('../assets/images/image.png')} 
+            style={styles.mainLogoImage} 
+            resizeMode="contain"
+          />
+          <Text style={styles.logoText}>PollSphere</Text>
           <Text style={styles.subtitle}>Real-time feedback & polling platform</Text>
         </View>
 
@@ -1528,5 +1541,34 @@ const styles = StyleSheet.create({
   },
   fullNextBtn: {
     width: '100%',
+  },
+  miniLogoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 2,
+  },
+  miniLogoImage: {
+    width: 24,
+    height: 24,
+  },
+  logoMiniText: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    letterSpacing: -0.5,
+  },
+  mainLogoImage: {
+    width: 72,
+    height: 72,
+    marginBottom: 8,
+  },
+  logoText: {
+    fontSize: 36,
+    fontWeight: '900',
+    color: '#ffffff',
+    fontFamily: 'SpaceMono',
+    letterSpacing: -1,
   },
 });
