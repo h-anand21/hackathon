@@ -7,7 +7,8 @@ import {
   KeyboardAvoidingView, 
   Platform, 
   ActivityIndicator, 
-  Alert
+  Alert,
+  Pressable
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@clerk/clerk-expo';
@@ -17,6 +18,7 @@ import { Colors } from '../../constants/Theme';
 import { api, initTokenGetter } from '../../utils/api';
 import { Lock, Plus, Trash } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function CreatePollScreen() {
   const { isLoaded, userId, getToken } = useAuth();
@@ -33,7 +35,57 @@ export default function CreatePollScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [responseMode, setResponseMode] = useState<'anonymous' | 'authenticated'>('anonymous');
-  const [expiryHours, setExpiryHours] = useState('24');
+
+  // Expiry states using native Date object
+  const [expiryDate, setExpiryDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setHours(d.getHours() + 24);
+    return d;
+  });
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date');
+
+  const onPickerChange = (event: any, selectedDate?: Date) => {
+    if (event.type === 'dismissed') {
+      setShowPicker(false);
+      return;
+    }
+
+    const currentDate = selectedDate || expiryDate;
+
+    if (Platform.OS === 'android') {
+      setShowPicker(false);
+    }
+
+    setExpiryDate(currentDate);
+
+    if (pickerMode === 'date') {
+      setPickerMode('time');
+      if (Platform.OS === 'android') {
+        setTimeout(() => setShowPicker(true), 150);
+      }
+    }
+  };
+
+  const showDatePicker = () => {
+    setPickerMode('date');
+    setShowPicker(true);
+  };
+
+  const setExpiryFromOffset = (hoursOffset: number) => {
+    const d = new Date();
+    d.setHours(d.getHours() + hoursOffset);
+    setExpiryDate(d);
+  };
+
+  const formatDateTime = (d: Date) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+  };
 
   // Single Question setup for wizard ease
   const [questionText, setQuestionText] = useState('');
@@ -81,9 +133,8 @@ export default function CreatePollScreen() {
       return;
     }
 
-    const hours = parseInt(expiryHours);
-    if (isNaN(hours) || hours <= 0) {
-      Alert.alert('Validation Error', 'Please enter a valid number of hours for expiry');
+    if (expiryDate <= new Date()) {
+      Alert.alert('Validation Error', 'Expiry date and time must be in the future');
       return;
     }
 
@@ -91,14 +142,12 @@ export default function CreatePollScreen() {
 
     try {
       // Token injected automatically by axios interceptor — no manual call needed
-      const expiresAtDate = new Date();
-      expiresAtDate.setHours(expiresAtDate.getHours() + hours);
 
       const pollRes = await api.post('/polls', {
         title: title.trim(),
         description: description.trim() || undefined,
         responseMode,
-        expiresAt: expiresAtDate.toISOString()
+        expiresAt: expiryDate.toISOString()
       });
 
       if (!pollRes.data.success) {
@@ -131,6 +180,11 @@ export default function CreatePollScreen() {
       setTitle('');
       setDescription('');
       setQuestionText('');
+      setExpiryDate(() => {
+        const d = new Date();
+        d.setHours(d.getHours() + 24);
+        return d;
+      });
       setOptions([
         { id: '1', text: '' },
         { id: '2', text: '' }
@@ -175,7 +229,7 @@ export default function CreatePollScreen() {
 
           {/* Section 1: Poll General Metadata */}
           <BrutalCard variant="default">
-            <Text style={styles.cardHeader}>1. General Info</Text>
+            <Text style={[styles.cardHeader, { color: colors.foreground, borderBottomColor: colors.border }]}>1. General Info</Text>
             <BrutalInput
               label="Poll Campaign Title"
               placeholder="e.g., Team Feedback Session"
@@ -192,7 +246,7 @@ export default function CreatePollScreen() {
             />
 
             {/* Mode selection buttons */}
-            <Text style={styles.inputLabel}>Response Mode</Text>
+            <Text style={[styles.inputLabel, { color: colors.foreground }]}>Response Mode</Text>
             <View style={styles.toggleRow}>
               <BrutalButton
                 title="Anonymous"
@@ -210,18 +264,70 @@ export default function CreatePollScreen() {
               />
             </View>
 
-            <BrutalInput
-              label="Expiry (Hours from now)"
-              placeholder="24"
-              value={expiryHours}
-              onChangeText={setExpiryHours}
-              keyboardType="number-pad"
-            />
+            <Text style={[styles.inputLabel, { color: colors.foreground }]}>Expiry Date & Time</Text>
+            
+            {/* Native Date Picker Trigger Button */}
+            <Pressable 
+              onPress={showDatePicker}
+              style={[
+                styles.pickerTrigger, 
+                { 
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                }
+              ]}
+            >
+              <Text style={[styles.pickerTriggerText, { color: colors.foreground }]}>
+                📅 {formatDateTime(expiryDate)}
+              </Text>
+            </Pressable>
+
+            {showPicker && (
+              <DateTimePicker
+                value={expiryDate}
+                mode={pickerMode}
+                display="default"
+                minimumDate={new Date()}
+                onChange={onPickerChange}
+              />
+            )}
+
+            {/* Quick offset buttons */}
+            <View style={styles.quickOffsetRow}>
+              <BrutalButton
+                title="+1 Hr"
+                variant="default"
+                onPress={() => setExpiryFromOffset(1)}
+                style={styles.quickOffsetBtn}
+                textStyle={styles.quickOffsetBtnText}
+              />
+              <BrutalButton
+                title="+1 Day"
+                variant="default"
+                onPress={() => setExpiryFromOffset(24)}
+                style={styles.quickOffsetBtn}
+                textStyle={styles.quickOffsetBtnText}
+              />
+              <BrutalButton
+                title="+3 Days"
+                variant="default"
+                onPress={() => setExpiryFromOffset(72)}
+                style={styles.quickOffsetBtn}
+                textStyle={styles.quickOffsetBtnText}
+              />
+              <BrutalButton
+                title="+7 Days"
+                variant="default"
+                onPress={() => setExpiryFromOffset(168)}
+                style={styles.quickOffsetBtn}
+                textStyle={styles.quickOffsetBtnText}
+              />
+            </View>
           </BrutalCard>
 
           {/* Section 2: Poll Question & Options */}
           <BrutalCard variant="primary">
-            <Text style={styles.cardHeader}>2. Add Question</Text>
+            <Text style={[styles.cardHeader, { color: colors.foreground, borderBottomColor: colors.border }]}>2. Add Question</Text>
             <BrutalInput
               label="Question Text"
               placeholder="What would you like to ask?"
@@ -247,7 +353,7 @@ export default function CreatePollScreen() {
               />
             </View>
 
-            <Text style={styles.inputLabel}>Choices</Text>
+            <Text style={[styles.inputLabel, { color: colors.foreground }]}>Choices</Text>
             {options.map((opt, idx) => (
               <View key={opt.id} style={styles.optionInputRow}>
                 <BrutalInput
@@ -380,8 +486,6 @@ const styles = StyleSheet.create({
   },
   addOptionBtn: {
     marginTop: 12,
-    borderColor: '#3f3f46',
-    backgroundColor: '#18181b',
   },
   addOptionBtnText: {
     fontSize: 12,
@@ -412,5 +516,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     marginBottom: 10,
+  },
+  quickOffsetRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 10,
+  },
+  quickOffsetBtn: {
+    flex: 1,
+    marginVertical: 4,
+    paddingVertical: 4,
+  },
+  quickOffsetBtnText: {
+    fontSize: 9,
+    fontFamily: 'SpaceMono',
+    fontWeight: '900',
+  },
+  pickerTrigger: {
+    borderWidth: 2,
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 10,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
+  },
+  pickerTriggerText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 14,
+    fontWeight: '900',
   },
 });

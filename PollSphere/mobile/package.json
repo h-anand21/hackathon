@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@clerk/clerk-expo": "^2.6.2",
+    "@react-native-community/datetimepicker": "8.6.0",
     "axios": "^1.18.1",
     "expo": "~55.0.0",
     "expo-auth-session": "~55.0.17",

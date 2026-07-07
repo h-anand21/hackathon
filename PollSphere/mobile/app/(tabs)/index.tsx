@@ -9,11 +9,12 @@ import {
   RefreshControl,
   Share,
   Alert,
-  Pressable
+  Pressable,
+  BackHandler
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@clerk/clerk-expo';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { BrutalCard, BrutalButton, BrutalInput } from '../../components/Brutal';
 import { Colors } from '../../constants/Theme';
 import { api, setAuthToken, initTokenGetter } from '../../utils/api';
@@ -42,6 +43,22 @@ export default function DashboardScreen() {
       initTokenGetter(getToken);
     }
   }, [isLoaded, getToken]);
+
+  // Intercept back press on main dashboard tab to exit app instead of redirect loop
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        BackHandler.exitApp();
+        return true; // prevent default behavior
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => {
+        subscription.remove();
+      };
+    }, [])
+  );
 
   const fetchPolls = async (isRef = false) => {
     if (!userId) {

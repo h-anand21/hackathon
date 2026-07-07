@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+cklimport React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -969,7 +969,7 @@ export default function LoginScreen() {
                   style={styles.miniLogoImage} 
                   resizeMode="contain"
                 />
-                <Text style={styles.logoMiniText}>PollSphere</Text>
+                <Text style={[styles.logoMiniText, { color: colors.foreground }]}>PollSphere</Text>
               </View>
               <Text style={styles.subtitleMini}>Real-time polling</Text>
             </View>
@@ -978,19 +978,19 @@ export default function LoginScreen() {
                 SecureStore.setItemAsync(ONBOARDING_KEY, 'true');
                 setShowOnboarding(false);
               }} 
-              style={styles.topSkipBtn}
+              style={[styles.topSkipBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
             >
-              <Text style={styles.topSkipText}>Skip</Text>
+              <Text style={[styles.topSkipText, { color: colors.foreground }]}>Skip</Text>
             </Pressable>
           </View>
 
           {/* Neo-brutalist Onboarding Card Container */}
           <View style={styles.brutalCardContainer}>
             {/* Solid offset shadow layer */}
-            <View style={styles.brutalCardShadow} />
+            <View style={[styles.brutalCardShadow, { backgroundColor: colors.border, borderColor: colors.border }]} />
             
             {/* Main Card Body */}
-            <View style={styles.brutalCardBody}>
+            <View style={[styles.brutalCardBody, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {/* Card Header Row matching the user's image */}
               <View style={styles.cardHeaderRow}>
                 <View style={styles.liveBadge}>
@@ -1000,7 +1000,7 @@ export default function LoginScreen() {
               </View>
 
               {/* Card Title */}
-              <Text style={styles.slideHeaderTitle}>{slide.title}</Text>
+              <Text style={[styles.slideHeaderTitle, { color: colors.foreground }]}>{slide.title}</Text>
 
               {/* Render animated custom visualizer */}
               {slide.renderAnim()}
@@ -1021,8 +1021,8 @@ export default function LoginScreen() {
           </View>
 
           {/* Description sub-card */}
-          <View style={styles.descCard}>
-            <Text style={styles.slideDescText}>{slide.desc}</Text>
+          <View style={[styles.descCard, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+            <Text style={[styles.slideDescText, { color: colors.foreground }]}>{slide.desc}</Text>
           </View>
 
           {/* Controls with stacked Back and Next buttons */}
@@ -1072,13 +1072,13 @@ export default function LoginScreen() {
             style={styles.mainLogoImage} 
             resizeMode="contain"
           />
-          <Text style={styles.logoText}>PollSphere</Text>
+          <Text style={[styles.logoText, { color: colors.foreground }]}>PollSphere</Text>
           <Text style={styles.subtitle}>Real-time feedback & polling platform</Text>
         </View>
 
         {/* Interactive Login/Signup Card */}
         <BrutalCard variant="primary" style={styles.card}>
-          <Text style={styles.cardTitle}>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>
             {isForgotPasswordMode 
               ? 'Reset Password' 
               : pendingVerification 
@@ -1091,7 +1091,7 @@ export default function LoginScreen() {
           {isForgotPasswordMode ? (
             forgotPasswordStep === 1 ? (
               <View>
-                <Text style={styles.infoText}>
+                <Text style={[styles.infoText, { color: colors.foreground }]}>
                   Enter your email address to receive a password reset verification code.
                 </Text>
                 <BrutalInput
@@ -1123,7 +1123,7 @@ export default function LoginScreen() {
               </View>
             ) : (
               <View>
-                <Text style={styles.infoText}>
+                <Text style={[styles.infoText, { color: colors.foreground }]}>
                   Enter the code sent to your email and select your new password.
                 </Text>
                 <BrutalInput
@@ -1162,7 +1162,7 @@ export default function LoginScreen() {
             )
           ) : pendingVerification ? (
             <View>
-              <Text style={styles.infoText}>
+              <Text style={[styles.infoText, { color: colors.foreground }]}>
                 We sent a verification code to your email. Enter it below.
               </Text>
               <BrutalInput
