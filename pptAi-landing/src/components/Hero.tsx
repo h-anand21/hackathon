@@ -1,115 +1,58 @@
-import { motion } from 'framer-motion'
-import { ArrowRight, Play, Zap, Shield, Users } from 'lucide-react'
-import HeroPreview from './HeroPreview'
-
-const APP_URL = import.meta.env.VITE_APP_URL || 'http://localhost:3000'
-
-const container = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.12 } },
-}
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
-}
-
-const badges = [
-  { icon: Zap, text: '10x Faster' },
-  { icon: Shield, text: 'Free to Start' },
-  { icon: Users, text: '500+ Generated' },
-]
+import { Sparkles, ArrowUp } from 'lucide-react'
+import DashboardMockup from './DashboardMockup'
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center pt-24 pb-16 px-6 overflow-hidden">
-      <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-16 items-center">
-        {/* Left content */}
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-col gap-6"
-        >
-          {/* Badge */}
-          <motion.div variants={fadeUp}>
-            <span className="inline-flex items-center gap-2 glass glow-border rounded-full px-4 py-2 text-sm font-medium text-indigo-300">
-              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-              Powered by Gemini AI + DALL·E 3
-            </span>
-          </motion.div>
+    <section 
+      className="relative min-h-[100svh] overflow-hidden bg-cover bg-center flex flex-col pt-16 sm:pt-0"
+      style={{ backgroundImage: 'url("https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260611_133301_d5f2a94a-b22e-4e4a-a6b6-eacdddf1f5b0.png&w=1280&q=85")' }}
+    >
+      <div className="flex-1 min-h-8 sm:min-h-12 lg:min-h-16 shrink-0" />
 
-          {/* Title */}
-          <motion.div variants={fadeUp} className="flex flex-col gap-1">
-            <h1 className="text-5xl lg:text-7xl font-extrabold leading-tight text-white">
-              Create
-            </h1>
-            <h1 className="text-5xl lg:text-7xl font-extrabold leading-tight gradient-text">
-              Professional
-            </h1>
-            <h1 className="text-5xl lg:text-7xl font-extrabold leading-tight text-white">
-              Presentations
-            </h1>
-            <h1 className="text-5xl lg:text-7xl font-extrabold leading-tight text-white/50">
-              with AI
-            </h1>
-          </motion.div>
+      <div className="text-center flex flex-col items-center px-4 relative z-20">
+        <h1 className="text-gray-900 font-normal leading-[1.05] tracking-tight text-[40px] min-[400px]:text-[44px] sm:text-6xl lg:text-7xl xl:text-[80px]">
+          <div className="animate-fade-up">Create presentations.</div>
+          <div className="animate-fade-up" style={{ animationDelay: '100ms' }}>Effortlessly.</div>
+        </h1>
 
-          {/* Subtitle */}
-          <motion.p variants={fadeUp} className="text-lg text-white/60 max-w-lg leading-relaxed">
-            From idea to a complete, beautifully designed slide deck in seconds.
-            Just type your topic — AI writes, designs, and illustrates everything automatically.
-          </motion.p>
+        <form className="animate-fade-up mt-5 sm:mt-6 w-full max-w-xl" style={{ animationDelay: '220ms' }}>
+          <div className="flex items-center gap-3 rounded-full bg-white/60 backdrop-blur-md ring-1 ring-gray-200 pl-5 pr-1.5 py-1.5 shadow-sm">
+            <input 
+              type="text" 
+              placeholder="What topic do you want to present?" 
+              className="flex-1 bg-transparent text-sm sm:text-base text-gray-900 placeholder-gray-500 outline-none py-2"
+            />
+            <button type="submit" className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-900 text-white hover:scale-105 active:scale-95 transition-transform shrink-0 flex items-center justify-center">
+              <ArrowUp className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+            </button>
+          </div>
+        </form>
 
-          {/* Buttons */}
-          <motion.div variants={fadeUp} className="flex flex-wrap gap-4">
-            <motion.a
-              href={APP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(99,102,241,0.5)' }}
-              whileTap={{ scale: 0.97 }}
-              className="btn-primary flex items-center gap-2 no-underline"
-            >
-              Generate Free <ArrowRight size={16} />
-            </motion.a>
-            <motion.a
-              href="#demo"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="btn-secondary flex items-center gap-2 no-underline"
-            >
-              <Play size={16} className="text-indigo-400" /> Watch Demo
-            </motion.a>
-          </motion.div>
+        <p className="animate-fade-up mt-4 sm:mt-5 text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed max-w-md" style={{ animationDelay: '340ms' }}>
+          Ship slides that answer actual requirements <br className="hidden sm:block" />
+          — and look stunning with <Sparkles className="inline w-4 h-4 -mt-1 text-indigo-500" /> pptAI
+        </p>
 
-          {/* Trust badges */}
-          <motion.div variants={fadeUp} className="flex flex-wrap gap-4 mt-2">
-            {badges.map((b) => {
-              const Icon = b.icon
-              return (
-                <div key={b.text} className="flex items-center gap-2 text-sm text-white/50">
-                  <Icon size={14} className="text-indigo-400" />
-                  {b.text}
-                </div>
-              )
-            })}
-          </motion.div>
-        </motion.div>
-
-        {/* Right — floating preview */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <HeroPreview />
-        </motion.div>
+        <div className="animate-fade-up mt-4 sm:mt-5 flex flex-wrap items-center justify-center gap-3" style={{ animationDelay: '460ms' }}>
+          <a href="#" className="bg-gray-900 text-white text-sm font-medium px-6 py-2.5 rounded-full hover:bg-gray-800 hover:shadow-lg transition-all">
+            Try It Free
+          </a>
+          <a href="#" className="text-gray-700 text-sm font-medium px-6 py-2.5 rounded-full ring-1 ring-gray-300 hover:bg-gray-100 transition-colors bg-white/50 backdrop-blur-sm">
+            Talk to sales
+          </a>
+        </div>
       </div>
 
-      {/* Bottom gradient fade */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
-        style={{ background: 'linear-gradient(to bottom, transparent, #0f0f1a)' }}
+      <div className="flex-1 min-h-10 sm:min-h-12 lg:min-h-16 shrink-0" />
+
+      <div className="animate-hero-rise relative z-0 w-[92%] sm:w-[84%] lg:w-[72%] max-w-4xl mx-auto shrink-0 -mb-10 sm:-mb-20 lg:-mb-32" style={{ animationDelay: '620ms' }}>
+        <DashboardMockup />
+      </div>
+
+      <img 
+        src="https://res.cloudinary.com/dy5er7kv5/image/upload/q_auto/f_auto/v1781191264/grass_eam204.png" 
+        alt="" 
+        className="pointer-events-none absolute bottom-0 left-0 z-10 w-full select-none object-cover h-[20vh] sm:h-auto"
       />
     </section>
   )
