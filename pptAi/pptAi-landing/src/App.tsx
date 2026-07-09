@@ -46,13 +46,12 @@ export default function App() {
       <CursorSpotlight />
 
       {/* Global Fixed Background */}
-      <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-blue-50/50">
-        <motion.div 
+      <div className="fixed inset-0 z-[-1] pointer-events-none bg-blue-50/50">
+        <div 
           style={{ 
-            y: bgY,
             backgroundImage: 'url("https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260611_133301_d5f2a94a-b22e-4e4a-a6b6-eacdddf1f5b0.png&w=1280&q=85")' 
           }}
-          className="absolute inset-[-10%] bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center"
         />
         <img 
           src="https://res.cloudinary.com/dy5er7kv5/image/upload/q_auto/f_auto/v1781191264/grass_eam204.png" 
