@@ -1,6 +1,8 @@
 import { Sparkles, ArrowUp } from 'lucide-react'
 import DashboardMockup from './DashboardMockup'
 
+const APP_URL = import.meta.env.VITE_APP_URL || 'http://localhost:3000'
+
 export default function Hero() {
   return (
     <section 
@@ -15,12 +17,14 @@ export default function Hero() {
           <div className="animate-fade-up" style={{ animationDelay: '100ms' }}>Effortlessly.</div>
         </h1>
 
-        <form className="animate-fade-up mt-5 sm:mt-6 w-full max-w-xl" style={{ animationDelay: '220ms' }}>
+        <form action={APP_URL} method="GET" className="animate-fade-up mt-5 sm:mt-6 w-full max-w-xl" style={{ animationDelay: '220ms' }}>
           <div className="flex items-center gap-3 rounded-full bg-white/60 backdrop-blur-md ring-1 ring-gray-200 pl-5 pr-1.5 py-1.5 shadow-sm">
             <input 
+              name="prompt"
               type="text" 
               placeholder="What topic do you want to present?" 
               className="flex-1 bg-transparent text-sm sm:text-base text-gray-900 placeholder-gray-500 outline-none py-2"
+              required
             />
             <button type="submit" className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-900 text-white hover:scale-105 active:scale-95 transition-transform shrink-0 flex items-center justify-center">
               <ArrowUp className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />

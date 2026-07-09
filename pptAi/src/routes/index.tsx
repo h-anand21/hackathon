@@ -22,6 +22,7 @@ import { Slider } from '#/components/ui/slider'
 import { Textarea } from '#/components/ui/textarea'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import { z } from 'zod'
 import { Sparkles, Wand2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -35,6 +36,9 @@ type HomeFormState = {
 }
 
 export const Route = createFileRoute('/')({
+  validateSearch: z.object({
+    prompt: z.string().optional().catch(''),
+  }),
   beforeLoad: async ({ location }) => {
     const session = await getSession()
 
@@ -54,8 +58,10 @@ function HomePage() {
   const _context = Route.useRouteContext()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const search = Route.useSearch()
+  
   const [form, setForm] = useState<HomeFormState>({
-    content: '',
+    content: search.prompt || '',
     slideCount: 8,
     style: 'minimal',
     tone: 'formal',
