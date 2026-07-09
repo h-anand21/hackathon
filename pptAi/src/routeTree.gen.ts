@@ -8,14 +8,14 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root.tsx'
-import { Route as AboutRouteImport } from './routes/about.tsx'
-import { Route as AuthRouteRouteImport } from './routes/_auth/route.tsx'
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PresentationsPresentationIdRouteImport } from './routes/presentations.$presentationId.tsx'
-import { Route as ApiInngestRouteImport } from './routes/api/inngest.ts'
-import { Route as AuthLoginRouteImport } from './routes/_auth/login.tsx'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$.ts'
+import { Route as PresentationsPresentationIdRouteImport } from './routes/presentations.$presentationId'
+import { Route as ApiInngestRouteImport } from './routes/api/inngest'
+import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',

@@ -83,16 +83,29 @@ Guidelines:
 - Last slide should be a summary or call-to-action
 - Keep content concise and impactful
 - For imagePrompt, describe a professional illustration that complements the slide (no text in images)
+
+You MUST respond with a JSON object matching this schema:
+{
+  "slides": [
+    {
+      "title": "Slide Title",
+      "content": "Slide content / bullet points",
+      "notes": "Speaker notes (optional)",
+      "imagePrompt": "A concise prompt to generate an illustration for this slide"
+    }
+  ]
+}
 `
 
       const result = await generateText({
-        model: mesh('google/gemini-3.5-flash'),
-        output: Output.object({ schema: slidesResponseSchema }),
+        model: mesh.chat('google/gemini-3.5-flash'),
+        output: Output.json(),
         system: systemPrompt,
         prompt: presentation.prompt,
       })
 
-      return result.output
+      const parsed = slidesResponseSchema.parse(result.output)
+      return parsed
     })
 
     await step.run('delete-old-slides', async () => {

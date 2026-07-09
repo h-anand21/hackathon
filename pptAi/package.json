@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.63",
-    "@ai-sdk/openai": "^4.0.8",
+    "@ai-sdk/openai": "^3.0.82",
     "@ai-sdk/react": "^3.0.166",
     "@imagekit/nodejs": "^7.5.0",
     "@prisma/adapter-pg": "^7.4.2",
