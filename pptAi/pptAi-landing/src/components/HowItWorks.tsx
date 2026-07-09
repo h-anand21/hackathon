@@ -27,7 +27,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-24 sm:py-32 px-6 bg-white relative">
+    <section id="how-it-works" className="py-24 sm:py-32 px-6 relative">
       <div className="max-w-7xl mx-auto relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -63,7 +63,7 @@ export default function HowItWorks() {
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-                  className="w-24 h-24 rounded-full bg-white ring-1 ring-gray-200 shadow-sm flex items-center justify-center mb-6 relative z-10 overflow-hidden"
+                  className="w-24 h-24 rounded-full bg-white/70 backdrop-blur-xl ring-1 ring-white/50 shadow-sm flex items-center justify-center mb-6 relative z-10 overflow-hidden"
                 >
                   <div 
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"

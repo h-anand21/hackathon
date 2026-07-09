@@ -25,7 +25,7 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   return (
-    <section id="faq" className="py-24 sm:py-32 px-6 bg-white relative">
+    <section id="faq" className="py-24 sm:py-32 px-6 relative">
       <div className="max-w-3xl mx-auto relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -53,7 +53,7 @@ export default function FAQ() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.8 }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="rounded-2xl border border-gray-200 bg-white overflow-hidden"
+                className="rounded-2xl border border-white/50 bg-white/70 backdrop-blur-xl overflow-hidden ring-1 ring-white/50 shadow-sm"
               >
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : i)}

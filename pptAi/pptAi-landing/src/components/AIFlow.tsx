@@ -44,7 +44,7 @@ const fadeUp = {
 
 export default function AIFlow() {
   return (
-    <section id="aiflow" className="py-24 sm:py-32 px-6 bg-white relative overflow-hidden">
+    <section id="aiflow" className="py-24 sm:py-32 px-6 relative overflow-hidden">
       <div className="max-w-3xl mx-auto relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -72,7 +72,7 @@ export default function AIFlow() {
                   whileInView="visible"
                   viewport={{ once: true, amount: 0.4 }}
                   whileHover={{ scale: 1.03, y: -2, boxShadow: "0 20px 40px -15px rgba(0,0,0,0.05)" }}
-                  className="w-full bg-white rounded-2xl p-5 flex items-start gap-4 ring-1 ring-gray-200 shadow-sm transition-all relative overflow-hidden group"
+                  className="w-full bg-white/70 backdrop-blur-xl rounded-2xl p-5 flex items-start gap-4 ring-1 ring-white/50 shadow-sm transition-all relative overflow-hidden group"
                 >
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"

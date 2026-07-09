@@ -21,7 +21,7 @@ const features = [
 
 export default function Features() {
   return (
-    <section id="features" className="py-24 sm:py-32 px-6 bg-gray-50/50 relative overflow-hidden">
+    <section id="features" className="py-24 sm:py-32 px-6 relative overflow-hidden">
       <div className="max-w-7xl mx-auto relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -54,7 +54,7 @@ export default function Features() {
                   y: -5,
                   boxShadow: "0 20px 40px -15px rgba(0,0,0,0.05)",
                 }}
-                className="bg-white rounded-2xl p-6 group cursor-default relative overflow-hidden ring-1 ring-gray-200 shadow-sm transition-all duration-300"
+                className="bg-white/70 backdrop-blur-xl rounded-2xl p-6 group cursor-default relative overflow-hidden ring-1 ring-white/50 shadow-sm transition-all duration-300"
               >
                 <div
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
