@@ -1,10 +1,15 @@
 import { Output, generateText } from 'ai'
-import { google } from '@ai-sdk/google'
+import { createOpenAI } from '@ai-sdk/openai'
 import { z } from 'zod'
 
 import { prisma } from '#/db'
 
 import { inngest } from './client'
+
+const mesh = createOpenAI({
+  baseURL: 'https://api.meshapi.ai/v1',
+  apiKey: process.env.MESH_API_KEY,
+})
 
 // ---------------------------------------------------------------------------
 // Image Generation
@@ -81,7 +86,7 @@ Guidelines:
 `
 
       const result = await generateText({
-        model: google('gemini-2.5-flash'),
+        model: mesh('google/gemini-3.5-flash'),
         output: Output.object({ schema: slidesResponseSchema }),
         system: systemPrompt,
         prompt: presentation.prompt,
