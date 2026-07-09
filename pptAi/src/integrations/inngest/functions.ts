@@ -3,6 +3,7 @@ import { createOpenAI } from '@ai-sdk/openai'
 import { z } from 'zod'
 
 import { prisma } from '#/db'
+import { uploadImageFromUrl } from '#/lib/imagekit'
 
 import { inngest } from './client'
 
@@ -115,15 +116,54 @@ You MUST respond with a JSON object matching this schema:
     })
 
     await step.run('create-slides', async () => {
-      const data = slides.map((s, i) => ({
-        presentationId,
-        order: i,
-        title: s.title,
-        content: s.content,
-        notes: s.notes ?? null,
-        imagePrompt: s.imagePrompt,
-        imageUrl: buildImageKitUrl(s.imagePrompt, `slide-${presentationId}-${i}`),
-      }))
+      const data = await Promise.all(
+        slides.map(async (s, i) => {
+          let imageUrl = buildImageKitUrl(s.imagePrompt, `slide-${presentationId}-${i}`)
+
+          try {
+            const response = await fetch('https://api.meshapi.ai/v1/images/generations', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${process.env.MESH_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                model: 'openai/dall-e-3',
+                prompt: s.imagePrompt,
+                n: 1,
+                size: '1024x1024',
+              }),
+            })
+
+            if (response.ok) {
+              const resJson = await response.json()
+              const tempUrl = resJson.data?.[0]?.url
+              if (tempUrl) {
+                const permanentUrl = await uploadImageFromUrl(
+                  tempUrl,
+                  `slide-${presentationId}-${i}`,
+                )
+                imageUrl = permanentUrl
+              }
+            } else {
+              const errText = await response.text()
+              console.warn(`MeshAPI DALL-E 3 returned status ${response.status}: ${errText}`)
+            }
+          } catch (err) {
+            console.warn(`Failed to generate image for slide ${i} via MeshAPI:`, err)
+          }
+
+          return {
+            presentationId,
+            order: i,
+            title: s.title,
+            content: s.content,
+            notes: s.notes ?? null,
+            imagePrompt: s.imagePrompt,
+            imageUrl,
+          }
+        })
+      )
 
       await prisma.slide.createMany({ data })
     })
