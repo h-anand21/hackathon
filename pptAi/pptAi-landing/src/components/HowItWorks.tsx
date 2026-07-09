@@ -5,8 +5,8 @@ const steps = [
   {
     number: '01',
     icon: FileText,
-    title: 'Describe Your Topic',
-    desc: 'Type your topic, paste your notes, or upload a document. Our AI understands context, tone, and depth.',
+    title: 'Provide a Topic',
+    desc: 'Just tell us what you want to present about. Give us a topic, a document, or just a rough idea.',
     color: '#6366f1',
   },
   {
@@ -19,34 +19,36 @@ const steps = [
   {
     number: '03',
     icon: Image,
-    title: 'Images Auto-Generated',
-    desc: 'DALL·E 3 creates custom, context-aware illustrations for every slide. No stock photos ever.',
+    title: 'DALL·E 3 Illustrates It',
+    desc: 'We generate beautiful, context-aware images for your slides so you never need stock photos.',
     color: '#22d3ee',
-  },
+  }
 ]
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-32 px-6">
-      <div className="max-w-7xl mx-auto">
+    <section id="how-it-works" className="py-24 sm:py-32 px-6 bg-white relative">
+      <div className="max-w-7xl mx-auto relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="text-center mb-20"
         >
-          <p className="text-indigo-400 font-semibold text-sm uppercase tracking-widest mb-3">How it works</p>
-          <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4">
-            Three Steps to a{' '}
-            <span className="gradient-text">Perfect Presentation</span>
+          <p className="text-indigo-600 font-semibold text-sm uppercase tracking-widest mb-3">Workflow</p>
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
+            How It Works
           </h2>
-          <p className="text-white/50 text-lg max-w-xl mx-auto">
-            No design skills. No writer's block. No wasted hours.
+          <p className="text-gray-600 text-lg max-w-xl mx-auto">
+            From an idea to a fully designed presentation in three simple steps.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-8 relative">
+          {/* Connector Line (Desktop only) */}
+          <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-[1px] bg-gradient-to-r from-transparent via-gray-200 to-transparent -z-10" />
+
           {steps.map((step, i) => {
             const Icon = step.icon
             return (
@@ -54,41 +56,28 @@ export default function HowItWorks() {
                 key={i}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.6, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ scale: 1.03, y: -4 }}
-                className="glass rounded-3xl p-8 relative overflow-hidden group cursor-default"
-                style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.7, delay: i * 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="relative flex flex-col items-center text-center group"
               >
-                {/* Background number */}
-                <div
-                  className="absolute top-4 right-4 text-7xl font-extrabold leading-none select-none"
-                  style={{ color: `${step.color}10` }}
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                  className="w-24 h-24 rounded-full bg-white ring-1 ring-gray-200 shadow-sm flex items-center justify-center mb-6 relative z-10 overflow-hidden"
                 >
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: `radial-gradient(circle at center, ${step.color}15, transparent 70%)` }}
+                  />
+                  <Icon size={32} style={{ color: step.color }} className="relative z-10" />
+                </motion.div>
+
+                <div className="text-gray-300 text-6xl font-black absolute -top-8 -left-4 opacity-30 select-none z-0">
                   {step.number}
                 </div>
 
-                {/* Glow on hover */}
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl"
-                  style={{ background: `radial-gradient(circle at 30% 50%, ${step.color}10, transparent 70%)` }}
-                />
-
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
-                  style={{ background: `${step.color}20`, border: `1px solid ${step.color}40` }}
-                >
-                  <Icon size={24} style={{ color: step.color }} />
-                </div>
-
-                <div
-                  className="text-xs font-bold uppercase tracking-widest mb-2"
-                  style={{ color: step.color }}
-                >
-                  Step {step.number}
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
-                <p className="text-white/50 leading-relaxed text-sm">{step.desc}</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
+                <p className="text-gray-600 leading-relaxed text-sm sm:text-base max-w-xs">{step.desc}</p>
               </motion.div>
             )
           })}

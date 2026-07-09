@@ -21,11 +21,11 @@ export default function Navbar() {
       </a>
 
       <div className="hidden md:flex items-center gap-8">
-        <a href="#" className="flex items-center gap-1 text-[13px] text-gray-700 hover:text-gray-900 font-medium transition-colors">
+        <a href="#features" className="flex items-center gap-1 text-[13px] text-gray-700 hover:text-gray-900 font-medium transition-colors">
           Toolkit <ChevronDown className="w-3.5 h-3.5" />
         </a>
-        <a href="#" className="text-[13px] text-gray-700 hover:text-gray-900 font-medium transition-colors">Plans</a>
-        <a href="#" className="text-[13px] text-gray-700 hover:text-gray-900 font-medium transition-colors">News</a>
+        <a href="#how-it-works" className="text-[13px] text-gray-700 hover:text-gray-900 font-medium transition-colors">Workflow</a>
+        <a href="#aiflow" className="text-[13px] text-gray-700 hover:text-gray-900 font-medium transition-colors">AI Generation</a>
       </div>
 
       <div className="flex items-center gap-4">
@@ -54,9 +54,9 @@ export default function Navbar() {
             transition={{ duration: 0.2 }}
             className="absolute left-4 right-4 top-full mt-2 rounded-2xl bg-white/90 backdrop-blur-xl ring-1 ring-gray-200 px-5 py-3 shadow-xl z-50 flex flex-col"
           >
-            <a href="#" className="text-[15px] text-gray-700 hover:text-gray-900 border-b border-gray-200 py-3 font-medium">Toolkit</a>
-            <a href="#" className="text-[15px] text-gray-700 hover:text-gray-900 border-b border-gray-200 py-3 font-medium">Plans</a>
-            <a href="#" className="text-[15px] text-gray-700 hover:text-gray-900 py-3 font-medium border-b border-gray-200">News</a>
+            <a href="#features" onClick={() => setMobileOpen(false)} className="text-[15px] text-gray-700 hover:text-gray-900 border-b border-gray-200 py-3 font-medium">Toolkit</a>
+            <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="text-[15px] text-gray-700 hover:text-gray-900 border-b border-gray-200 py-3 font-medium">Workflow</a>
+            <a href="#aiflow" onClick={() => setMobileOpen(false)} className="text-[15px] text-gray-700 hover:text-gray-900 py-3 font-medium border-b border-gray-200">AI Generation</a>
             <a href={APP_URL} className="text-[15px] text-gray-900 hover:text-black py-3 font-medium">Get Started</a>
           </motion.div>
         )}

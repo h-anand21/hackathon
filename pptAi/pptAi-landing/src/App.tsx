@@ -2,6 +2,9 @@ import './index.css'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import CursorSpotlight from './components/CursorSpotlight'
+import AIFlow from './components/AIFlow'
+import HowItWorks from './components/HowItWorks'
+import Features from './components/Features'
 
 export default function App() {
   return (
@@ -20,9 +23,10 @@ export default function App() {
         they clash with the new light-theme Questly design. 
         Uncomment and update their styling if needed.
       */}
-      {/* <AIFlow /> */}
-      {/* <HowItWorks /> */}
-      {/* <Features /> */}
+      <HowItWorks />
+      <AIFlow />
+      <Features />
+      
       {/* <DemoCarousel /> */}
       {/* <Stats /> */}
       {/* <Testimonials /> */}
