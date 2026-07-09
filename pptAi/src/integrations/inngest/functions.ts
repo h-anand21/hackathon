@@ -27,6 +27,37 @@ function buildImageKitUrl(prompt: string, filename: string): string {
   return `${baseUrl}/ik-genimg-prompt-${encodeURIComponent(sanitizedPrompt)}/${filename}.jpg?tr=w-1280,h-720`
 }
 
+function cleanAndParseJSON(text: string): any {
+  let cleaned = text.trim()
+  if (cleaned.startsWith('```json')) {
+    cleaned = cleaned.slice(7)
+  } else if (cleaned.startsWith('```')) {
+    cleaned = cleaned.slice(3)
+  }
+  if (cleaned.endsWith('```')) {
+    cleaned = cleaned.slice(0, -3)
+  }
+  cleaned = cleaned.trim()
+
+  const firstBrace = cleaned.indexOf('{')
+  if (firstBrace === -1) {
+    throw new Error('No JSON object found in response')
+  }
+
+  let parseError: any = null
+  for (let i = cleaned.length; i >= firstBrace + 2; i--) {
+    try {
+      const candidate = cleaned.slice(firstBrace, i).trim()
+      if (candidate.endsWith('}')) {
+        return JSON.parse(candidate)
+      }
+    } catch (e) {
+      parseError = e
+    }
+  }
+  throw parseError || new Error('Failed to parse clean JSON')
+}
+
 // ---------------------------------------------------------------------------
 // Schemas
 // ---------------------------------------------------------------------------
@@ -100,12 +131,12 @@ You MUST respond with a JSON object matching this schema:
 
       const result = await generateText({
         model: mesh.chat('google/gemini-3.5-flash'),
-        output: Output.json(),
         system: systemPrompt,
         prompt: presentation.prompt,
       })
 
-      const parsed = slidesResponseSchema.parse(result.output)
+      const rawJson = cleanAndParseJSON(result.text)
+      const parsed = slidesResponseSchema.parse(rawJson)
       return parsed
     })
 
@@ -128,7 +159,7 @@ You MUST respond with a JSON object matching this schema:
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                model: 'openai/dall-e-3',
+                model: 'openai/gpt-image-1',
                 prompt: s.imagePrompt,
                 n: 1,
                 size: '1024x1024',
@@ -147,7 +178,7 @@ You MUST respond with a JSON object matching this schema:
               }
             } else {
               const errText = await response.text()
-              console.warn(`MeshAPI DALL-E 3 returned status ${response.status}: ${errText}`)
+              console.warn(`MeshAPI image generation returned status ${response.status}: ${errText}`)
             }
           } catch (err) {
             console.warn(`Failed to generate image for slide ${i} via MeshAPI:`, err)
