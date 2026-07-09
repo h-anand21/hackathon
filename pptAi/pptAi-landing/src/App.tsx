@@ -5,6 +5,8 @@ import CursorSpotlight from './components/CursorSpotlight'
 import AIFlow from './components/AIFlow'
 import HowItWorks from './components/HowItWorks'
 import Features from './components/Features'
+import FAQ from './components/FAQ'
+import Footer from './components/Footer'
 
 export default function App() {
   return (
@@ -26,12 +28,14 @@ export default function App() {
       <HowItWorks />
       <AIFlow />
       <Features />
+      <FAQ />
       
       {/* <DemoCarousel /> */}
       {/* <Stats /> */}
       {/* <Testimonials /> */}
       {/* <CTA /> */}
-      {/* <Footer /> */}
+      
+      <Footer />
     </div>
   )
 }
