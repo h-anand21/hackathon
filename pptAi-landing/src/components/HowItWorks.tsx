@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { FileText, Brain, Image } from 'lucide-react'
+import { FileText, BrainCog, Image } from 'lucide-react'
 
 const steps = [
   {
@@ -11,7 +11,7 @@ const steps = [
   },
   {
     number: '02',
-    icon: Brain,
+    icon: BrainCog,
     title: 'Gemini AI Writes It',
     desc: 'Google Gemini AI generates structured slide content with titles, bullets, speaker notes and flow.',
     color: '#8b5cf6',
