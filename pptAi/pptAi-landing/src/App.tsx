@@ -1,18 +1,13 @@
 import './index.css'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
-// import AIFlow from './components/AIFlow'
-// import HowItWorks from './components/HowItWorks'
-// import Features from './components/Features'
-// import DemoCarousel from './components/DemoCarousel'
-// import Stats from './components/Stats'
-// import Testimonials from './components/Testimonials'
-// import CTA from './components/CTA'
-// import Footer from './components/Footer'
+import CursorSpotlight from './components/CursorSpotlight'
 
 export default function App() {
   return (
     <div className="min-h-screen bg-white">
+      <CursorSpotlight />
+      
       <div className="absolute top-0 left-0 w-full z-50">
         <Navbar />
       </div>
