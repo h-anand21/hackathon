@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, Sparkles, FileText, Download, Layout, Pencil, Image as ImageIcon } from 'lucide-react'
+import { ChevronDown, Sparkles, FileText, Download, Layout, Pencil, Check, Image as ImageIcon } from 'lucide-react'
 
 const faqs = [
   {
@@ -116,18 +116,30 @@ const FaqVisual = ({ type }: { type: string }) => {
                  <div className="flex-1 bg-slate-200 p-2 sm:p-4 flex items-center justify-center relative">
                     {/* The Slide */}
                     <div className="w-48 sm:w-72 h-20 sm:h-32 bg-white shadow-lg border border-slate-200 p-3 sm:p-4 flex gap-3 relative overflow-visible">
-                       {/* Text Column */}
-                       <div className="flex-1 flex flex-col gap-2 relative">
-                          <motion.div animate={{ width: ['100%', '30%', '70%', '100%'] }} transition={{ duration: 8, times: [0, 0.2, 0.3, 1], repeat: Infinity, ease: "easeInOut" }} className="h-4 sm:h-5 bg-slate-800 rounded-[2px] relative flex items-center justify-end pr-[2px]">
-                              {/* Blinking Caret (visible only during edit) */}
-                              <motion.div animate={{ opacity: [0, 1, 0, 0, 0] }} transition={{ duration: 8, times: [0, 0.1, 0.2, 0.3, 1], repeat: Infinity }} className="w-[1.5px] h-[60%] bg-white" />
-                          </motion.div>
-                          <div className="w-full h-2 sm:h-2.5 bg-slate-300 rounded-[2px]" />
-                          <div className="w-full h-2 sm:h-2.5 bg-slate-300 rounded-[2px]" />
-                          <div className="w-2/3 h-2 sm:h-2.5 bg-slate-300 rounded-[2px]" />
+                       {/* Text Column - REAL TEXT */}
+                       <div className="flex-1 flex flex-col gap-1 relative text-left z-10 pt-1">
+                          <h3 className="text-slate-800 font-bold text-[10px] sm:text-xs leading-tight flex items-center">
+                             <span>Pitch Deck&nbsp;</span>
+                             <span className="relative inline-block h-[14px] sm:h-[16px]">
+                                {/* The old text */}
+                                <motion.span animate={{ opacity: [1, 1, 0, 0, 1] }} transition={{ duration: 8, times: [0, 0.2, 0.21, 0.95, 1], repeat: Infinity }} className="relative z-10">
+                                   2024
+                                </motion.span>
+                                
+                                {/* The blue selection highlight (expands right to left as cursor drags) */}
+                                <motion.div animate={{ opacity: [0, 1, 1, 0, 0], left: ['100%', '0%', '0%', '0%', '0%'], width: ['0%', '100%', '100%', '0%', '0%'] }} transition={{ duration: 8, times: [0, 0.1, 0.2, 0.25, 1], repeat: Infinity }} className="absolute top-0 bottom-0 bg-blue-500/30 z-0 rounded-[1px]" />
+                                
+                                {/* The new text typing out */}
+                                <motion.span animate={{ opacity: [0, 0, 1, 1, 0], width: ['0%', '0%', '0%', '100%', '100%'] }} transition={{ duration: 8, times: [0, 0.2, 0.21, 0.35, 1], repeat: Infinity }} className="absolute left-0 top-0 text-indigo-600 whitespace-nowrap overflow-hidden z-10 border-r-[1px] border-indigo-600 font-bold">
+                                   for Startups
+                                </motion.span>
+                             </span>
+                          </h3>
                           
-                          {/* Text selection highlight */}
-                          <motion.div animate={{ opacity: [0, 1, 1, 0, 0] }} transition={{ duration: 8, times: [0, 0.1, 0.3, 0.35, 1], repeat: Infinity }} className="absolute -top-1 -left-1 w-[105%] h-6 sm:h-7 border border-blue-500 bg-blue-500/10 rounded-[2px] z-10 pointer-events-none" />
+                          <p className="text-[5px] sm:text-[7px] text-slate-500 leading-relaxed mt-1 w-full pr-2">
+                             Use artificial intelligence to generate stunning presentations in seconds.
+                             No design skills required, just pure AI power.
+                          </p>
                        </div>
                        
                        {/* Image Column */}
@@ -165,54 +177,181 @@ const FaqVisual = ({ type }: { type: string }) => {
               </div>
               
               {/* Cursor Animation */}
-              <motion.div animate={{ x: [100, -30, -30, 80, 80, 80, 100], y: [80, 10, 10, 30, 30, -20, 80], scale: [1, 1, 0.9, 1, 0.9, 0.9, 1] }} transition={{ duration: 8, times: [0, 0.1, 0.3, 0.4, 0.45, 0.5, 1], repeat: Infinity, ease: "easeInOut" }} className="absolute z-40 top-1/2 left-1/2 mt-[-30px] ml-[-40px]">
-                 <div className="w-6 h-6 sm:w-8 sm:h-8 bg-black rounded-tl-2xl rounded-tr-sm rounded-br-2xl rounded-bl-sm border-[2px] border-white shadow-[0_0_15px_rgba(0,0,0,0.5)] transform rotate-[-45deg]" />
+              <motion.div animate={{ x: [100, -10, -35, -35, 80, 80, 80, 100], y: [80, -10, -10, -10, 30, 30, -20, 80], scale: [1, 1, 0.9, 0.9, 1, 0.9, 0.9, 1] }} transition={{ duration: 8, times: [0, 0.1, 0.2, 0.3, 0.4, 0.45, 0.5, 1], repeat: Infinity, ease: "easeInOut" }} className="absolute z-40 top-1/2 left-1/2 mt-[-30px] ml-[-40px]">
+                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_5px_10px_rgba(0,0,0,0.6)] sm:w-8 sm:h-8">
+                    <path d="M5.5 2L19.5 15.5H12.5L9.5 22.5L5.5 2Z" fill="black" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
+                 </svg>
               </motion.div>
            </div>
         </div>
       )
     case 'export':
       return (
-        <div className="w-full h-full bg-slate-50 flex items-center justify-center relative gap-8 sm:gap-16">
-           <motion.div animate={{ y: [0, -20, 0], opacity: [0, 1, 0], scale: [0.5, 1, 0.5] }} transition={{ duration: 4, times: [0, 0.5, 1], repeat: Infinity }} className="absolute top-4 sm:top-6 w-20 h-28 sm:w-24 sm:h-32 bg-white border border-slate-300 rounded-lg shadow-xl flex items-center justify-center z-10">
-              <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-slate-400" />
-           </motion.div>
+        <div className="w-full h-full bg-slate-900 flex items-center justify-center relative overflow-hidden font-sans">
+           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[length:10px_10px]" />
            
-           <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 4, times: [0.3, 0.5, 0.7], repeat: Infinity }} className="w-28 h-32 sm:w-36 sm:h-40 bg-orange-50 border border-orange-200 rounded-xl shadow-lg flex flex-col items-center justify-center gap-2 z-20 mt-12 sm:mt-16 relative overflow-hidden">
-              <div className="absolute top-0 w-full h-3 sm:h-4 bg-orange-500" />
-              <Download className="w-10 h-10 sm:w-12 sm:h-12 text-orange-400" />
-              <span className="text-[12px] sm:text-[14px] font-black text-orange-700 tracking-widest">PPTX</span>
-           </motion.div>
-           
-           <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 4, times: [0.6, 0.8, 1], repeat: Infinity }} className="w-28 h-32 sm:w-36 sm:h-40 bg-red-50 border border-red-200 rounded-xl shadow-lg flex flex-col items-center justify-center gap-2 z-20 mt-12 sm:mt-16 relative overflow-hidden">
-              <div className="absolute top-0 w-full h-3 sm:h-4 bg-red-500" />
-              <Download className="w-10 h-10 sm:w-12 sm:h-12 text-red-400" />
-              <span className="text-[12px] sm:text-[14px] font-black text-red-700 tracking-widest">PDF</span>
-           </motion.div>
+           {/* UI Mockup */}
+           <div className="w-[280px] sm:w-[440px] h-32 sm:h-48 bg-slate-100 rounded-lg shadow-[0_0_40px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden border border-slate-700 relative z-10">
+              {/* Topbar */}
+              <div className="w-full h-8 sm:h-10 bg-white border-b border-slate-200 flex items-center px-3 sm:px-4 justify-between relative z-30">
+                 <div className="flex gap-1.5 sm:gap-2">
+                    <div className="w-2 h-2 rounded-full bg-red-400" />
+                    <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                    <div className="w-2 h-2 rounded-full bg-green-400" />
+                 </div>
+                 
+                 {/* Export Button */}
+                 <motion.div animate={{ scale: [1, 1, 0.95, 1, 1] }} transition={{ duration: 8, times: [0, 0.18, 0.2, 0.22, 1], repeat: Infinity }} className="bg-indigo-600 text-white text-[8px] sm:text-[10px] px-3 py-1.5 rounded font-bold flex items-center gap-1.5 shadow-sm relative overflow-hidden cursor-pointer">
+                    <Download className="w-3 h-3" /> Export
+                    {/* Click Flash */}
+                    <motion.div animate={{ opacity: [0, 0, 1, 0, 0] }} transition={{ duration: 8, times: [0, 0.18, 0.2, 0.25, 1], repeat: Infinity }} className="absolute inset-0 bg-black/20" />
+                 </motion.div>
+              </div>
+
+              {/* Canvas Preview */}
+              <div className="flex-1 bg-slate-200 flex items-center justify-center p-4 relative z-0">
+                 <div className="w-48 sm:w-64 h-20 sm:h-28 bg-white shadow-md border border-slate-200 flex p-3 gap-3">
+                    <div className="flex-1 flex flex-col gap-2">
+                       <div className="w-3/4 h-3 bg-slate-800 rounded-[2px]" />
+                       <div className="w-full h-1.5 bg-slate-300 rounded-[2px]" />
+                       <div className="w-5/6 h-1.5 bg-slate-300 rounded-[2px]" />
+                    </div>
+                    <div className="w-16 sm:w-20 h-full bg-sky-200 rounded-[2px] overflow-hidden relative">
+                       <div className="absolute top-1 right-1 w-3 h-3 bg-yellow-400 rounded-full" />
+                       <div className="absolute -bottom-2 -left-2 w-8 h-8 bg-emerald-400 rotate-45" />
+                    </div>
+                 </div>
+              </div>
+
+              {/* Export Dropdown Menu */}
+              <motion.div animate={{ opacity: [0, 0, 1, 1, 0, 0], scale: [0.95, 0.95, 1, 1, 0.95, 0.95], y: [10, 10, 0, 0, 10, 10] }} transition={{ duration: 8, times: [0, 0.22, 0.25, 0.45, 0.48, 1], repeat: Infinity }} className="absolute top-9 sm:top-11 right-3 sm:right-4 w-36 sm:w-44 bg-white border border-slate-200 shadow-xl rounded-lg overflow-hidden z-20 flex flex-col pointer-events-none origin-top-right">
+                 {/* PPTX Option */}
+                 <div className="px-3 py-2 border-b border-slate-100 flex items-center gap-2 relative overflow-hidden">
+                    {/* Hover effect triggered by cursor */}
+                    <motion.div animate={{ opacity: [0, 0, 1, 1, 0, 0] }} transition={{ duration: 8, times: [0, 0.28, 0.3, 0.45, 0.48, 1], repeat: Infinity }} className="absolute inset-0 bg-slate-100 z-0" />
+                    <div className="bg-orange-100 p-1.5 rounded relative z-10"><FileText className="w-3 h-3 text-orange-500" /></div>
+                    <div className="flex flex-col relative z-10"><span className="text-[8px] sm:text-[10px] font-bold text-slate-800">PowerPoint</span><span className="text-[6px] sm:text-[8px] text-slate-500">.pptx</span></div>
+                    
+                    {/* Click Ripple */}
+                    <motion.div animate={{ scale: [0, 0, 0, 5, 5], opacity: [0, 0, 0.5, 0, 0] }} transition={{ duration: 8, times: [0, 0.33, 0.35, 0.45, 1], repeat: Infinity }} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-slate-300 rounded-full z-0" />
+                 </div>
+                 {/* PDF Option */}
+                 <div className="px-3 py-2 flex items-center gap-2 relative z-10 bg-white">
+                    <div className="bg-red-100 p-1.5 rounded"><FileText className="w-3 h-3 text-red-500" /></div>
+                    <div className="flex flex-col"><span className="text-[8px] sm:text-[10px] font-bold text-slate-800">PDF Document</span><span className="text-[6px] sm:text-[8px] text-slate-500">.pdf</span></div>
+                 </div>
+              </motion.div>
+
+              {/* Browser Download Toast */}
+              <motion.div animate={{ y: [40, 40, 0, 0, 40, 40], opacity: [0, 0, 1, 1, 0, 0] }} transition={{ duration: 8, times: [0, 0.5, 0.55, 0.9, 0.95, 1], repeat: Infinity }} className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-3 sm:px-4 py-2 rounded-full shadow-2xl flex items-center gap-2 sm:gap-3 z-30 pointer-events-none">
+                 <div className="w-5 h-5 sm:w-6 sm:h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                    <Check className="w-3 h-3 text-white" />
+                 </div>
+                 <span className="text-[9px] sm:text-[11px] font-semibold whitespace-nowrap">pitch_deck.pptx downloaded</span>
+              </motion.div>
+
+              {/* Cursor Animation */}
+              <motion.div animate={{ x: [0, 160, 160, 110, 110, -50, -50, 0], y: [40, -60, -60, -25, -25, 40, 40, 40], scale: [1, 1, 0.9, 1, 0.9, 1, 1, 1] }} transition={{ duration: 8, times: [0, 0.15, 0.2, 0.3, 0.35, 0.5, 0.9, 1], repeat: Infinity, ease: "easeInOut" }} className="absolute z-40 top-1/2 left-1/2 mt-[-10px] ml-[-10px]">
+                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_5px_10px_rgba(0,0,0,0.6)] sm:w-8 sm:h-8">
+                    <path d="M5.5 2L19.5 15.5H12.5L9.5 22.5L5.5 2Z" fill="black" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
+                 </svg>
+              </motion.div>
+           </div>
         </div>
       )
     case 'design':
       return (
-        <div className="w-full h-full bg-slate-50 flex items-center justify-center relative overflow-hidden">
-           <div className="w-64 sm:w-96 h-36 sm:h-48 bg-white shadow-xl border border-slate-200 rounded-xl p-4 sm:p-5 relative flex flex-col overflow-hidden">
-              {/* Messy State */}
-              <motion.div animate={{ opacity: [1, 0, 0, 1] }} transition={{ duration: 4, times: [0, 0.4, 0.8, 1], repeat: Infinity }} className="absolute inset-0 p-4">
-                 <div className="w-24 h-4 sm:h-5 bg-slate-800 rounded-[2px] rotate-12 ml-6 mt-2" />
-                 <div className="w-32 h-8 sm:h-10 bg-slate-300 rounded-[2px] -rotate-6 ml-10 mt-6" />
-                 <div className="w-20 h-8 sm:h-10 bg-slate-400 rounded-[2px] rotate-12 ml-2 mt-4" />
-              </motion.div>
-              {/* Auto-Align Magic effect */}
-              <motion.div animate={{ scale: [0, 2.5, 0], opacity: [0, 1, 0], rotate: 180 }} transition={{ duration: 4, times: [0.3, 0.5, 0.7], repeat: Infinity }} className="absolute inset-0 flex items-center justify-center z-20">
-                 <Sparkles className="w-16 h-16 sm:w-20 sm:h-20 text-indigo-500 drop-shadow-[0_0_20px_rgba(99,102,241,0.5)]" />
-              </motion.div>
-              {/* Clean State */}
-              <motion.div animate={{ opacity: [0, 0, 1, 0] }} transition={{ duration: 4, times: [0, 0.5, 0.9, 1], repeat: Infinity }} className="absolute inset-0 p-4 sm:p-5 bg-emerald-50">
-                 <div className="w-3/4 h-5 sm:h-6 bg-emerald-800 rounded-[2px] mb-3" />
-                 <div className="flex gap-3 h-16 sm:h-20">
-                    <div className="flex-1 bg-emerald-200 rounded-[2px]" />
-                    <div className="flex-1 bg-emerald-200 rounded-[2px]" />
+        <div className="w-full h-full bg-slate-900 flex items-center justify-center relative overflow-hidden font-sans">
+           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[length:10px_10px]" />
+           
+           <div className="w-[280px] sm:w-[440px] h-32 sm:h-48 relative z-10 flex items-center justify-center">
+              
+              {/* State 1: App Interface with Prompt (0 - 3s) */}
+              <motion.div animate={{ opacity: [1, 1, 0, 0, 1], scale: [1, 1, 0.95, 0.95, 1] }} transition={{ duration: 8, times: [0, 0.38, 0.42, 0.95, 1], repeat: Infinity }} className="absolute inset-0 bg-slate-50 shadow-xl rounded-lg border border-slate-300 flex flex-col overflow-hidden">
+                 {/* App Topbar */}
+                 <div className="w-full h-6 sm:h-8 bg-white border-b border-slate-200 flex items-center px-3">
+                    <div className="flex gap-1.5">
+                       <div className="w-2 h-2 rounded-full bg-red-400" />
+                       <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                       <div className="w-2 h-2 rounded-full bg-green-400" />
+                    </div>
+                    <span className="ml-3 font-bold text-[7px] sm:text-[9px] text-slate-800 tracking-widest">pptAI Dashboard</span>
+                 </div>
+                 
+                 {/* App Body */}
+                 <div className="flex-1 p-3 sm:p-5 flex flex-col gap-2">
+                    <h4 className="font-bold text-[9px] sm:text-[11px] text-slate-800">What is your presentation about?</h4>
+                    {/* Prompt Box */}
+                    <div className="w-full h-16 sm:h-20 bg-white border-2 border-indigo-200 rounded-md p-2 sm:p-3 relative shadow-inner">
+                       <div className="flex items-start">
+                          <span className="text-[8px] sm:text-[11px] text-slate-700 font-medium leading-relaxed font-mono">
+                             <motion.span animate={{ opacity: [0, 1, 1, 1] }} transition={{ duration: 8, times: [0, 0.05, 0.5, 1], repeat: Infinity }}>Create a </motion.span>
+                             <motion.span animate={{ opacity: [0, 0, 1, 1] }} transition={{ duration: 8, times: [0, 0.1, 0.5, 1], repeat: Infinity }} className="text-indigo-600 font-bold">dark-themed</motion.span>
+                             <motion.span animate={{ opacity: [0, 0, 1, 1] }} transition={{ duration: 8, times: [0, 0.15, 0.5, 1], repeat: Infinity }}> deck about </motion.span>
+                             <motion.span animate={{ opacity: [0, 0, 1, 1] }} transition={{ duration: 8, times: [0, 0.2, 0.5, 1], repeat: Infinity }} className="text-emerald-600 font-bold">Space Exploration</motion.span>
+                             <motion.span animate={{ opacity: [1, 1, 0, 0, 1] }} transition={{ duration: 8, times: [0, 0.38, 0.4, 0.95, 1], repeat: Infinity }} className="inline-block w-0.5 h-2.5 sm:h-3 bg-black ml-1 align-middle animate-pulse" />
+                          </span>
+                       </div>
+                       
+                       <motion.div animate={{ scale: [1, 1, 0.9, 1, 1] }} transition={{ duration: 8, times: [0, 0.33, 0.35, 0.37, 1], repeat: Infinity }} className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-indigo-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[7px] sm:text-[9px] font-bold flex items-center gap-1 shadow-md border border-indigo-500">
+                          <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Generate
+                       </motion.div>
+                    </div>
                  </div>
               </motion.div>
+
+              {/* State 2: Progress (3.5 - 4.5s) */}
+              <motion.div animate={{ opacity: [0, 0, 1, 1, 0, 0] }} transition={{ duration: 8, times: [0, 0.42, 0.44, 0.55, 0.57, 1], repeat: Infinity }} className="absolute inset-0 bg-slate-900/95 backdrop-blur-md z-20 rounded-lg flex flex-col items-center justify-center gap-3 border border-slate-700">
+                 <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400 animate-spin" />
+                 <span className="text-[8px] sm:text-[10px] text-white font-bold animate-pulse tracking-widest">APPLYING DESIGN...</span>
+              </motion.div>
+
+              {/* State 3: Beautiful Designed REAL Slide (4.5s - 8.0s) */}
+              <motion.div animate={{ opacity: [0, 0, 1, 1, 0], scale: [0.95, 0.95, 1, 1, 0.95] }} transition={{ duration: 8, times: [0, 0.55, 0.58, 0.92, 0.95], repeat: Infinity }} className="absolute inset-0 bg-slate-950 shadow-[0_0_50px_rgba(0,0,0,0.8)] rounded-lg border border-slate-700 overflow-hidden flex flex-col z-10">
+                 {/* Real Slide Content */}
+                 <div className="flex-1 flex relative">
+                    {/* Dark/Stylish Sidebar Text Area */}
+                    <div className="w-1/2 h-full p-4 sm:p-6 flex flex-col justify-center relative overflow-hidden z-10">
+                       {/* Background accents */}
+                       <div className="absolute top-0 left-0 w-full h-full bg-slate-900" />
+                       <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-600 rounded-bl-full opacity-30 blur-2xl" />
+                       <div className="absolute bottom-0 left-0 w-16 h-16 bg-emerald-500 rounded-tr-full opacity-30 blur-xl" />
+                       
+                       {/* REAL TEXT */}
+                       <div className="relative z-10 flex flex-col">
+                          <span className="text-indigo-400 font-bold text-[7px] sm:text-[9px] tracking-widest uppercase mb-1">Chapter 1</span>
+                          <h1 className="text-white font-black text-sm sm:text-[22px] leading-tight mb-2 sm:mb-3">Space Exploration</h1>
+                          <p className="text-slate-400 text-[6px] sm:text-[9px] leading-relaxed">
+                             Discovering the cosmos through generative AI design. No design skills required to build the future.
+                          </p>
+                       </div>
+                    </div>
+
+                    {/* Image / Content Side with CSS Space Art */}
+                    <div className="w-1/2 h-full relative overflow-hidden">
+                       <div className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-slate-900 to-black border-l border-slate-800">
+                          {/* Stars */}
+                          <div className="absolute top-4 left-4 w-1 h-1 bg-white rounded-full opacity-80 shadow-[0_0_5px_white]" />
+                          <div className="absolute top-8 right-8 w-1.5 h-1.5 bg-white rounded-full opacity-60 shadow-[0_0_5px_white]" />
+                          <div className="absolute bottom-10 left-10 w-1 h-1 bg-white rounded-full opacity-90 shadow-[0_0_5px_white]" />
+                          
+                          {/* Planet */}
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-emerald-400 to-indigo-700 shadow-[0_0_40px_rgba(52,211,153,0.3)] flex items-center justify-center">
+                             {/* Planet Rings */}
+                             <div className="absolute w-24 h-6 sm:w-36 sm:h-8 border-[3px] border-indigo-300/40 rounded-[100%] rotate-[20deg]" />
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </motion.div>
+
+              {/* Cursor clicking Generate */}
+              <motion.div animate={{ x: [100, 160, 160, 160, 250, 250, 100], y: [150, 45, 45, 45, 150, 150, 150], scale: [1, 1, 0.9, 1, 1, 1, 1] }} transition={{ duration: 8, times: [0, 0.25, 0.33, 0.37, 0.5, 0.9, 1], repeat: Infinity, ease: "easeInOut" }} className="absolute z-40 top-1/2 left-1/2 mt-[-10px] ml-[-20px]">
+                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_5px_10px_rgba(0,0,0,0.6)] sm:w-8 sm:h-8">
+                    <path d="M5.5 2L19.5 15.5H12.5L9.5 22.5L5.5 2Z" fill="black" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
+                 </svg>
+              </motion.div>
+
            </div>
         </div>
       )
