@@ -341,23 +341,106 @@ const PresentationReady = () => {
 }
 
 const DownloadExport = () => {
-  const formats = ['PPTX', 'PDF', 'Google Slides']
+  const formats = [
+    { name: 'PowerPoint', icon: 'PPTX' },
+    { name: 'PDF Doc', icon: 'PDF' },
+    { name: 'Google', icon: 'Slides' }
+  ]
+
+  const [activeIdx, setActiveIdx] = useState(0)
+  const [phase, setPhase] = useState(0) // 0: idle/hover, 1: clicking/downloading, 2: done
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout
+    if (phase === 0) {
+      timer = setTimeout(() => setPhase(1), 800) // Hover for 0.8s, then click
+    } else if (phase === 1) {
+      timer = setTimeout(() => setPhase(2), 2000) // Download takes 2s
+    } else if (phase === 2) {
+      timer = setTimeout(() => {
+        setPhase(0)
+        setActiveIdx(prev => (prev + 1) % formats.length)
+      }, 1500) // Show done for 1.5s, then move to next
+    }
+    return () => clearTimeout(timer)
+  }, [phase])
+
   return (
     <div className="mt-3 flex gap-2">
-       {formats.map((fmt, i) => (
-         <motion.div 
-           key={fmt}
-           whileHover={{ y: -2 }}
-           className="flex-1 bg-white border border-gray-100 rounded-md py-2 flex items-center justify-center text-[10px] font-semibold text-amber-700/70 shadow-sm cursor-default ring-1 ring-black/5"
-         >
-           <motion.span
-              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-              transition={{ repeat: Infinity, duration: 2, delay: i * 0.4 }}
-              className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5 shadow-[0_0_5px_rgba(251,191,36,0.5)]"
-           />
-           {fmt}
-         </motion.div>
-       ))}
+      {formats.map((fmt, i) => {
+        const isActive = activeIdx === i
+        const isDownloading = isActive && phase === 1
+        const isDone = isActive && phase === 2
+
+        return (
+          <div 
+            key={fmt.name}
+            className={`flex-1 relative rounded-lg border transition-all duration-300 flex flex-col items-center justify-center py-2.5 shadow-sm overflow-hidden ${
+              isActive 
+                ? 'border-indigo-400 bg-indigo-50/30 shadow-[0_4px_15px_rgba(99,102,241,0.1)] z-10' 
+                : 'border-slate-200 bg-white z-0'
+            }`}
+          >
+             {/* Icon/Name */}
+             <span className={`text-[11px] font-bold mb-1 transition-colors ${isActive ? 'text-indigo-600' : 'text-slate-500'}`}>
+               {fmt.icon}
+             </span>
+             
+             {/* Action Area */}
+             <div className="h-5 flex items-center justify-center w-full px-2.5">
+                {isDownloading ? (
+                   <div className="w-full bg-indigo-100 rounded-full h-1.5 overflow-hidden">
+                     <motion.div 
+                       initial={{ width: '0%' }}
+                       animate={{ width: '100%' }}
+                       transition={{ duration: 2, ease: 'linear' }}
+                       className="bg-indigo-500 h-full relative"
+                     >
+                       <motion.div 
+                          animate={{ x: ['-100%', '200%'] }}
+                          transition={{ repeat: Infinity, duration: 1 }}
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+                       />
+                     </motion.div>
+                   </div>
+                ) : isDone ? (
+                   <motion.div 
+                     initial={{ scale: 0 }}
+                     animate={{ scale: 1 }}
+                     className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 uppercase tracking-wider"
+                   >
+                     <CheckCircle2 className="w-3.5 h-3.5" />
+                     <span>Saved</span>
+                   </motion.div>
+                ) : (
+                   <Download className={`w-3.5 h-3.5 transition-colors ${isActive ? 'text-indigo-400' : 'text-slate-300'}`} />
+                )}
+             </div>
+
+             {/* Fake Cursor Overlay */}
+             <AnimatePresence>
+               {isActive && (
+                 <motion.div
+                   initial={{ opacity: 0, x: 15, y: 15 }}
+                   animate={{ 
+                     opacity: 1, 
+                     x: 0, 
+                     y: 0,
+                     scale: phase === 1 ? 0.85 : 1 // click press effect
+                   }}
+                   exit={{ opacity: 0, x: 10, y: 10 }}
+                   transition={{ duration: 0.3 }}
+                   className="absolute bottom-1 right-1 z-20 pointer-events-none"
+                 >
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+                     <path d="M5.5 3.21V20.8C5.5 21.45 6.27 21.78 6.74 21.34L11.4 16.92L14.86 24.32C15.08 24.78 15.63 24.96 16.09 24.73L18.66 23.53C19.12 23.32 19.31 22.76 19.08 22.29L15.68 14.92H20.91C21.57 14.92 21.89 14.11 21.41 13.67L6.68 0.54C6.22 0.13 5.5 0.46 5.5 1.11V3.21Z" fill="black" stroke="white" strokeWidth="1.5"/>
+                   </svg>
+                 </motion.div>
+               )}
+             </AnimatePresence>
+          </div>
+        )
+      })}
     </div>
   )
 }
