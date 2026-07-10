@@ -1,14 +1,45 @@
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { Sparkles, ArrowUp } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import DashboardMockup from './DashboardMockup'
-import MagneticButton from './MagneticButton'
 
-const APP_URL = import.meta.env.VITE_APP_URL || 'http://localhost:3000'
+const PLACEHOLDERS = [
+  "A pitch deck for a new SaaS product...",
+  "A marketing strategy for a coffee shop...",
+  "An 8-slide presentation on AI...",
+  "A quarterly business review for Q3..."
+]
 
 export default function Hero() {
   const { scrollY } = useScroll()
-  const yBg = useTransform(scrollY, [0, 1000], [0, 300])
   const yContent = useTransform(scrollY, [0, 1000], [0, 150])
+  const grassOpacity = useTransform(scrollY, [0, 300], [1, 0])
+
+  const [inputValue, setInputValue] = useState('')
+  const [placeholder, setPlaceholder] = useState('')
+  const [placeholderIndex, setPlaceholderIndex] = useState(0)
+  const [charIndex, setCharIndex] = useState(0)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  useEffect(() => {
+    const currentText = PLACEHOLDERS[placeholderIndex]
+    
+    let timer: NodeJS.Timeout
+    if (!isDeleting && charIndex < currentText.length) {
+      timer = setTimeout(() => setCharIndex(c => c + 1), 60)
+    } else if (isDeleting && charIndex > 0) {
+      timer = setTimeout(() => setCharIndex(c => c - 1), 30)
+    } else if (!isDeleting && charIndex === currentText.length) {
+      timer = setTimeout(() => setIsDeleting(true), 2000)
+    } else if (isDeleting && charIndex === 0) {
+      setIsDeleting(false)
+      setPlaceholderIndex((prev) => (prev + 1) % PLACEHOLDERS.length)
+    }
+
+    setPlaceholder(currentText.substring(0, charIndex))
+
+    return () => clearTimeout(timer)
+  }, [charIndex, isDeleting, placeholderIndex])
 
   return (
     <section className="relative min-h-[100svh] overflow-hidden flex flex-col pt-16 sm:pt-0">
@@ -18,69 +49,81 @@ export default function Hero() {
       {/* Hero Content with Parallax */}
       <motion.div 
         style={{ y: yContent }}
-        className="text-center flex flex-col items-center px-4 relative z-20"
+        className="relative z-10 flex flex-col items-center justify-center px-6 text-center shrink-0"
       >
-        <h1 className="text-gray-900 font-normal leading-[1.05] tracking-tight text-[40px] min-[400px]:text-[44px] sm:text-6xl lg:text-7xl xl:text-[80px]">
-          <motion.div 
-            initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
-            Create presentations.
-          </motion.div>
-          <motion.div 
-            initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          >
-            Effortlessly.
-          </motion.div>
-        </h1>
-
-        <motion.form 
-          action={APP_URL} 
-          method="GET"
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-5 sm:mt-6 w-full max-w-xl relative group"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-md border border-gray-200/60 shadow-sm mb-6 sm:mb-8"
         >
-          <div className="flex items-center gap-3 rounded-full bg-white/60 backdrop-blur-md ring-1 ring-gray-200 pl-5 pr-1.5 py-1.5 shadow-sm transition-shadow group-hover:shadow-md group-hover:ring-gray-300">
-            <input 
-              name="prompt"
-              type="text" 
-              placeholder="What topic do you want to present?" 
-              className="flex-1 bg-transparent text-sm sm:text-base text-gray-900 placeholder-gray-500 outline-none py-2"
-              required
-            />
-            <MagneticButton className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-900 text-white flex items-center justify-center shrink-0">
-              <ArrowUp className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
-            </MagneticButton>
-          </div>
-        </motion.form>
-
-        <motion.p 
+          <Sparkles className="w-4 h-4 text-blue-600" />
+          <span className="text-xs sm:text-sm font-medium text-gray-800 tracking-wide uppercase">AI Presentation Generator</span>
+        </motion.div>
+        
+        <motion.h1 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-4 sm:mt-5 text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed max-w-md"
+          transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
+          className="text-[40px] leading-[1.1] sm:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 max-w-4xl"
         >
-          Ship slides that answer actual requirements <br className="hidden sm:block" />
-          — and look stunning with <Sparkles className="inline w-4 h-4 -mt-1 text-gray-900" /> pptAI
-        </motion.p>
+          Create presentations.<br/>Effortlessly.
+        </motion.h1>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-4 sm:mt-5 flex flex-wrap items-center justify-center gap-3"
+          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+          className="w-full max-w-xl mt-8 sm:mt-12 group"
         >
-          <MagneticButton href={APP_URL} className="bg-gray-900 text-white text-sm font-medium px-6 py-2.5 rounded-full shadow-md">
+          {/* Animated Glow Effect behind input */}
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
+          
+          <div className="relative flex items-center w-full h-14 bg-white/80 backdrop-blur-xl rounded-full border border-gray-200 shadow-sm overflow-hidden px-2 transition-all hover:shadow-md hover:bg-white focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20">
+            {inputValue === '' && (
+              <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-[15px] text-gray-400">
+                {placeholder}
+                <motion.span 
+                  animate={{ opacity: [1, 0] }}
+                  transition={{ repeat: Infinity, duration: 0.8 }}
+                  className="w-[1.5px] h-4 bg-blue-500 ml-0.5 inline-block"
+                />
+              </div>
+            )}
+            <input 
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              className="flex-1 px-4 text-gray-900 text-[15px] outline-none bg-transparent h-full relative z-10"
+            />
+            <button className="flex-shrink-0 w-10 h-10 rounded-full bg-[#0F172A] text-white flex items-center justify-center hover:bg-gray-800 transition-colors relative z-10">
+              <ArrowUp className="w-4 h-4" />
+            </button>
+          </div>
+        </motion.div>
+
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.6 }}
+          className="mt-6 text-[15px] sm:text-base text-gray-500 max-w-lg"
+        >
+          Ship slides that answer actual requirements<br className="hidden sm:block"/>
+          — and look stunning with <span className="font-semibold text-gray-800">pptAI</span>
+        </motion.p>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="flex items-center gap-4 mt-8"
+        >
+          <button className="px-6 py-2.5 rounded-full bg-[#0F172A] text-white text-sm font-medium hover:bg-gray-800 transition-colors shadow-lg shadow-gray-900/10">
             Try It Free
-          </MagneticButton>
-          <MagneticButton href="#" className="text-gray-700 text-sm font-medium px-6 py-2.5 rounded-full ring-1 ring-gray-300 bg-white/50 backdrop-blur-sm">
+          </button>
+          <button className="px-6 py-2.5 rounded-full bg-white/60 backdrop-blur-md text-gray-700 text-sm font-medium hover:bg-white hover:text-gray-900 transition-colors border border-gray-200/60 shadow-sm">
             Watch Demo
-          </MagneticButton>
+          </button>
         </motion.div>
       </motion.div>
 
@@ -91,7 +134,7 @@ export default function Hero() {
         initial={{ opacity: 0, y: 80, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 1.2, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-0 w-[92%] sm:w-[84%] lg:w-[72%] max-w-4xl mx-auto shrink-0 -mb-10 sm:-mb-20 lg:-mb-32"
+        className="relative z-20 w-[92%] sm:w-[84%] lg:w-[72%] max-w-4xl mx-auto shrink-0 pb-16"
       >
         <motion.div
           animate={{ y: [-8, 8, -8], rotate: [-0.5, 0.5, -0.5] }}
@@ -102,10 +145,11 @@ export default function Hero() {
       </motion.div>
 
       {/* Grass Overlay */}
-      <img 
+      <motion.img 
+        style={{ opacity: grassOpacity }}
         src="https://res.cloudinary.com/dy5er7kv5/image/upload/q_auto/f_auto/v1781191264/grass_eam204.png" 
         alt="" 
-        className="pointer-events-none absolute bottom-0 left-0 z-10 w-full select-none object-cover h-[20vh] sm:h-auto"
+        className="pointer-events-none absolute bottom-[-10px] left-0 z-10 w-full select-none object-cover object-top h-[150px] sm:h-[200px] lg:h-[260px] xl:h-[300px]"
       />
     </section>
   )
