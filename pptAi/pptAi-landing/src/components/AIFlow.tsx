@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { FileText, BrainCog, Image, Download, CheckCircle, ArrowDown } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 const steps = [
   {
@@ -40,6 +41,38 @@ const fadeUp = {
     opacity: 1, y: 0, scale: 1,
     transition: { duration: 0.7, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] },
   }),
+}
+
+const TypewriterText = ({ text }: { text: string }) => {
+  const [displayText, setDisplayText] = useState('')
+  const [index, setIndex] = useState(0)
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout
+    if (index < text.length) {
+      timer = setTimeout(() => {
+        setDisplayText((prev) => prev + text[index])
+        setIndex((prev) => prev + 1)
+      }, 50)
+    } else {
+      timer = setTimeout(() => {
+        setDisplayText('')
+        setIndex(0)
+      }, 3000)
+    }
+    return () => clearTimeout(timer)
+  }, [index, text])
+
+  return (
+    <span>
+      "{displayText}
+      <motion.span
+        animate={{ opacity: [1, 0] }}
+        transition={{ repeat: Infinity, duration: 0.8 }}
+        className="w-[1.5px] h-[1em] bg-indigo-500 ml-0.5 inline-block align-middle"
+      />"
+    </span>
+  )
 }
 
 export default function AIFlow() {
@@ -97,7 +130,9 @@ export default function AIFlow() {
                       </span>
                     </div>
                     <h3 className="text-base font-semibold text-gray-900 mb-1">{step.label}</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {i === 0 ? <TypewriterText text="Create a 10-slide presentation on Machine Learning" /> : step.desc}
+                    </p>
                   </div>
                 </motion.div>
 
