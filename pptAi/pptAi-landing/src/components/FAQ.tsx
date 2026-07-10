@@ -266,9 +266,21 @@ const FaqVisual = ({ type }: { type: string }) => {
            
            <div className="w-[280px] sm:w-[440px] h-32 sm:h-48 relative z-10 flex items-center justify-center">
               
-              {/* State 1: App Interface with Prompt (0 - 3s) */}
-              <motion.div animate={{ opacity: [1, 1, 0, 0, 1], scale: [1, 1, 0.95, 0.95, 1] }} transition={{ duration: 8, times: [0, 0.38, 0.42, 0.95, 1], repeat: Infinity }} className="absolute inset-0 bg-slate-50 shadow-xl rounded-lg border border-slate-300 flex flex-col overflow-hidden">
-                 {/* App Topbar */}
+              {/* Top Step Badge */}
+              <div className="absolute -top-10 sm:-top-12 left-1/2 -translate-x-1/2 z-40 bg-indigo-950 text-white rounded-full font-bold shadow-[0_5px_15px_rgba(79,70,229,0.4)] flex items-center justify-center border border-indigo-500 overflow-hidden w-48 sm:w-56 h-7 sm:h-8">
+                 <motion.div animate={{ opacity: [1, 1, 0, 0, 0, 0, 0] }} transition={{ duration: 15, times: [0, 0.18, 0.2, 0.4, 0.6, 0.8, 1], repeat: Infinity }} className="absolute inset-0 flex items-center justify-center gap-1.5"><Pencil className="w-3 h-3 text-yellow-400"/> <span className="text-[7px] sm:text-[9px]">STEP 1: TYPE TOPIC</span></motion.div>
+                 
+                 <motion.div animate={{ opacity: [0, 0, 1, 1, 0, 0, 0] }} transition={{ duration: 15, times: [0, 0.18, 0.2, 0.38, 0.4, 0.8, 1], repeat: Infinity }} className="absolute inset-0 flex items-center justify-center gap-1.5"><FileText className="w-3 h-3 text-sky-400"/> <span className="text-[7px] sm:text-[9px]">STEP 2: AI WRITES TEXT</span></motion.div>
+                 
+                 <motion.div animate={{ opacity: [0, 0, 0, 1, 1, 0, 0] }} transition={{ duration: 15, times: [0, 0.38, 0.4, 0.58, 0.6, 0.8, 1], repeat: Infinity }} className="absolute inset-0 flex items-center justify-center gap-1.5"><Layout className="w-3 h-3 text-orange-400"/> <span className="text-[7px] sm:text-[9px]">STEP 3: AI BUILDS LAYOUT</span></motion.div>
+                 
+                 <motion.div animate={{ opacity: [0, 0, 0, 0, 1, 1, 0] }} transition={{ duration: 15, times: [0, 0.58, 0.6, 0.78, 0.8, 0.98, 1], repeat: Infinity }} className="absolute inset-0 flex items-center justify-center gap-1.5"><Pencil className="w-3 h-3 text-pink-400"/> <span className="text-[7px] sm:text-[9px]">STEP 4: AI APPLIES COLORS</span></motion.div>
+                 
+                 <motion.div animate={{ opacity: [0, 0, 0, 0, 0, 1, 1] }} transition={{ duration: 15, times: [0, 0.6, 0.78, 0.8, 0.98, 1, 1], repeat: Infinity }} className="absolute inset-0 flex items-center justify-center gap-1.5"><ImageIcon className="w-3 h-3 text-emerald-400"/> <span className="text-[7px] sm:text-[9px]">STEP 5: AI CREATES IMAGES</span></motion.div>
+              </div>
+
+              {/* Step 1: Real Dashboard Input (0-3s) */}
+              <motion.div animate={{ opacity: [1, 1, 0, 0, 0, 0, 0] }} transition={{ duration: 15, times: [0, 0.18, 0.2, 0.4, 0.6, 0.8, 1], repeat: Infinity }} className="absolute inset-0 bg-slate-50 shadow-xl rounded-lg border border-slate-300 flex flex-col overflow-hidden z-30">
                  <div className="w-full h-6 sm:h-8 bg-white border-b border-slate-200 flex items-center px-3">
                     <div className="flex gap-1.5">
                        <div className="w-2 h-2 rounded-full bg-red-400" />
@@ -277,79 +289,91 @@ const FaqVisual = ({ type }: { type: string }) => {
                     </div>
                     <span className="ml-3 font-bold text-[7px] sm:text-[9px] text-slate-800 tracking-widest">pptAI Dashboard</span>
                  </div>
-                 
-                 {/* App Body */}
                  <div className="flex-1 p-3 sm:p-5 flex flex-col gap-2">
                     <h4 className="font-bold text-[9px] sm:text-[11px] text-slate-800">What is your presentation about?</h4>
-                    {/* Prompt Box */}
                     <div className="w-full h-16 sm:h-20 bg-white border-2 border-indigo-200 rounded-md p-2 sm:p-3 relative shadow-inner">
                        <div className="flex items-start">
                           <span className="text-[8px] sm:text-[11px] text-slate-700 font-medium leading-relaxed font-mono">
-                             <motion.span animate={{ opacity: [0, 1, 1, 1] }} transition={{ duration: 8, times: [0, 0.05, 0.5, 1], repeat: Infinity }}>Create a </motion.span>
-                             <motion.span animate={{ opacity: [0, 0, 1, 1] }} transition={{ duration: 8, times: [0, 0.1, 0.5, 1], repeat: Infinity }} className="text-indigo-600 font-bold">dark-themed</motion.span>
-                             <motion.span animate={{ opacity: [0, 0, 1, 1] }} transition={{ duration: 8, times: [0, 0.15, 0.5, 1], repeat: Infinity }}> deck about </motion.span>
-                             <motion.span animate={{ opacity: [0, 0, 1, 1] }} transition={{ duration: 8, times: [0, 0.2, 0.5, 1], repeat: Infinity }} className="text-emerald-600 font-bold">Space Exploration</motion.span>
-                             <motion.span animate={{ opacity: [1, 1, 0, 0, 1] }} transition={{ duration: 8, times: [0, 0.38, 0.4, 0.95, 1], repeat: Infinity }} className="inline-block w-0.5 h-2.5 sm:h-3 bg-black ml-1 align-middle animate-pulse" />
+                             Create a deck about Space Exploration...
+                             <motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.5, repeat: Infinity }} className="inline-block w-0.5 h-2.5 sm:h-3 bg-black ml-1 align-middle" />
                           </span>
                        </div>
-                       
-                       <motion.div animate={{ scale: [1, 1, 0.9, 1, 1] }} transition={{ duration: 8, times: [0, 0.33, 0.35, 0.37, 1], repeat: Infinity }} className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-indigo-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[7px] sm:text-[9px] font-bold flex items-center gap-1 shadow-md border border-indigo-500">
+                       <motion.div animate={{ scale: [1, 1, 0.9, 1, 1] }} transition={{ duration: 15, times: [0, 0.13, 0.15, 0.17, 1], repeat: Infinity }} className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-indigo-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[7px] sm:text-[9px] font-bold flex items-center gap-1 shadow-md border border-indigo-500">
                           <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Generate
                        </motion.div>
                     </div>
                  </div>
+                 {/* Cursor clicking Generate */}
+                 <motion.div animate={{ x: [100, 160, 160, 160, 250], y: [150, 45, 45, 45, 150] }} transition={{ duration: 15, times: [0, 0.1, 0.13, 0.17, 0.3], repeat: Infinity, ease: "easeInOut" }} className="absolute z-50 top-1/2 left-1/2 mt-[-10px] ml-[-20px]">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_5px_10px_rgba(0,0,0,0.6)] sm:w-8 sm:h-8">
+                       <path d="M5.5 2L19.5 15.5H12.5L9.5 22.5L5.5 2Z" fill="black" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
+                    </svg>
+                 </motion.div>
               </motion.div>
 
-              {/* State 2: Progress (3.5 - 4.5s) */}
-              <motion.div animate={{ opacity: [0, 0, 1, 1, 0, 0] }} transition={{ duration: 8, times: [0, 0.42, 0.44, 0.55, 0.57, 1], repeat: Infinity }} className="absolute inset-0 bg-slate-900/95 backdrop-blur-md z-20 rounded-lg flex flex-col items-center justify-center gap-3 border border-slate-700">
-                 <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400 animate-spin" />
-                 <span className="text-[8px] sm:text-[10px] text-white font-bold animate-pulse tracking-widest">APPLYING DESIGN...</span>
+              {/* Step 2: AI Writes REAL Text on blank slide (3-6s) */}
+              <motion.div animate={{ opacity: [0, 0, 1, 1, 0, 0, 0] }} transition={{ duration: 15, times: [0, 0.18, 0.2, 0.38, 0.4, 0.8, 1], repeat: Infinity }} className="absolute inset-0 bg-white p-4 sm:p-6 flex flex-col justify-center rounded-lg shadow-xl border border-slate-300 z-20">
+                 <span className="text-slate-500 font-bold text-[7px] sm:text-[9px] tracking-widest uppercase mb-1">Chapter 1</span>
+                 <h1 className="text-slate-900 font-black text-sm sm:text-[22px] leading-tight mb-2 sm:mb-3">Space Exploration</h1>
+                 <p className="text-slate-600 text-[6px] sm:text-[9px] leading-relaxed w-[80%]">
+                    Discovering the cosmos through generative AI design. No design skills required.
+                 </p>
               </motion.div>
 
-              {/* State 3: Beautiful Designed REAL Slide (4.5s - 8.0s) */}
-              <motion.div animate={{ opacity: [0, 0, 1, 1, 0], scale: [0.95, 0.95, 1, 1, 0.95] }} transition={{ duration: 8, times: [0, 0.55, 0.58, 0.92, 0.95], repeat: Infinity }} className="absolute inset-0 bg-slate-950 shadow-[0_0_50px_rgba(0,0,0,0.8)] rounded-lg border border-slate-700 overflow-hidden flex flex-col z-10">
-                 {/* Real Slide Content */}
-                 <div className="flex-1 flex relative">
-                    {/* Dark/Stylish Sidebar Text Area */}
-                    <div className="w-1/2 h-full p-4 sm:p-6 flex flex-col justify-center relative overflow-hidden z-10">
-                       {/* Background accents */}
-                       <div className="absolute top-0 left-0 w-full h-full bg-slate-900" />
-                       <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-600 rounded-bl-full opacity-30 blur-2xl" />
-                       <div className="absolute bottom-0 left-0 w-16 h-16 bg-emerald-500 rounded-tr-full opacity-30 blur-xl" />
-                       
-                       {/* REAL TEXT */}
-                       <div className="relative z-10 flex flex-col">
-                          <span className="text-indigo-400 font-bold text-[7px] sm:text-[9px] tracking-widest uppercase mb-1">Chapter 1</span>
-                          <h1 className="text-white font-black text-sm sm:text-[22px] leading-tight mb-2 sm:mb-3">Space Exploration</h1>
-                          <p className="text-slate-400 text-[6px] sm:text-[9px] leading-relaxed">
-                             Discovering the cosmos through generative AI design. No design skills required to build the future.
-                          </p>
-                       </div>
-                    </div>
-
-                    {/* Image / Content Side with CSS Space Art */}
-                    <div className="w-1/2 h-full relative overflow-hidden">
-                       <div className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-slate-900 to-black border-l border-slate-800">
-                          {/* Stars */}
-                          <div className="absolute top-4 left-4 w-1 h-1 bg-white rounded-full opacity-80 shadow-[0_0_5px_white]" />
-                          <div className="absolute top-8 right-8 w-1.5 h-1.5 bg-white rounded-full opacity-60 shadow-[0_0_5px_white]" />
-                          <div className="absolute bottom-10 left-10 w-1 h-1 bg-white rounded-full opacity-90 shadow-[0_0_5px_white]" />
-                          
-                          {/* Planet */}
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-emerald-400 to-indigo-700 shadow-[0_0_40px_rgba(52,211,153,0.3)] flex items-center justify-center">
-                             {/* Planet Rings */}
-                             <div className="absolute w-24 h-6 sm:w-36 sm:h-8 border-[3px] border-indigo-300/40 rounded-[100%] rotate-[20deg]" />
-                          </div>
-                       </div>
+              {/* Step 3: AI Builds Layout (split screen) (6-9s) */}
+              <motion.div animate={{ opacity: [0, 0, 0, 1, 1, 0, 0] }} transition={{ duration: 15, times: [0, 0.38, 0.4, 0.58, 0.6, 0.8, 1], repeat: Infinity }} className="absolute inset-0 bg-white flex rounded-lg shadow-xl border border-slate-300 overflow-hidden z-20">
+                 <div className="w-1/2 h-full p-4 sm:p-6 flex flex-col justify-center">
+                    <span className="text-slate-500 font-bold text-[7px] sm:text-[9px] tracking-widest uppercase mb-1">Chapter 1</span>
+                    <h1 className="text-slate-900 font-black text-sm sm:text-[22px] leading-tight mb-2 sm:mb-3">Space Exploration</h1>
+                    <p className="text-slate-600 text-[6px] sm:text-[9px] leading-relaxed">
+                       Discovering the cosmos through generative AI design. No design skills required.
+                    </p>
+                 </div>
+                 <div className="w-1/2 h-full border-l border-slate-200 bg-slate-50 flex items-center justify-center p-3 sm:p-4">
+                    <div className="w-full h-full border-2 border-dashed border-slate-300 rounded flex items-center justify-center">
+                       <ImageIcon className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 opacity-50" />
                     </div>
                  </div>
               </motion.div>
 
-              {/* Cursor clicking Generate */}
-              <motion.div animate={{ x: [100, 160, 160, 160, 250, 250, 100], y: [150, 45, 45, 45, 150, 150, 150], scale: [1, 1, 0.9, 1, 1, 1, 1] }} transition={{ duration: 8, times: [0, 0.25, 0.33, 0.37, 0.5, 0.9, 1], repeat: Infinity, ease: "easeInOut" }} className="absolute z-40 top-1/2 left-1/2 mt-[-10px] ml-[-20px]">
-                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_5px_10px_rgba(0,0,0,0.6)] sm:w-8 sm:h-8">
-                    <path d="M5.5 2L19.5 15.5H12.5L9.5 22.5L5.5 2Z" fill="black" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
-                 </svg>
+              {/* Step 4: AI Applies Colors (Dark Mode Sidebar) (9-12s) */}
+              <motion.div animate={{ opacity: [0, 0, 0, 0, 1, 1, 0] }} transition={{ duration: 15, times: [0, 0.58, 0.6, 0.78, 0.8, 0.98, 1], repeat: Infinity }} className="absolute inset-0 bg-slate-50 flex rounded-lg shadow-xl border border-slate-700 overflow-hidden z-20">
+                 <div className="w-1/2 h-full bg-slate-900 p-4 sm:p-6 flex flex-col justify-center relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-600 rounded-bl-[100px] opacity-30 blur-2xl" />
+                    <div className="absolute bottom-0 left-0 w-16 h-16 bg-emerald-500 rounded-tr-[100px] opacity-30 blur-xl" />
+                    <span className="text-indigo-400 font-bold text-[7px] sm:text-[9px] tracking-widest uppercase mb-1 relative z-10">Chapter 1</span>
+                    <h1 className="text-white font-black text-sm sm:text-[22px] leading-tight mb-2 sm:mb-3 relative z-10">Space Exploration</h1>
+                    <p className="text-slate-400 text-[6px] sm:text-[9px] leading-relaxed relative z-10">
+                       Discovering the cosmos through generative AI design. No design skills required.
+                    </p>
+                 </div>
+                 <div className="w-1/2 h-full border-l border-slate-800 bg-slate-950 flex items-center justify-center p-3 sm:p-4">
+                    <div className="w-full h-full border-2 border-dashed border-slate-700 rounded flex items-center justify-center">
+                       <ImageIcon className="w-6 h-6 sm:w-8 sm:h-8 text-slate-600" />
+                    </div>
+                 </div>
+              </motion.div>
+
+              {/* Step 5: AI Creates Images (Full Slide) (12-15s) */}
+              <motion.div animate={{ opacity: [0, 0, 0, 0, 0, 1, 1] }} transition={{ duration: 15, times: [0, 0.6, 0.78, 0.8, 0.98, 1, 1], repeat: Infinity }} className="absolute inset-0 bg-slate-50 flex rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-slate-700 overflow-hidden z-10">
+                 <div className="w-1/2 h-full bg-slate-900 p-4 sm:p-6 flex flex-col justify-center relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-600 rounded-bl-[100px] opacity-30 blur-2xl" />
+                    <div className="absolute bottom-0 left-0 w-16 h-16 bg-emerald-500 rounded-tr-[100px] opacity-30 blur-xl" />
+                    <span className="text-indigo-400 font-bold text-[7px] sm:text-[9px] tracking-widest uppercase mb-1 relative z-10">Chapter 1</span>
+                    <h1 className="text-white font-black text-sm sm:text-[22px] leading-tight mb-2 sm:mb-3 relative z-10">Space Exploration</h1>
+                    <p className="text-slate-400 text-[6px] sm:text-[9px] leading-relaxed relative z-10">
+                       Discovering the cosmos through generative AI design. No design skills required.
+                    </p>
+                 </div>
+                 <div className="w-1/2 h-full relative overflow-hidden border-l border-slate-800">
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-slate-900 to-black">
+                       <div className="absolute top-4 left-4 w-1 h-1 bg-white rounded-full opacity-80 shadow-[0_0_5px_white]" />
+                       <div className="absolute top-8 right-8 w-1.5 h-1.5 bg-white rounded-full opacity-60 shadow-[0_0_5px_white]" />
+                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-emerald-400 to-indigo-700 shadow-[0_0_40px_rgba(52,211,153,0.3)] flex items-center justify-center">
+                          <div className="absolute w-24 h-6 sm:w-36 sm:h-8 border-[3px] border-indigo-300/40 rounded-[100%] rotate-[20deg]" />
+                       </div>
+                    </div>
+                 </div>
               </motion.div>
 
            </div>
