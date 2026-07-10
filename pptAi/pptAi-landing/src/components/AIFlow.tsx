@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { FileText, BrainCog, Image, Download, CheckCircle, ArrowDown, ChevronUp, ChevronDown, Loader2, CheckCircle2, Sparkles } from 'lucide-react'
+import { FileText, BrainCog, Image, Download, CheckCircle, ArrowDown, ChevronUp, ChevronDown, Loader2, CheckCircle2, Sparkles, LayoutTemplate } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 const steps = [
@@ -198,26 +198,143 @@ const DalleGenerating = () => {
 }
 
 const PresentationReady = () => {
+  const [slideIdx, setSlideIdx] = useState(0)
+  
+  const PPT_SLIDES = [
+    {
+      title: "Introduction to AI",
+      img: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=600&auto=format&fit=crop",
+      bullets: ["What is Artificial Intelligence?", "History and evolution", "Current industry trends"]
+    },
+    {
+      title: "Machine Learning",
+      img: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?q=80&w=600&auto=format&fit=crop",
+      bullets: ["Supervised vs Unsupervised", "Training data sets", "Model evaluation metrics"]
+    },
+    {
+      title: "Deep Learning",
+      img: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=600&auto=format&fit=crop",
+      bullets: ["Neural Networks explained", "Backpropagation", "Real-world applications"]
+    },
+    {
+      title: "Future of Tech",
+      img: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?q=80&w=600&auto=format&fit=crop",
+      bullets: ["Ethics in AI", "Quantum computing", "Singularity theories"]
+    }
+  ]
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSlideIdx(s => (s + 1) % PPT_SLIDES.length)
+    }, 2800) // 2.8s per slide for readability
+    return () => clearInterval(timer)
+  }, [])
+
   return (
-    <div className="mt-4 flex flex-col gap-2">
-      <div className="w-full bg-emerald-100/50 rounded-full h-1.5 overflow-hidden">
-         <motion.div 
-           initial={{ width: '0%' }}
-           whileInView={{ width: '100%' }}
-           viewport={{ once: true }}
-           transition={{ duration: 2, ease: 'easeOut' }}
-           className="bg-emerald-500 h-full relative"
-         >
-           <motion.div 
-             animate={{ x: ['-100%', '200%'] }}
-             transition={{ repeat: Infinity, duration: 1.5 }}
-             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent"
-           />
-         </motion.div>
+    <div className="mt-3 bg-[#f8fafc] rounded-xl p-2.5 border border-[#e2e8f0] shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-2.5 relative overflow-hidden">
+      
+      {/* Top Header */}
+      <div className="flex justify-between items-center px-1">
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+          {slideIdx === PPT_SLIDES.length - 1 ? 'Finalizing Deck...' : 'Assembling Slides'}
+        </span>
+        <span className="text-[10px] font-mono font-bold text-indigo-600 bg-indigo-100/50 px-2 py-0.5 rounded-full border border-indigo-100">
+          {slideIdx + 1} / {PPT_SLIDES.length}
+        </span>
       </div>
-      <div className="flex justify-between w-full text-[9px] font-bold text-emerald-600/70 uppercase tracking-widest">
-         <span>Finalizing Deck</span>
-         <span>100%</span>
+
+      <div className="flex gap-2 h-[115px]">
+        {/* Sidebar - Scrolling Thumbnails */}
+        <div className="w-7 flex flex-col overflow-hidden relative border-r border-slate-200 pr-1.5">
+           <motion.div 
+             animate={{ y: -(slideIdx * 26) }}
+             transition={{ type: "spring", stiffness: 300, damping: 30 }}
+             className="flex flex-col gap-1.5 absolute top-0 left-0 w-full"
+           >
+             {PPT_SLIDES.map((_, i) => (
+               <div 
+                 key={i}
+                 className={`w-full h-5 rounded-sm transition-all duration-300 flex-shrink-0 flex items-center justify-center text-[8px] font-bold ${
+                   slideIdx === i ? 'bg-indigo-500 text-white shadow-md' : 
+                   slideIdx > i ? 'bg-indigo-50 border border-indigo-100 text-indigo-400' : 
+                   'bg-white border border-dashed border-slate-300 text-slate-300'
+                 }`}
+               >
+                 {i + 1}
+               </div>
+             ))}
+           </motion.div>
+        </div>
+        
+        {/* Main Editor View */}
+        <div className="flex-1 bg-white rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-slate-200 overflow-hidden relative">
+           <AnimatePresence mode="wait">
+              <motion.div
+                 key={slideIdx}
+                 initial={{ opacity: 0, y: 5 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, position: 'absolute' }}
+                 transition={{ duration: 0.2 }}
+                 className="absolute inset-0 p-3 flex flex-col gap-1.5"
+              >
+                 {/* Real Title */}
+                 <motion.div 
+                   initial={{ opacity: 0, x: -10 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   transition={{ delay: 0.1, duration: 0.3 }}
+                   className="text-[13px] font-extrabold text-slate-800 border-b border-slate-100 pb-1"
+                 >
+                   {PPT_SLIDES[slideIdx].title}
+                 </motion.div>
+                 
+                 <div className="flex gap-3 h-full items-start mt-1">
+                   {/* Real Image */}
+                   <motion.div 
+                     initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+                     animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                     transition={{ delay: 0.3, type: "spring", stiffness: 200, damping: 15 }}
+                     className="w-[45%] aspect-video bg-slate-50 rounded-md overflow-hidden relative shadow-sm border border-slate-200"
+                   >
+                     <img src={PPT_SLIDES[slideIdx].img} alt="slide img" className="w-full h-full object-cover" />
+                     {/* Scanning effect over image */}
+                     <motion.div 
+                        initial={{ top: '-100%' }}
+                        animate={{ top: '200%' }}
+                        transition={{ duration: 1.5, ease: "linear", delay: 0.4 }}
+                        className="absolute left-0 right-0 h-[2px] bg-white shadow-[0_0_12px_4px_rgba(255,255,255,0.9)]"
+                     />
+                   </motion.div>
+                   
+                   {/* Real Bullets */}
+                   <div className="flex-1 flex flex-col gap-1.5 mt-0.5">
+                      {PPT_SLIDES[slideIdx].bullets.map((bullet, idx) => (
+                         <motion.div 
+                           key={idx}
+                           initial={{ opacity: 0, x: 10 }}
+                           animate={{ opacity: 1, x: 0 }}
+                           transition={{ delay: 0.5 + (idx * 0.15), duration: 0.3 }}
+                           className="flex items-start gap-1.5"
+                         >
+                            <div className="w-1 h-1 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
+                            <span className="text-[9.5px] font-medium text-slate-600 leading-tight">
+                              {bullet}
+                            </span>
+                         </motion.div>
+                      ))}
+                   </div>
+                 </div>
+              </motion.div>
+           </AnimatePresence>
+        </div>
+      </div>
+      
+      {/* Global Progress Bar */}
+      <div className="w-full bg-slate-200 rounded-full h-1 mt-0.5 overflow-hidden">
+         <motion.div 
+           className="bg-indigo-500 h-full"
+           animate={{ width: `${((slideIdx + 1) / PPT_SLIDES.length) * 100}%` }}
+           transition={{ duration: 0.3 }}
+         />
       </div>
     </div>
   )
