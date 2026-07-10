@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion'
-import { FileText, BrainCog, Image, Download, CheckCircle, ArrowDown, ChevronUp, ChevronDown } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { FileText, BrainCog, Image, Download, CheckCircle, ArrowDown, ChevronUp, ChevronDown, Loader2, CheckCircle2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 const steps = [
@@ -49,6 +49,58 @@ const PROMPTS = [
   "Generate a marketing strategy presentation for Q3",
   "History of space exploration for B.Tech students"
 ]
+
+const GeminiThinking = () => {
+  const [step, setStep] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setStep(s => {
+        if (s >= 4) return 0
+        return s + 1
+      })
+    }, 1800)
+    return () => clearInterval(timer)
+  }, [])
+
+  const logs = [
+    "Analyzing prompt context...",
+    "Extracting key topics & structure...",
+    "Drafting titles and bullet points...",
+    "Generating speaker notes..."
+  ]
+
+  return (
+    <div className="mt-3 bg-[#f8fafc] rounded-lg p-3 border border-[#e2e8f0] font-mono text-[11px] shadow-inner">
+      <div className="flex flex-col gap-2">
+        {logs.map((log, index) => {
+          const isActive = step === index
+          const isDone = step > index
+          return (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: isActive || isDone ? 1 : 0, x: isActive || isDone ? 0 : -10 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-center gap-2.5 h-4"
+            >
+              {isActive ? (
+                <Loader2 className="w-3 h-3 animate-spin text-purple-500 shrink-0" />
+              ) : isDone ? (
+                <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
+              ) : (
+                <div className="w-3 h-3 shrink-0" />
+              )}
+              <span className={isActive ? "text-purple-600 font-medium" : isDone ? "text-slate-500" : "text-transparent"}>
+                {log}
+              </span>
+            </motion.div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 const TypewriterText = () => {
   const [promptIndex, setPromptIndex] = useState(0)
@@ -189,6 +241,11 @@ export default function AIFlow() {
                     <h3 className="text-base font-semibold text-gray-900 mb-1">{step.label}</h3>
                     {i === 0 ? (
                       <TypewriterText />
+                    ) : i === 1 ? (
+                      <>
+                        <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
+                        <GeminiThinking />
+                      </>
                     ) : (
                       <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
                     )}
