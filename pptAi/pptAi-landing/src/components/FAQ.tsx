@@ -385,7 +385,7 @@ const FaqVisual = ({ type }: { type: string }) => {
 }
 
 export default function FAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0)
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
     <section id="faq" className="py-24 sm:py-32 px-6 relative">

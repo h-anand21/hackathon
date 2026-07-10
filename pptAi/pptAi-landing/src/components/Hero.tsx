@@ -74,12 +74,13 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          className="w-full max-w-xl mt-8 sm:mt-12 group"
+          className="w-full max-w-xl mt-8 sm:mt-12"
         >
-          {/* Animated Glow Effect behind input */}
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
-          
-          <div className="relative flex items-center w-full h-14 bg-white/80 backdrop-blur-xl rounded-full border border-gray-200 shadow-sm overflow-hidden px-2 transition-all hover:shadow-md hover:bg-white focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20">
+          <motion.div 
+            whileHover={{ y: -4, scale: 1.01 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="relative flex items-center w-full h-14 bg-white/80 backdrop-blur-xl rounded-full border border-gray-200 shadow-sm overflow-hidden px-2 transition-all hover:shadow-[0_10px_40px_rgba(37,99,235,0.12)] hover:bg-white focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20"
+          >
             {inputValue === '' && (
               <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-[15px] text-gray-400">
                 {placeholder}
@@ -112,7 +113,7 @@ export default function Hero() {
                 </motion.div>
               </button>
             </div>
-          </div>
+          </motion.div>
         </motion.div>
 
         <motion.p 

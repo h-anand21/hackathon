@@ -5,10 +5,10 @@ import './index.css'
 
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
-import CursorSpotlight from './components/CursorSpotlight'
 import AIFlow from './components/AIFlow'
 import Features from './components/Features'
 import FAQ from './components/FAQ'
+import CTA from './components/CTA'
 import Footer from './components/Footer'
 
 export default function App() {
@@ -42,8 +42,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      <CursorSpotlight />
-
       {/* Global Fixed Sky Background */}
       <div className="fixed inset-0 z-[-1] pointer-events-none bg-blue-50/50">
         <div 
@@ -63,6 +61,7 @@ export default function App() {
         <AIFlow />
         <Features />
         <FAQ />
+        <CTA />
       </main>
       
       <Footer />
