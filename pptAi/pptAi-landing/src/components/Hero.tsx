@@ -11,10 +11,8 @@ export default function Hero() {
   const yContent = useTransform(scrollY, [0, 1000], [0, 150])
 
   return (
-    <section className="relative min-h-[100svh] flex flex-col pt-16 sm:pt-0">
+    <section className="relative min-h-[100svh] overflow-hidden flex flex-col pt-16 sm:pt-0">
       
-
-
       <div className="flex-1 min-h-8 sm:min-h-12 lg:min-h-16 shrink-0" />
 
       {/* Hero Content with Parallax */}
@@ -103,6 +101,12 @@ export default function Hero() {
         </motion.div>
       </motion.div>
 
+      {/* Grass Overlay */}
+      <img 
+        src="https://res.cloudinary.com/dy5er7kv5/image/upload/q_auto/f_auto/v1781191264/grass_eam204.png" 
+        alt="" 
+        className="pointer-events-none absolute bottom-0 left-0 z-10 w-full select-none object-cover h-[20vh] sm:h-auto"
+      />
     </section>
   )
 }

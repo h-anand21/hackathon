@@ -44,7 +44,7 @@ export default function App() {
     <div className="min-h-screen">
       <CursorSpotlight />
 
-      {/* Global Fixed Background */}
+      {/* Global Fixed Sky Background */}
       <div className="fixed inset-0 z-[-1] pointer-events-none bg-blue-50/50">
         <div 
           style={{ 
@@ -52,13 +52,6 @@ export default function App() {
           }}
           className="absolute inset-0 bg-cover bg-center"
         />
-        <img 
-          src="https://res.cloudinary.com/dy5er7kv5/image/upload/q_auto/f_auto/v1781191264/grass_eam204.png" 
-          alt="" 
-          className="absolute bottom-0 left-0 w-full select-none object-cover h-[25vh] sm:h-auto opacity-90"
-        />
-        {/* Soft gradient to blend the grass into the bottom */}
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white/30 to-transparent" />
       </div>
       
       <div className="absolute top-0 left-0 w-full z-50">
