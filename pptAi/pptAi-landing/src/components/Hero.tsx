@@ -96,9 +96,22 @@ export default function Hero() {
               onChange={(e) => setInputValue(e.target.value)}
               className="flex-1 px-4 text-gray-900 text-[15px] outline-none bg-transparent h-full relative z-10"
             />
-            <button className="flex-shrink-0 w-10 h-10 rounded-full bg-[#0F172A] text-white flex items-center justify-center hover:bg-gray-800 transition-colors relative z-10">
-              <ArrowUp className="w-4 h-4" />
-            </button>
+            <div className="relative z-10 flex items-center justify-center">
+              {/* Pulsing ring animation */}
+              <motion.div 
+                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                className="absolute inset-0 bg-blue-500 rounded-full"
+              />
+              <button className="relative flex-shrink-0 w-10 h-10 rounded-full bg-[#0F172A] text-white flex items-center justify-center hover:bg-gray-800 transition-colors">
+                <motion.div
+                  animate={{ y: [-2, 2, -2] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                >
+                  <ArrowUp className="w-4 h-4" />
+                </motion.div>
+              </button>
+            </div>
           </div>
         </motion.div>
 
