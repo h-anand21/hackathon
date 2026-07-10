@@ -67,84 +67,96 @@ export default function About() {
       </motion.div>
 
       {/* Why We Are Different Section (Parallax) */}
-      <div ref={targetRef} className="w-full bg-slate-900 text-white py-32 px-6 relative overflow-hidden">
+      <div ref={targetRef} className="w-full py-32 px-6 relative overflow-hidden">
         {/* Animated background grid */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] opacity-20" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:64px_64px] opacity-50" />
         
         <motion.div style={{ opacity }} className="max-w-6xl mx-auto relative z-10">
-          <div className="text-center mb-24">
-            <h2 className="text-4xl sm:text-5xl font-black mb-6">Why pptAI is Different?</h2>
-            <p className="text-blue-200 text-lg max-w-2xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-24"
+          >
+            <h2 className="text-4xl sm:text-5xl font-black mb-6 text-slate-900">Why pptAI is Different?</h2>
+            <p className="text-slate-600 text-lg max-w-2xl mx-auto">
               Most AI presentation tools just dump generic text into pre-made templates. We completely reimagined the architecture from the ground up.
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center">
             
             {/* The Competition */}
             <motion.div style={{ y: y1 }} className="space-y-8">
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-3xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-2 h-full bg-red-500/50" />
-                <h3 className="text-xl font-bold text-slate-300 mb-2 uppercase tracking-wider">Other AI Tools</h3>
-                <p className="text-red-300 font-medium mb-6 text-sm">Rigid, repetitive, and boring.</p>
-                <ul className="space-y-4 text-slate-400">
-                  <li className="flex items-start gap-3">
-                    <div className="mt-1">❌</div>
-                    <span>Uses basic templates and forces text into predefined, rigid boxes.</span>
+              <motion.div 
+                whileHover={{ scale: 1.02 }}
+                className="bg-white border border-slate-200 p-8 rounded-3xl relative overflow-hidden shadow-sm"
+              >
+                <div className="absolute top-0 left-0 w-2 h-full bg-red-500" />
+                <h3 className="text-xl font-bold text-slate-400 mb-2 uppercase tracking-wider">Other AI Tools</h3>
+                <p className="text-red-500 font-bold mb-6 text-sm">Rigid, repetitive, and boring.</p>
+                <ul className="space-y-5 text-slate-600">
+                  <li className="flex items-start gap-4">
+                    <div className="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0 text-xs font-bold mt-1">✕</div>
+                    <span className="leading-relaxed">Uses basic templates and forces text into predefined, rigid boxes.</span>
                   </li>
-                  <li className="flex items-start gap-3">
-                    <div className="mt-1">❌</div>
-                    <span>Images are usually generic stock photos that don't match the context.</span>
+                  <li className="flex items-start gap-4">
+                    <div className="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0 text-xs font-bold mt-1">✕</div>
+                    <span className="leading-relaxed">Images are usually generic stock photos that don't match the context.</span>
                   </li>
-                  <li className="flex items-start gap-3">
-                    <div className="mt-1">❌</div>
-                    <span>Lacks a real narrative structure. It just summarizes text randomly.</span>
+                  <li className="flex items-start gap-4">
+                    <div className="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0 text-xs font-bold mt-1">✕</div>
+                    <span className="leading-relaxed">Lacks a real narrative structure. It just summarizes text randomly.</span>
                   </li>
                 </ul>
-              </div>
+              </motion.div>
             </motion.div>
 
             {/* Us */}
             <motion.div style={{ y: y2 }} className="space-y-8">
-              <div className="bg-gradient-to-br from-blue-900/50 to-sky-900/50 backdrop-blur-md border border-blue-500/30 p-8 sm:p-10 rounded-3xl relative overflow-hidden shadow-2xl shadow-blue-900/50">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px]" />
+              <motion.div 
+                whileHover={{ scale: 1.02 }}
+                className="bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 p-8 sm:p-10 rounded-3xl relative overflow-hidden shadow-xl shadow-blue-500/10"
+              >
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px]" />
                 <div className="absolute top-0 left-0 w-2 h-full bg-blue-500" />
                 
-                <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-wider flex items-center gap-2">
-                  <Sparkles className="text-blue-400" /> pptAI
+                <h3 className="text-2xl font-black text-slate-900 mb-2 uppercase tracking-wider flex items-center gap-2 relative z-10">
+                  <Sparkles className="text-blue-500" /> pptAI
                 </h3>
-                <p className="text-blue-300 font-bold mb-6 text-sm">Dynamic, context-aware, and stunning.</p>
+                <p className="text-blue-600 font-bold mb-6 text-sm relative z-10">Dynamic, context-aware, and stunning.</p>
                 
-                <ul className="space-y-5 text-blue-50 relative z-10">
+                <ul className="space-y-5 text-slate-700 relative z-10">
                   <li className="flex items-start gap-4">
-                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 border border-blue-400/30">
-                      <Blocks className="w-4 h-4 text-blue-400" />
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border border-blue-200">
+                      <Blocks className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
-                      <strong className="block text-white mb-1">Dynamic Rendering Engine</strong>
-                      <span className="text-sm opacity-80 leading-relaxed block">We don't use fixed templates. Our React-based engine calculates the best layout mathematically based on your exact text length and image dimensions.</span>
+                      <strong className="block text-slate-900 mb-1">Dynamic Rendering Engine</strong>
+                      <span className="text-sm leading-relaxed block">We don't use fixed templates. Our React-based engine calculates the best layout mathematically based on your exact text length and image dimensions.</span>
                     </div>
                   </li>
                   <li className="flex items-start gap-4">
-                    <div className="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center shrink-0 border border-sky-400/30">
-                      <BrainCircuit className="w-4 h-4 text-sky-400" />
+                    <div className="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center shrink-0 border border-sky-200">
+                      <BrainCircuit className="w-4 h-4 text-sky-600" />
                     </div>
                     <div>
-                      <strong className="block text-white mb-1">Narrative Intelligence</strong>
-                      <span className="text-sm opacity-80 leading-relaxed block">Gemini AI is prompted to think like an expert storyteller. It structures your presentation with a hook, body, and compelling conclusion.</span>
+                      <strong className="block text-slate-900 mb-1">Narrative Intelligence</strong>
+                      <span className="text-sm leading-relaxed block">Gemini AI is prompted to think like an expert storyteller. It structures your presentation with a hook, body, and compelling conclusion.</span>
                     </div>
                   </li>
                   <li className="flex items-start gap-4">
-                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 border border-blue-400/30">
-                      <Wand2 className="w-4 h-4 text-blue-400" />
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border border-blue-200">
+                      <Wand2 className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
-                      <strong className="block text-white mb-1">Hyper-Specific DALL-E Art</strong>
-                      <span className="text-sm opacity-80 leading-relaxed block">We analyze the slide's specific context to generate custom, on-brand DALL-E 3 images that perfectly illustrate your exact point.</span>
+                      <strong className="block text-slate-900 mb-1">Hyper-Specific DALL-E Art</strong>
+                      <span className="text-sm leading-relaxed block">We analyze the slide's specific context to generate custom, on-brand DALL-E 3 images that perfectly illustrate your exact point.</span>
                     </div>
                   </li>
                 </ul>
-              </div>
+              </motion.div>
             </motion.div>
 
           </div>
