@@ -11,8 +11,8 @@ export default function ComingSoon() {
         transition={{ duration: 0.6 }}
         className="max-w-md w-full bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl shadow-xl p-10 flex flex-col items-center"
       >
-        <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-6">
-          <Clock className="w-8 h-8 text-indigo-600" />
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+          <Clock className="w-8 h-8 text-blue-600" />
         </div>
         
         <h1 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Coming Soon</h1>
@@ -22,7 +22,7 @@ export default function ComingSoon() {
         
         <Link 
           to="/"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full transition-colors flex items-center gap-2 shadow-lg shadow-indigo-600/20"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-colors flex items-center gap-2 shadow-lg shadow-blue-600/20"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </Link>

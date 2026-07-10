@@ -10,6 +10,7 @@ import Contact from './pages/Contact'
 import Blog from './pages/Blog'
 import FuturePlan from './pages/FuturePlan'
 import ComingSoon from './pages/ComingSoon'
+import About from './pages/About'
 
 export default function App() {
   useEffect(() => {
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/future-plan" element={<FuturePlan />} />
+          <Route path="/about" element={<About />} />
           <Route path="/coming-soon" element={<ComingSoon />} />
         </Routes>
         

@@ -12,7 +12,7 @@ export default function FuturePlan() {
         transition={{ duration: 0.6 }}
         className="max-w-3xl w-full text-center mb-16"
       >
-        <p className="text-indigo-600 font-bold text-sm uppercase tracking-widest mb-3">Roadmap</p>
+        <p className="text-blue-600 font-bold text-sm uppercase tracking-widest mb-3">Roadmap</p>
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 mb-6 tracking-tight">
           What's next for pptAI?
         </h1>
@@ -28,19 +28,19 @@ export default function FuturePlan() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="col-span-1 md:col-span-2 bg-gradient-to-br from-indigo-900 to-slate-900 rounded-3xl p-8 sm:p-12 shadow-2xl overflow-hidden relative flex flex-col md:flex-row items-center gap-10"
+          className="col-span-1 md:col-span-2 bg-gradient-to-br from-blue-900 to-slate-900 rounded-3xl p-8 sm:p-12 shadow-2xl overflow-hidden relative flex flex-col md:flex-row items-center gap-10"
         >
           {/* Background Glow */}
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/20 blur-[100px] rounded-full pointer-events-none" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/20 blur-[100px] rounded-full pointer-events-none" />
           
           <div className="flex-1 relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/20 border border-indigo-400/30 rounded-full text-indigo-300 font-bold text-[10px] tracking-widest uppercase mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-blue-300 font-bold text-[10px] tracking-widest uppercase mb-6">
               <Sparkles className="w-3 h-3" /> Coming in Q4
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-white mb-4 leading-tight">
               pptAI Mobile App
             </h2>
-            <p className="text-indigo-200/80 leading-relaxed mb-8 text-sm sm:text-base">
+            <p className="text-blue-200/80 leading-relaxed mb-8 text-sm sm:text-base">
               Generate, edit, and present directly from your pocket. The upcoming mobile application will sync perfectly with your web dashboard, allowing you to generate last-minute pitch decks while on the go.
             </p>
             <ul className="flex flex-col gap-3 text-white text-sm font-medium mb-8">
@@ -64,8 +64,8 @@ export default function FuturePlan() {
               {/* Notch */}
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-slate-700 rounded-b-xl z-20" />
               {/* Fake UI */}
-              <div className="w-full h-24 bg-indigo-500/20 rounded-2xl mt-4 border border-indigo-500/30 flex items-center justify-center">
-                <Smartphone className="w-8 h-8 text-indigo-400" />
+              <div className="w-full h-24 bg-blue-500/20 rounded-2xl mt-4 border border-blue-500/30 flex items-center justify-center">
+                <Smartphone className="w-8 h-8 text-blue-400" />
               </div>
               <div className="w-3/4 h-4 bg-slate-600 rounded mt-2" />
               <div className="w-1/2 h-3 bg-slate-600 rounded" />

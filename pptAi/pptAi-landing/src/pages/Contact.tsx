@@ -10,7 +10,7 @@ export default function Contact() {
         transition={{ duration: 0.6 }}
         className="max-w-2xl w-full text-center mb-12"
       >
-        <p className="text-indigo-600 font-bold text-sm uppercase tracking-widest mb-3">Get in Touch</p>
+        <p className="text-blue-600 font-bold text-sm uppercase tracking-widest mb-3">Get in Touch</p>
         <h1 className="text-4xl sm:text-5xl font-black text-slate-900 mb-4 tracking-tight">
           Let's talk about the future of presentations
         </h1>
@@ -29,12 +29,12 @@ export default function Contact() {
           className="lg:col-span-1 flex flex-col gap-6"
         >
           <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-slate-200 shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center shrink-0">
-              <Mail className="w-5 h-5 text-indigo-600" />
+            <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center shrink-0">
+              <Mail className="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <h3 className="font-bold text-slate-900 mb-1">Email Us</h3>
-              <a href="mailto:work.himu2006@gmail.com" className="text-indigo-600 hover:underline text-sm font-medium">work.himu2006@gmail.com</a>
+              <a href="mailto:work.himu2006@gmail.com" className="text-blue-600 hover:underline text-sm font-medium">work.himu2006@gmail.com</a>
               <p className="text-slate-500 text-xs mt-1">We aim to reply within 24 hours.</p>
             </div>
           </div>
@@ -77,25 +77,25 @@ export default function Contact() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">First Name</label>
-                <input type="text" placeholder="John" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+                <input type="text" placeholder="John" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Last Name</label>
-                <input type="text" placeholder="Doe" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+                <input type="text" placeholder="Doe" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
               </div>
             </div>
             
             <div className="flex flex-col gap-2">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
-              <input type="email" placeholder="john@company.com" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+              <input type="email" placeholder="john@company.com" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
             </div>
 
             <div className="flex flex-col gap-2">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Message</label>
-              <textarea placeholder="How can we help you?" rows={5} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none"></textarea>
+              <textarea placeholder="How can we help you?" rows={5} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"></textarea>
             </div>
 
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-600/20 mt-2">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-600/20 mt-2">
               Send Message <Send className="w-4 h-4" />
             </button>
           </form>
