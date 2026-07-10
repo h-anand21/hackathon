@@ -1,4 +1,5 @@
 import { Globe, Code2, Mail } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import Logo from './Logo'
 import { motion } from 'framer-motion'
 
@@ -14,10 +15,10 @@ export default function Footer() {
           className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16"
         >
           <div className="md:col-span-1">
-            <a href="/" className="text-gray-900 flex items-center gap-2 mb-4 group">
+            <Link to="/" className="text-gray-900 flex items-center gap-2 mb-4 group">
               <Logo className="w-6 h-6 transition-transform group-hover:scale-110" />
               <span className="font-semibold text-xl tracking-tight">pptAI</span>
-            </a>
+            </Link>
             <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
               Ship beautiful presentations effortlessly. Powered by Gemini and DALL-E 3.
             </p>
@@ -26,27 +27,27 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-gray-900 mb-4 text-sm">Product</h4>
             <ul className="space-y-3">
-              <li><a href="#features" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Features</a></li>
-              <li><a href="#" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Pricing</a></li>
-              <li><a href="#" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Templates</a></li>
+              <li><a href="/#features" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Features</a></li>
+              <li><Link to="/coming-soon" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Pricing</Link></li>
+              <li><Link to="/coming-soon" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Templates</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold text-gray-900 mb-4 text-sm">Company</h4>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">About</a></li>
-              <li><a href="#" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Blog</a></li>
-              <li><a href="#" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Careers</a></li>
-              <li><a href="#" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Contact</a></li>
+              <li><Link to="/coming-soon" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">About</Link></li>
+              <li><Link to="/blog" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Blog</Link></li>
+              <li><Link to="/future-plan" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Future Plan</Link></li>
+              <li><Link to="/contact" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Contact</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold text-gray-900 mb-4 text-sm">Legal</h4>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Terms of Service</a></li>
+              <li><Link to="/coming-soon" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/coming-soon" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
         </motion.div>
@@ -60,16 +61,34 @@ export default function Footer() {
         >
           <p className="text-gray-400 text-sm">© 2026 pptAI. All rights reserved.</p>
           <div className="flex items-center gap-5">
-            {[Globe, Code2, Mail].map((Icon, i) => (
-              <motion.a 
-                key={i} 
-                href="#" 
-                whileHover={{ scale: 1.1, y: -2 }}
-                className="text-gray-400 hover:text-gray-900 transition-colors"
-              >
-                <Icon size={18} />
-              </motion.a>
-            ))}
+            <motion.a 
+              href="https://hanand.dev" 
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.1, y: -2 }}
+              className="text-gray-400 hover:text-gray-900 transition-colors"
+              title="Developer Website"
+            >
+              <Globe size={18} />
+            </motion.a>
+            <motion.a 
+              href="https://github.com/h-anand21/hackathon/tree/main/pptAi" 
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.1, y: -2 }}
+              className="text-gray-400 hover:text-gray-900 transition-colors"
+              title="GitHub Repository"
+            >
+              <Code2 size={18} />
+            </motion.a>
+            <motion.a 
+              href="mailto:work.himu2006@gmail.com" 
+              whileHover={{ scale: 1.1, y: -2 }}
+              className="text-gray-400 hover:text-gray-900 transition-colors"
+              title="Email Us"
+            >
+              <Mail size={18} />
+            </motion.a>
           </div>
         </motion.div>
       </div>
