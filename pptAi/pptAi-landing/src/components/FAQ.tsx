@@ -118,34 +118,45 @@ const FaqVisual = ({ type }: { type: string }) => {
                     <div className="w-48 sm:w-72 h-20 sm:h-32 bg-white shadow-lg border border-slate-200 p-3 sm:p-4 flex gap-3 relative overflow-visible">
                        {/* Text Column */}
                        <div className="flex-1 flex flex-col gap-2 relative">
-                          <motion.div animate={{ width: ['100%', '30%', '70%', '100%'] }} transition={{ duration: 8, times: [0, 0.2, 0.3, 1], repeat: Infinity, ease: "easeInOut" }} className="h-4 sm:h-5 bg-slate-800 rounded-[2px]" />
+                          <motion.div animate={{ width: ['100%', '30%', '70%', '100%'] }} transition={{ duration: 8, times: [0, 0.2, 0.3, 1], repeat: Infinity, ease: "easeInOut" }} className="h-4 sm:h-5 bg-slate-800 rounded-[2px] relative flex items-center justify-end pr-[2px]">
+                              {/* Blinking Caret (visible only during edit) */}
+                              <motion.div animate={{ opacity: [0, 1, 0, 0, 0] }} transition={{ duration: 8, times: [0, 0.1, 0.2, 0.3, 1], repeat: Infinity }} className="w-[1.5px] h-[60%] bg-white" />
+                          </motion.div>
                           <div className="w-full h-2 sm:h-2.5 bg-slate-300 rounded-[2px]" />
                           <div className="w-full h-2 sm:h-2.5 bg-slate-300 rounded-[2px]" />
                           <div className="w-2/3 h-2 sm:h-2.5 bg-slate-300 rounded-[2px]" />
                           
                           {/* Text selection highlight */}
-                          <motion.div animate={{ opacity: [0, 1, 1, 0] }} transition={{ duration: 8, times: [0, 0.1, 0.3, 0.4], repeat: Infinity }} className="absolute -top-1 -left-1 w-[105%] h-6 sm:h-7 border border-blue-500 bg-blue-500/10 rounded-[2px] z-10" />
+                          <motion.div animate={{ opacity: [0, 1, 1, 0, 0] }} transition={{ duration: 8, times: [0, 0.1, 0.3, 0.35, 1], repeat: Infinity }} className="absolute -top-1 -left-1 w-[105%] h-6 sm:h-7 border border-blue-500 bg-blue-500/10 rounded-[2px] z-10 pointer-events-none" />
                        </div>
                        
                        {/* Image Column */}
                        <div className="w-20 sm:w-28 h-full bg-slate-100 rounded-[2px] border border-slate-300 relative overflow-visible flex-shrink-0 group">
-                          {/* Image Switcher */}
-                          <motion.div animate={{ opacity: [1, 1, 0, 1] }} transition={{ duration: 8, times: [0, 0.5, 0.6, 1], repeat: Infinity }} className="absolute inset-0 bg-cyan-100 flex items-center justify-center rounded-[2px]">
-                             <ImageIcon className="w-6 h-6 text-cyan-500" />
+                          {/* Picture 1 (Daytime Mountain) */}
+                          <motion.div animate={{ opacity: [1, 1, 0, 0, 1] }} transition={{ duration: 8, times: [0, 0.5, 0.55, 0.95, 1], repeat: Infinity }} className="absolute inset-0 bg-sky-200 overflow-hidden rounded-[2px]">
+                             <div className="absolute top-1 right-2 w-3 sm:w-4 h-3 sm:h-4 bg-yellow-400 rounded-full" />
+                             <div className="absolute -bottom-2 -left-2 w-10 sm:w-12 h-10 sm:h-12 bg-emerald-400 rotate-45" />
+                             <div className="absolute -bottom-4 right-0 w-14 sm:w-16 h-14 sm:h-16 bg-emerald-500 rotate-45" />
                           </motion.div>
-                          <motion.div animate={{ opacity: [0, 0, 1, 0] }} transition={{ duration: 8, times: [0, 0.5, 0.6, 1], repeat: Infinity }} className="absolute inset-0 bg-emerald-100 flex items-center justify-center rounded-[2px]">
-                             <ImageIcon className="w-6 h-6 text-emerald-500" />
+                          
+                          {/* Picture 2 (Night Cyberpunk City) */}
+                          <motion.div animate={{ opacity: [0, 0, 1, 1, 0] }} transition={{ duration: 8, times: [0, 0.5, 0.55, 0.95, 1], repeat: Infinity }} className="absolute inset-0 bg-slate-900 overflow-hidden rounded-[2px]">
+                             <div className="absolute top-2 left-2 w-2 sm:w-3 h-2 sm:h-3 bg-slate-100 rounded-full shadow-[0_0_8px_white]" />
+                             <div className="absolute bottom-0 left-2 w-2 sm:w-3 h-6 sm:h-8 bg-indigo-950 border-t border-indigo-500" />
+                             <div className="absolute bottom-0 left-5 sm:left-6 w-3 sm:w-4 h-10 sm:h-12 bg-purple-900 border-t border-purple-400" />
+                             <div className="absolute bottom-0 left-10 sm:left-12 w-2 sm:w-3 h-5 sm:h-6 bg-blue-950 border-t border-blue-500" />
+                             <div className="absolute bottom-0 left-14 sm:left-16 w-4 sm:w-5 h-8 sm:h-10 bg-indigo-900 border-t border-indigo-400" />
                              {/* Magic spark effect when swapped */}
-                             <motion.div animate={{ scale: [0, 1.5, 0], opacity: [0, 1, 0], rotate: 90 }} transition={{ duration: 8, times: [0.55, 0.6, 0.65], repeat: Infinity }} className="absolute inset-0 flex items-center justify-center z-20">
-                                <Sparkles className="w-8 h-8 text-emerald-400 drop-shadow-md" />
+                             <motion.div animate={{ scale: [0, 1.5, 0], opacity: [0, 1, 0], rotate: 90 }} transition={{ duration: 8, times: [0.5, 0.55, 0.6], repeat: Infinity }} className="absolute inset-0 flex items-center justify-center z-20">
+                                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-purple-300 drop-shadow-[0_0_10px_white]" />
                              </motion.div>
                           </motion.div>
 
                           {/* Image Selection Highlight */}
-                          <motion.div animate={{ opacity: [0, 0, 1, 0, 0] }} transition={{ duration: 8, times: [0, 0.4, 0.45, 0.6, 0.7], repeat: Infinity }} className="absolute -inset-[3px] border-[2px] border-indigo-500 rounded z-20 pointer-events-none" />
+                          <motion.div animate={{ opacity: [0, 0, 1, 1, 0] }} transition={{ duration: 8, times: [0, 0.35, 0.4, 0.6, 0.65], repeat: Infinity }} className="absolute -inset-[3px] border-[2px] border-indigo-500 rounded z-20 pointer-events-none" />
                           
                           {/* AI Regenerate Toolbar popover */}
-                          <motion.div animate={{ opacity: [0, 0, 1, 0, 0], scale: [0.8, 0.8, 1, 0.8, 0.8], y: [10, 10, -5, -5, 10] }} transition={{ duration: 8, times: [0, 0.4, 0.45, 0.6, 0.7], repeat: Infinity }} className="absolute -top-6 sm:-top-8 left-1/2 -translate-x-1/2 z-30 bg-indigo-600 text-white text-[7px] sm:text-[9px] px-2 py-1 sm:px-3 sm:py-1.5 rounded shadow-xl flex items-center gap-1 font-bold whitespace-nowrap">
+                          <motion.div animate={{ opacity: [0, 0, 1, 1, 0], scale: [0.8, 0.8, 1, 1, 0.8], y: [10, 10, -5, -5, 10] }} transition={{ duration: 8, times: [0, 0.35, 0.4, 0.6, 0.65], repeat: Infinity }} className="absolute -top-6 sm:-top-8 left-1/2 -translate-x-1/2 z-30 bg-indigo-600 text-white text-[7px] sm:text-[9px] px-2 py-1 sm:px-3 sm:py-1.5 rounded shadow-xl flex items-center gap-1 font-bold whitespace-nowrap">
                              <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> AI Replace Image
                           </motion.div>
                        </div>
