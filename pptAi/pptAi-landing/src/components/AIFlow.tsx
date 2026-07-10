@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { FileText, BrainCog, Image, Download, CheckCircle, ArrowDown, ChevronUp, ChevronDown } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -52,80 +52,62 @@ const PROMPTS = [
 
 const TypewriterText = () => {
   const [promptIndex, setPromptIndex] = useState(0)
-  const [direction, setDirection] = useState(1)
+  const [targetIndex, setTargetIndex] = useState(0)
   const [charIndex, setCharIndex] = useState(0)
-  const [isManual, setIsManual] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  // Auto typing logic
+  // Typing and Deleting logic
   useEffect(() => {
-    if (isManual) return
-    const currentText = PROMPTS[promptIndex]
     let timer: NodeJS.Timeout
 
-    if (charIndex < currentText.length) {
-      timer = setTimeout(() => setCharIndex(c => c + 1), 35)
+    if (promptIndex !== targetIndex) {
+      // We need to transition to a new prompt
+      if (!isDeleting) {
+        setIsDeleting(true)
+      } else {
+        if (charIndex > 0) {
+          timer = setTimeout(() => setCharIndex(c => c - 1), 15) // fast delete
+        } else {
+          setIsDeleting(false)
+          setPromptIndex(targetIndex)
+        }
+      }
     } else {
-      timer = setTimeout(() => {
-        setDirection(1)
-        setCharIndex(0)
-        setPromptIndex(prev => (prev + 1) % PROMPTS.length)
-      }, 3000)
+      // Type out the current prompt
+      const currentText = PROMPTS[promptIndex]
+      if (charIndex < currentText.length) {
+        timer = setTimeout(() => setCharIndex(c => c + 1), 35)
+      }
     }
+    
     return () => clearTimeout(timer)
-  }, [charIndex, isManual, promptIndex])
-
-  // Resume auto-typing after manual interaction
-  useEffect(() => {
-    if (isManual) {
-      const resetTimer = setTimeout(() => {
-        setIsManual(false)
-        setCharIndex(0)
-        setDirection(1)
-        setPromptIndex(prev => (prev + 1) % PROMPTS.length)
-      }, 5000)
-      return () => clearTimeout(resetTimer)
-    }
-  }, [isManual, promptIndex])
+  }, [charIndex, isDeleting, promptIndex, targetIndex])
 
   const handleNext = () => {
-    setIsManual(true)
-    setDirection(1)
-    setPromptIndex((prev) => (prev + 1) % PROMPTS.length)
+    if (promptIndex !== targetIndex || isDeleting) return
+    setTargetIndex((prev) => (prev + 1) % PROMPTS.length)
   }
 
   const handlePrev = () => {
-    setIsManual(true)
-    setDirection(-1)
-    setPromptIndex((prev) => (prev - 1 + PROMPTS.length) % PROMPTS.length)
+    if (promptIndex !== targetIndex || isDeleting) return
+    setTargetIndex((prev) => (prev - 1 + PROMPTS.length) % PROMPTS.length)
   }
 
   const currentText = PROMPTS[promptIndex]
-  const displayText = isManual ? currentText : currentText.substring(0, charIndex)
-  const isTyping = !isManual && charIndex < currentText.length
+  const displayText = currentText.substring(0, charIndex)
+  const isTyping = promptIndex !== targetIndex || charIndex < currentText.length
 
   return (
-    <div className={`flex items-center gap-3 bg-white border shadow-sm rounded-lg p-3 mt-3 w-full relative transition-all duration-500 ${isTyping ? 'border-indigo-400 ring-4 ring-indigo-500/10' : 'border-gray-200'}`}>
-      <div className="flex-1 min-h-[48px] flex items-center relative overflow-hidden">
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={promptIndex}
-            custom={direction}
-            initial={{ y: direction === 1 ? 30 : -30, opacity: 0, scale: 0.95 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: direction === 1 ? -30 : 30, opacity: 0, scale: 0.95, position: 'absolute' }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="w-full text-gray-800 font-medium leading-relaxed pr-2"
-          >
-            "{displayText}
-            {isTyping && (
-              <motion.span
-                animate={{ opacity: [1, 0] }}
-                transition={{ repeat: Infinity, duration: 0.8 }}
-                className="w-[2px] h-[1.2em] bg-indigo-500 ml-0.5 inline-block align-middle"
-              />
-            )}"
-          </motion.div>
-        </AnimatePresence>
+    <div className={`flex items-center gap-3 bg-white border shadow-sm rounded-lg p-3 mt-3 w-full relative transition-all duration-500 ${isTyping ? 'border-indigo-400 ring-2 ring-indigo-500/10' : 'border-gray-200'}`}>
+      <div className="flex-1 min-h-[48px] flex items-center relative overflow-hidden pr-2">
+        <span className="w-full text-gray-800 font-medium leading-relaxed italic">
+          "{displayText}
+          <motion.span
+            animate={{ opacity: [1, 0] }}
+            transition={{ repeat: Infinity, duration: 0.8 }}
+            className="w-[2px] h-[1.2em] bg-indigo-500 ml-0.5 inline-block align-middle"
+          />"
+        </span>
       </div>
       
       <div className="flex flex-col gap-0.5 shrink-0 bg-gray-50 rounded-md border border-gray-100 p-0.5 shadow-sm z-10 relative">
