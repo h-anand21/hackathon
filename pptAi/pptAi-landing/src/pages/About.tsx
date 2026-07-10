@@ -81,7 +81,8 @@ export default function About() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
           {/* AI Co-Pilot */}
           <motion.div 
             whileHover={{ y: -5 }}
@@ -89,27 +90,45 @@ export default function About() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 group cursor-default relative overflow-hidden"
+            className="bg-white rounded-[2rem] p-6 shadow-lg shadow-slate-200/40 border border-slate-100 group cursor-default"
           >
-            {/* Hover Animation Visual */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-bl-full -mr-10 -mt-10 transition-transform duration-500 group-hover:scale-150" />
-            
-            <div className="flex justify-between items-start mb-8 relative z-10">
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
-                <Sparkles className="w-6 h-6" />
-              </div>
+            {/* Large Visual Block */}
+            <div className="w-full h-48 bg-slate-50 group-hover:bg-blue-50/50 rounded-3xl mb-8 relative overflow-hidden transition-colors duration-500 flex flex-col items-center justify-center p-4 border border-slate-100 group-hover:border-blue-100">
+              {/* User Prompt */}
+              <motion.div 
+                className="w-full bg-white p-3 rounded-2xl rounded-br-sm shadow-sm border border-slate-100 mb-3 origin-bottom-right"
+                initial={{ opacity: 1, scale: 1 }}
+                whileHover={{ scale: 1.05 }}
+              >
+                <div className="w-2/3 h-2 bg-slate-200 rounded-full mb-2" />
+                <div className="w-1/3 h-2 bg-slate-200 rounded-full" />
+              </motion.div>
               
-              <div className="w-20 h-12 flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="bg-blue-100 text-blue-600 text-[9px] font-bold py-1 px-2 rounded-t-lg rounded-bl-lg shadow-sm flex items-center gap-1">
-                  <motion.div animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0 }} className="w-1 h-1 bg-blue-500 rounded-full" />
-                  <motion.div animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }} className="w-1 h-1 bg-blue-500 rounded-full" />
-                  <motion.div animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.4 }} className="w-1 h-1 bg-blue-500 rounded-full" />
+              {/* AI Response */}
+              <motion.div 
+                className="w-full max-w-[85%] self-start bg-blue-600 p-3 rounded-2xl rounded-bl-sm shadow-md shadow-blue-500/20 origin-bottom-left"
+                initial={{ opacity: 0.5, scale: 0.95 }}
+                whileHover={{ opacity: 1, scale: 1 }}
+              >
+                <div className="flex gap-1 mb-2">
+                  <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1.5 h-1.5 bg-white rounded-full" />
+                  <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-white rounded-full" />
+                  <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-white rounded-full" />
                 </div>
-              </div>
+                <div className="w-full h-1.5 bg-blue-400 rounded-full mb-1.5" />
+                <div className="w-4/5 h-1.5 bg-blue-400 rounded-full" />
+              </motion.div>
+
+              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors" />
             </div>
 
-            <h3 className="text-xl font-bold text-slate-900 mb-3 relative z-10 group-hover:text-blue-600 transition-colors">AI Co-Pilot</h3>
-            <p className="text-slate-600 text-sm leading-relaxed relative z-10">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center shrink-0">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">AI Co-Pilot</h3>
+            </div>
+            <p className="text-slate-600 text-sm leading-relaxed px-2">
               Think of pptAI as your co-pilot. It doesn't just copy-paste text; it actually researches your topic and writes a compelling story.
             </p>
           </motion.div>
@@ -121,25 +140,40 @@ export default function About() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 group cursor-default relative overflow-hidden"
+            className="bg-white rounded-[2rem] p-6 shadow-lg shadow-slate-200/40 border border-slate-100 group cursor-default"
           >
-            {/* Hover Animation Visual */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-sky-50/50 rounded-bl-full -mr-10 -mt-10 transition-transform duration-500 group-hover:scale-150" />
-            
-            <div className="flex justify-between items-start mb-8 relative z-10">
-              <div className="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center">
-                <Blocks className="w-6 h-6" />
+            {/* Large Visual Block */}
+            <div className="w-full h-48 bg-slate-50 group-hover:bg-sky-50/50 rounded-3xl mb-8 relative overflow-hidden transition-colors duration-500 flex items-center justify-center border border-slate-100 group-hover:border-sky-100">
+              
+              <div className="w-4/5 h-28 bg-white rounded-xl shadow-sm border border-slate-200 p-2 relative">
+                {/* Pre-animation (Messy layout) visible initially */}
+                <motion.div className="absolute inset-2" initial={{ opacity: 1 }} whileHover={{ opacity: 0 }}>
+                  <div className="absolute top-2 left-4 w-12 h-4 bg-slate-200 rounded-sm rotate-6" />
+                  <div className="absolute top-10 left-2 w-20 h-12 bg-slate-200 rounded-md -rotate-3" />
+                  <div className="absolute top-8 right-2 w-16 h-16 bg-sky-100 rounded-md rotate-12" />
+                </motion.div>
+
+                {/* Post-animation (Clean layout) visible on hover */}
+                <motion.div className="absolute inset-2 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="flex-1 flex flex-col justify-center gap-2">
+                    <motion.div initial={{ x: -10, opacity: 0 }} whileHover={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="w-full h-3 bg-slate-800 rounded-sm" />
+                    <motion.div initial={{ x: -10, opacity: 0 }} whileHover={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="w-3/4 h-2 bg-slate-300 rounded-sm" />
+                    <motion.div initial={{ x: -10, opacity: 0 }} whileHover={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="w-1/2 h-2 bg-slate-300 rounded-sm" />
+                  </div>
+                  <motion.div initial={{ scale: 0.8, opacity: 0 }} whileHover={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring" }} className="w-16 h-full bg-sky-200 rounded-lg border-2 border-sky-300 border-dashed" />
+                </motion.div>
               </div>
 
-              <div className="w-20 h-12 flex flex-wrap gap-1 items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <motion.div animate={{ width: ["30%", "60%", "30%"] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} className="h-3 bg-sky-200 rounded-sm" />
-                <motion.div animate={{ width: ["60%", "30%", "60%"] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} className="h-3 bg-sky-100 rounded-sm" />
-                <motion.div animate={{ width: ["100%", "100%", "100%"] }} className="h-3 bg-sky-50 border border-sky-100 rounded-sm w-full" />
-              </div>
+              <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-sky-500/10 rounded-full blur-2xl group-hover:bg-sky-500/20 transition-colors" />
             </div>
 
-            <h3 className="text-xl font-bold text-slate-900 mb-3 relative z-10 group-hover:text-sky-600 transition-colors">Auto-Designer</h3>
-            <p className="text-slate-600 text-sm leading-relaxed relative z-10">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center shrink-0">
+                <Blocks className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 group-hover:text-sky-600 transition-colors">Auto-Designer</h3>
+            </div>
+            <p className="text-slate-600 text-sm leading-relaxed px-2">
               No more dragging text boxes to make them align perfectly. The app mathematically calculates the best layout for your content.
             </p>
           </motion.div>
@@ -151,31 +185,46 @@ export default function About() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 group cursor-default relative overflow-hidden"
+            className="bg-white rounded-[2rem] p-6 shadow-lg shadow-slate-200/40 border border-slate-100 group cursor-default"
           >
-            {/* Hover Animation Visual */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50/50 rounded-bl-full -mr-10 -mt-10 transition-transform duration-500 group-hover:scale-150" />
-            
-            <div className="flex justify-between items-start mb-8 relative z-10">
-              <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
-                <Rocket className="w-6 h-6" />
+            {/* Large Visual Block */}
+            <div className="w-full h-48 bg-slate-50 group-hover:bg-emerald-50/50 rounded-3xl mb-8 relative overflow-hidden transition-colors duration-500 flex items-center justify-center border border-slate-100 group-hover:border-emerald-100">
+              
+              <div className="relative w-24 h-24 flex items-center justify-center">
+                <motion.svg className="absolute inset-0 w-full h-full text-emerald-200 -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="45" fill="none" strokeWidth="6" stroke="currentColor" />
+                  <motion.circle 
+                    cx="50" cy="50" r="45" fill="none" strokeWidth="6" className="text-emerald-500" stroke="currentColor"
+                    initial={{ strokeDasharray: "283 283", strokeDashoffset: 283 }}
+                    whileHover={{ strokeDashoffset: 0 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                  />
+                </motion.svg>
+                
+                <motion.div 
+                  className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30 text-white"
+                  initial={{ scale: 1 }}
+                  whileHover={{ scale: [1, 0.8, 1.1, 1], rotate: [0, 0, 0, 360] }}
+                  transition={{ duration: 1.5, ease: "easeInOut" }}
+                >
+                  <Rocket className="w-6 h-6" />
+                </motion.div>
               </div>
 
-              <div className="w-20 h-12 flex flex-col items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 gap-2">
-                <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="text-emerald-500 font-black text-sm">
-                  ↓
-                </motion.div>
-                <div className="w-full h-1.5 bg-emerald-100 rounded-full overflow-hidden">
-                  <motion.div animate={{ width: ["0%", "100%", "0%"] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} className="h-full bg-emerald-500" />
-                </div>
-              </div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-colors" />
             </div>
 
-            <h3 className="text-xl font-bold text-slate-900 mb-3 relative z-10 group-hover:text-emerald-600 transition-colors">Instant Exporter</h3>
-            <p className="text-slate-600 text-sm leading-relaxed relative z-10">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0">
+                <Rocket className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Instant Exporter</h3>
+            </div>
+            <p className="text-slate-600 text-sm leading-relaxed px-2">
               Once generated, your slides are immediately ready to be presented on the web, downloaded, or shared with your team.
             </p>
           </motion.div>
+
         </div>
       </div>
 
