@@ -106,24 +106,24 @@ const DalleGenerating = () => {
   const [phase, setPhase] = useState(0) // 0: skeleton, 1: generating, 2: complete
   const [promptIdx, setPromptIdx] = useState(0)
   
-  const imgPrompts = [
-    "Cyberpunk city skyline at sunset",
-    "Minimalist workspace isometric 3D",
-    "Abstract neural network visualization"
+  const imgData = [
+    { prompt: "Cyberpunk city skyline at sunset", url: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?q=80&w=600&auto=format&fit=crop" },
+    { prompt: "Minimalist workspace isometric 3D", url: "https://images.unsplash.com/photo-1593642532744-d377ab507dc8?q=80&w=600&auto=format&fit=crop" },
+    { prompt: "Abstract neural network glowing", url: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=600&auto=format&fit=crop" }
   ]
 
   useEffect(() => {
     const timer = setInterval(() => {
       setPhase(p => {
         if (p === 2) {
-          setPromptIdx(idx => (idx + 1) % imgPrompts.length)
+          setPromptIdx(idx => (idx + 1) % imgData.length)
           return 0
         }
         return p + 1
       })
-    }, 1500)
+    }, 2000)
     return () => clearInterval(timer)
-  }, [imgPrompts.length])
+  }, [imgData.length])
 
   return (
     <div className="mt-3 bg-white rounded-xl p-3 border border-gray-200 flex flex-col gap-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] relative overflow-hidden">
@@ -136,19 +136,35 @@ const DalleGenerating = () => {
       
       <div className="text-[11px] text-gray-600 italic px-2 py-1.5 font-medium bg-gray-50 rounded-md border border-gray-100 flex items-center gap-2">
         <span className="text-gray-400 font-mono text-[9px] not-italic">/imagine</span>
-        <span className="truncate w-full">{imgPrompts[promptIdx]}</span>
+        <span className="truncate w-full">{imgData[promptIdx].prompt}</span>
       </div>
       
-      <div className="relative w-full h-28 rounded-lg border border-gray-100 overflow-hidden bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiNlNWU3ZWIiLz48L3N2Zz4=')] bg-repeat flex items-center justify-center">
+      <div className="relative w-full h-32 rounded-lg border border-gray-200 overflow-hidden bg-gray-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiNlNWU3ZWIiLz48L3N2Zz4=')] bg-repeat flex items-center justify-center">
         
-        {/* Generating Phase: Scanning Fill */}
+        {/* Skeleton Icon */}
+        <AnimatePresence>
+          {phase === 0 && (
+             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex items-center justify-center">
+               <Image className="w-8 h-8 text-gray-200" />
+             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Generating Phase: Real Image Wipe Reveal */}
         <motion.div 
           initial={{ height: '0%' }}
           animate={{ height: phase >= 1 ? '100%' : '0%' }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
-          className="absolute top-0 left-0 right-0 overflow-hidden bg-gradient-to-br from-cyan-400 to-indigo-500 flex items-center justify-center shadow-inner"
+          transition={{ duration: 1.5, ease: "linear" }}
+          className="absolute top-0 left-0 right-0 overflow-hidden bg-gray-100 shadow-inner z-0"
         >
-           <Image className="w-10 h-10 text-white/30" />
+           {imgData.map((item, idx) => (
+             <img 
+               key={idx}
+               src={item.url} 
+               alt={item.prompt}
+               className={`absolute top-0 left-0 w-full h-32 object-cover object-center transition-opacity duration-300 ${promptIdx === idx ? 'opacity-100' : 'opacity-0'}`} 
+             />
+           ))}
         </motion.div>
 
         {/* Scanner Laser */}
@@ -157,8 +173,8 @@ const DalleGenerating = () => {
             <motion.div 
               initial={{ top: '0%' }}
               animate={{ top: '100%' }}
-              transition={{ duration: 1.2, ease: "easeInOut" }}
-              className="absolute left-0 right-0 h-0.5 bg-white shadow-[0_0_15px_3px_rgba(255,255,255,0.8)] z-10"
+              transition={{ duration: 1.5, ease: "linear" }}
+              className="absolute left-0 right-0 h-[2px] bg-cyan-300 shadow-[0_0_15px_4px_rgba(34,211,238,0.8)] z-10"
             />
           )}
         </AnimatePresence>
@@ -172,7 +188,7 @@ const DalleGenerating = () => {
                exit={{ scale: 0, opacity: 0 }}
                className="absolute bottom-2 right-2 bg-white rounded-full p-1 shadow-lg z-20 flex items-center justify-center"
              >
-               <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+               <CheckCircle2 className="w-4 h-4 text-green-500" />
              </motion.div>
           )}
         </AnimatePresence>
