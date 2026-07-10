@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { FileText, BrainCog, Image, Download, CheckCircle, ArrowDown, ChevronUp, ChevronDown, Loader2, CheckCircle2 } from 'lucide-react'
+import { FileText, BrainCog, Image, Download, CheckCircle, ArrowDown, ChevronUp, ChevronDown, Loader2, CheckCircle2, Sparkles } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 const steps = [
@@ -103,24 +103,79 @@ const GeminiThinking = () => {
 }
 
 const DalleGenerating = () => {
+  const [phase, setPhase] = useState(0) // 0: skeleton, 1: generating, 2: complete
+  const [promptIdx, setPromptIdx] = useState(0)
+  
+  const imgPrompts = [
+    "Cyberpunk city skyline at sunset",
+    "Minimalist workspace isometric 3D",
+    "Abstract neural network visualization"
+  ]
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPhase(p => {
+        if (p === 2) {
+          setPromptIdx(idx => (idx + 1) % imgPrompts.length)
+          return 0
+        }
+        return p + 1
+      })
+    }, 1500)
+    return () => clearInterval(timer)
+  }, [imgPrompts.length])
+
   return (
-    <div className="mt-3 bg-[#f8fafc] rounded-lg p-3 border border-[#e2e8f0] flex gap-3 overflow-hidden shadow-inner">
-      <div className="flex gap-2">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="w-10 h-10 bg-white rounded-md border border-gray-200 relative overflow-hidden flex items-center justify-center shadow-sm">
-            <Image className="w-4 h-4 text-cyan-200" />
-            <motion.div 
-              animate={{ top: ['-100%', '200%'] }}
-              transition={{ repeat: Infinity, duration: 2, delay: i * 0.3 }}
-              className="absolute left-0 right-0 h-3 bg-gradient-to-b from-transparent via-cyan-400/40 to-transparent blur-[1px]"
-            />
-          </div>
-        ))}
+    <div className="mt-3 bg-white rounded-xl p-3 border border-gray-200 flex flex-col gap-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-blue-500 opacity-20" />
+      
+      <div className="flex justify-between items-center px-1">
+        <span className="text-[10px] font-bold tracking-widest uppercase text-cyan-600">DALL-E 3 Engine</span>
+        <Sparkles className={`w-3.5 h-3.5 text-cyan-500 ${phase === 1 ? 'animate-spin' : ''}`} />
       </div>
-      <div className="flex-1 flex flex-col justify-center gap-1.5">
-         <motion.div animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }} className="h-1.5 w-full bg-cyan-200 rounded-full" />
-         <motion.div animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.5 }} className="h-1.5 w-2/3 bg-cyan-200 rounded-full" />
-         <motion.div animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ repeat: Infinity, duration: 1.5, delay: 1 }} className="h-1.5 w-4/5 bg-cyan-200 rounded-full" />
+      
+      <div className="text-[11px] text-gray-600 italic px-2 py-1.5 font-medium bg-gray-50 rounded-md border border-gray-100 flex items-center gap-2">
+        <span className="text-gray-400 font-mono text-[9px] not-italic">/imagine</span>
+        <span className="truncate w-full">{imgPrompts[promptIdx]}</span>
+      </div>
+      
+      <div className="relative w-full h-28 rounded-lg border border-gray-100 overflow-hidden bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiNlNWU3ZWIiLz48L3N2Zz4=')] bg-repeat flex items-center justify-center">
+        
+        {/* Generating Phase: Scanning Fill */}
+        <motion.div 
+          initial={{ height: '0%' }}
+          animate={{ height: phase >= 1 ? '100%' : '0%' }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
+          className="absolute top-0 left-0 right-0 overflow-hidden bg-gradient-to-br from-cyan-400 to-indigo-500 flex items-center justify-center shadow-inner"
+        >
+           <Image className="w-10 h-10 text-white/30" />
+        </motion.div>
+
+        {/* Scanner Laser */}
+        <AnimatePresence>
+          {phase === 1 && (
+            <motion.div 
+              initial={{ top: '0%' }}
+              animate={{ top: '100%' }}
+              transition={{ duration: 1.2, ease: "easeInOut" }}
+              className="absolute left-0 right-0 h-0.5 bg-white shadow-[0_0_15px_3px_rgba(255,255,255,0.8)] z-10"
+            />
+          )}
+        </AnimatePresence>
+        
+        {/* Complete Checkmark */}
+        <AnimatePresence>
+          {phase === 2 && (
+             <motion.div 
+               initial={{ scale: 0, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               exit={{ scale: 0, opacity: 0 }}
+               className="absolute bottom-2 right-2 bg-white rounded-full p-1 shadow-lg z-20 flex items-center justify-center"
+             >
+               <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+             </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
