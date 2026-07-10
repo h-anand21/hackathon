@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { FileText, BrainCog, Image, Download, CheckCircle, ArrowDown } from 'lucide-react'
+import { FileText, BrainCog, Image, Download, CheckCircle, ArrowDown, ChevronUp, ChevronDown } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 const steps = [
@@ -43,35 +43,84 @@ const fadeUp = {
   }),
 }
 
-const TypewriterText = ({ text }: { text: string }) => {
+const PROMPTS = [
+  "Create a 10-slide presentation on Machine Learning",
+  "Design a business pitch deck for a SaaS startup",
+  "Generate a marketing strategy presentation for Q3",
+  "History of space exploration for B.Tech students"
+]
+
+const TypewriterText = () => {
+  const [promptIndex, setPromptIndex] = useState(0)
   const [displayText, setDisplayText] = useState('')
-  const [index, setIndex] = useState(0)
+  const [charIndex, setCharIndex] = useState(0)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
+    const currentText = PROMPTS[promptIndex]
     let timer: NodeJS.Timeout
-    if (index < text.length) {
-      timer = setTimeout(() => {
-        setDisplayText((prev) => prev + text[index])
-        setIndex((prev) => prev + 1)
-      }, 50)
-    } else {
-      timer = setTimeout(() => {
-        setDisplayText('')
-        setIndex(0)
-      }, 3000)
+
+    if (!isDeleting && charIndex < currentText.length) {
+      timer = setTimeout(() => setCharIndex(c => c + 1), 40)
+    } else if (isDeleting && charIndex > 0) {
+      timer = setTimeout(() => setCharIndex(c => c - 1), 20)
+    } else if (!isDeleting && charIndex === currentText.length) {
+      timer = setTimeout(() => setIsDeleting(true), 2500)
+    } else if (isDeleting && charIndex === 0) {
+      setIsDeleting(false)
+      setPromptIndex((prev) => (prev + 1) % PROMPTS.length)
     }
+
+    setDisplayText(currentText.substring(0, charIndex))
     return () => clearTimeout(timer)
-  }, [index, text])
+  }, [charIndex, isDeleting, promptIndex])
+
+  const handleNext = () => {
+    setIsDeleting(false)
+    setCharIndex(0)
+    setPromptIndex((prev) => (prev + 1) % PROMPTS.length)
+  }
+
+  const handlePrev = () => {
+    setIsDeleting(false)
+    setCharIndex(0)
+    setPromptIndex((prev) => (prev - 1 + PROMPTS.length) % PROMPTS.length)
+  }
 
   return (
-    <span>
-      "{displayText}
-      <motion.span
-        animate={{ opacity: [1, 0] }}
-        transition={{ repeat: Infinity, duration: 0.8 }}
-        className="w-[1.5px] h-[1em] bg-indigo-500 ml-0.5 inline-block align-middle"
-      />"
-    </span>
+    <div className="flex items-center gap-3 bg-white border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] rounded-lg p-3 mt-3 w-full">
+      <div className="flex-1 min-h-[40px] flex items-center">
+        <span className="text-gray-700 font-medium italic">
+          "{displayText}
+          <motion.span
+            animate={{ opacity: [1, 0] }}
+            transition={{ repeat: Infinity, duration: 0.8 }}
+            className="w-[2px] h-[1em] bg-indigo-500 ml-0.5 inline-block align-middle"
+          />"
+        </span>
+      </div>
+      
+      <div className="flex flex-col gap-0.5 shrink-0 bg-gray-50 rounded-md border border-gray-100 p-0.5 shadow-sm">
+        <button 
+          onClick={handleNext}
+          title="Next prompt"
+          className="hover:bg-white p-1 rounded-sm transition-all text-indigo-400 hover:text-indigo-600 shadow-[0_1px_2px_rgba(0,0,0,0.05)_inset] hover:shadow-sm"
+        >
+          <motion.div animate={{ y: [-1.5, 1.5, -1.5] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
+            <ChevronUp size={14} strokeWidth={2.5} />
+          </motion.div>
+        </button>
+        <button 
+          onClick={handlePrev}
+          title="Previous prompt"
+          className="hover:bg-white p-1 rounded-sm transition-all text-indigo-400 hover:text-indigo-600 shadow-[0_1px_2px_rgba(0,0,0,0.05)_inset] hover:shadow-sm"
+        >
+          <motion.div animate={{ y: [1.5, -1.5, 1.5] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", delay: 0.75 }}>
+            <ChevronDown size={14} strokeWidth={2.5} />
+          </motion.div>
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -130,9 +179,11 @@ export default function AIFlow() {
                       </span>
                     </div>
                     <h3 className="text-base font-semibold text-gray-900 mb-1">{step.label}</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {i === 0 ? <TypewriterText text="Create a 10-slide presentation on Machine Learning" /> : step.desc}
-                    </p>
+                    {i === 0 ? (
+                      <TypewriterText />
+                    ) : (
+                      <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
+                    )}
                   </div>
                 </motion.div>
 
