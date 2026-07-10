@@ -102,6 +102,78 @@ const GeminiThinking = () => {
   )
 }
 
+const DalleGenerating = () => {
+  return (
+    <div className="mt-3 bg-[#f8fafc] rounded-lg p-3 border border-[#e2e8f0] flex gap-3 overflow-hidden shadow-inner">
+      <div className="flex gap-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="w-10 h-10 bg-white rounded-md border border-gray-200 relative overflow-hidden flex items-center justify-center shadow-sm">
+            <Image className="w-4 h-4 text-cyan-200" />
+            <motion.div 
+              animate={{ top: ['-100%', '200%'] }}
+              transition={{ repeat: Infinity, duration: 2, delay: i * 0.3 }}
+              className="absolute left-0 right-0 h-3 bg-gradient-to-b from-transparent via-cyan-400/40 to-transparent blur-[1px]"
+            />
+          </div>
+        ))}
+      </div>
+      <div className="flex-1 flex flex-col justify-center gap-1.5">
+         <motion.div animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }} className="h-1.5 w-full bg-cyan-200 rounded-full" />
+         <motion.div animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.5 }} className="h-1.5 w-2/3 bg-cyan-200 rounded-full" />
+         <motion.div animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ repeat: Infinity, duration: 1.5, delay: 1 }} className="h-1.5 w-4/5 bg-cyan-200 rounded-full" />
+      </div>
+    </div>
+  )
+}
+
+const PresentationReady = () => {
+  return (
+    <div className="mt-4 flex flex-col gap-2">
+      <div className="w-full bg-emerald-100/50 rounded-full h-1.5 overflow-hidden">
+         <motion.div 
+           initial={{ width: '0%' }}
+           whileInView={{ width: '100%' }}
+           viewport={{ once: true }}
+           transition={{ duration: 2, ease: 'easeOut' }}
+           className="bg-emerald-500 h-full relative"
+         >
+           <motion.div 
+             animate={{ x: ['-100%', '200%'] }}
+             transition={{ repeat: Infinity, duration: 1.5 }}
+             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+           />
+         </motion.div>
+      </div>
+      <div className="flex justify-between w-full text-[9px] font-bold text-emerald-600/70 uppercase tracking-widest">
+         <span>Finalizing Deck</span>
+         <span>100%</span>
+      </div>
+    </div>
+  )
+}
+
+const DownloadExport = () => {
+  const formats = ['PPTX', 'PDF', 'Google Slides']
+  return (
+    <div className="mt-3 flex gap-2">
+       {formats.map((fmt, i) => (
+         <motion.div 
+           key={fmt}
+           whileHover={{ y: -2 }}
+           className="flex-1 bg-white border border-gray-100 rounded-md py-2 flex items-center justify-center text-[10px] font-semibold text-amber-700/70 shadow-sm cursor-default ring-1 ring-black/5"
+         >
+           <motion.span
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 2, delay: i * 0.4 }}
+              className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5 shadow-[0_0_5px_rgba(251,191,36,0.5)]"
+           />
+           {fmt}
+         </motion.div>
+       ))}
+    </div>
+  )
+}
+
 const TypewriterText = () => {
   const [promptIndex, setPromptIndex] = useState(0)
   const [targetIndex, setTargetIndex] = useState(0)
@@ -245,6 +317,21 @@ export default function AIFlow() {
                       <>
                         <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
                         <GeminiThinking />
+                      </>
+                    ) : i === 2 ? (
+                      <>
+                        <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
+                        <DalleGenerating />
+                      </>
+                    ) : i === 3 ? (
+                      <>
+                        <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
+                        <PresentationReady />
+                      </>
+                    ) : i === 4 ? (
+                      <>
+                        <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
+                        <DownloadExport />
                       </>
                     ) : (
                       <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
