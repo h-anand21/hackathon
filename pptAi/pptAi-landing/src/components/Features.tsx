@@ -182,15 +182,76 @@ const ExpandedAnimation = ({ title, color }: { title: string, color: string }) =
           case 'Multiple Themes':
             return (
               <RealWebMockup activeTab="themes">
-                 {/* Slide Canvas */}
-                 <motion.div animate={{ backgroundColor: ['#ffffff', '#eff6ff', '#ecfdf5', '#ffffff'] }} transition={{ duration: 6, repeat: Infinity }} className="w-32 h-16 shadow-md border border-slate-200 rounded p-2 flex flex-col gap-1.5 relative">
-                   <motion.div animate={{ backgroundColor: ['#0f172a', '#1d4ed8', '#047857', '#0f172a'] }} transition={{ duration: 6, repeat: Infinity }} className="w-2/3 h-2 rounded-sm" />
-                   <motion.div animate={{ backgroundColor: ['#64748b', '#60a5fa', '#34d399', '#64748b'] }} transition={{ duration: 6, repeat: Infinity }} className="w-full h-1 rounded-sm" />
-                   {/* Color Palettes Floating */}
-                   <motion.div animate={{ opacity: [1, 0, 0, 1] }} transition={{ duration: 6, times: [0, 0.3, 0.9, 1], repeat: Infinity }} className="absolute -right-2 top-2 w-4 h-4 bg-slate-800 rounded-full shadow border-2 border-white" />
-                   <motion.div animate={{ opacity: [0, 1, 0, 0] }} transition={{ duration: 6, times: [0, 0.3, 0.6, 1], repeat: Infinity }} className="absolute -right-2 top-2 w-4 h-4 bg-blue-600 rounded-full shadow border-2 border-white" />
-                   <motion.div animate={{ opacity: [0, 0, 1, 0] }} transition={{ duration: 6, times: [0, 0.6, 0.9, 1], repeat: Infinity }} className="absolute -right-2 top-2 w-4 h-4 bg-emerald-600 rounded-full shadow border-2 border-white" />
-                 </motion.div>
+                 {/* Theme Selector UI */}
+                 <div className="absolute top-2 left-2 z-20 flex flex-col gap-1">
+                    <motion.div animate={{ opacity: [1, 0, 0, 0, 0, 1] }} transition={{ duration: 12.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], repeat: Infinity }} className="absolute bg-white px-2 py-0.5 rounded shadow-sm border border-slate-200 text-[6px] font-bold text-slate-700">Theme: Minimal</motion.div>
+                    <motion.div animate={{ opacity: [0, 1, 0, 0, 0, 0] }} transition={{ duration: 12.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], repeat: Infinity }} className="absolute bg-white px-2 py-0.5 rounded shadow-sm border border-slate-200 text-[6px] font-bold text-slate-700">Theme: Bold</motion.div>
+                    <motion.div animate={{ opacity: [0, 0, 1, 0, 0, 0] }} transition={{ duration: 12.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], repeat: Infinity }} className="absolute bg-white px-2 py-0.5 rounded shadow-sm border border-slate-200 text-[6px] font-bold text-slate-700">Theme: Professional</motion.div>
+                    <motion.div animate={{ opacity: [0, 0, 0, 1, 0, 0] }} transition={{ duration: 12.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], repeat: Infinity }} className="absolute bg-white px-2 py-0.5 rounded shadow-sm border border-slate-200 text-[6px] font-bold text-slate-700">Theme: Dark UI</motion.div>
+                    <motion.div animate={{ opacity: [0, 0, 0, 0, 1, 0] }} transition={{ duration: 12.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], repeat: Infinity }} className="absolute bg-white px-2 py-0.5 rounded shadow-sm border border-slate-200 text-[6px] font-bold text-slate-700">Theme: Creative</motion.div>
+                 </div>
+                 
+                 {/* Main Canvas - Changes based on theme */}
+                 <div className="relative w-40 h-20 mt-4 flex items-center justify-center">
+                   
+                   {/* 1. Minimal Theme */}
+                   <motion.div animate={{ opacity: [1, 0, 0, 0, 0, 1] }} transition={{ duration: 12.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], repeat: Infinity }} className="absolute inset-0 bg-white shadow-sm border border-slate-200 p-2 flex flex-col gap-2 items-center justify-center rounded-sm">
+                      <div className="w-1/2 h-[1px] bg-slate-300" />
+                      <div className="w-3/4 h-2 bg-slate-800 text-white font-serif text-[4px] tracking-widest text-center leading-[2px] pt-[2px]">MINIMAL DESIGN</div>
+                      <div className="w-1/2 h-[1px] bg-slate-300" />
+                      <div className="w-2/3 h-[2px] bg-slate-400 mt-1" />
+                      <div className="w-1/2 h-[2px] bg-slate-400" />
+                   </motion.div>
+
+                   {/* 2. Bold Theme */}
+                   <motion.div animate={{ opacity: [0, 1, 0, 0, 0, 0] }} transition={{ duration: 12.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], repeat: Infinity }} className="absolute inset-0 bg-yellow-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-[1.5px] border-black p-2 flex flex-col justify-between rounded-sm">
+                      <div className="bg-black text-white text-[9px] font-black uppercase italic p-0.5 px-1.5 w-fit leading-tight border border-black shadow-[1px_1px_0_0_rgba(255,255,255,1)]">GO BOLD</div>
+                      <div className="w-full border-b-[1.5px] border-black border-dashed opacity-50" />
+                      <div className="w-full flex gap-1.5">
+                        <div className="w-1/2 h-5 bg-pink-500 border-[1.5px] border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)]" />
+                        <div className="w-1/2 h-5 bg-cyan-400 border-[1.5px] border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)]" />
+                      </div>
+                   </motion.div>
+
+                   {/* 3. Pro Theme */}
+                   <motion.div animate={{ opacity: [0, 0, 1, 0, 0, 0] }} transition={{ duration: 12.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], repeat: Infinity }} className="absolute inset-0 bg-slate-50 shadow-sm border-t-[5px] border-t-blue-700 border border-slate-300 p-2 flex gap-2 rounded-sm">
+                      <div className="flex-1 flex flex-col gap-1.5 mt-1">
+                         <div className="w-full h-2.5 bg-blue-800 rounded-[1px]" />
+                         <div className="w-full h-1 bg-slate-400 rounded-[1px]" />
+                         <div className="w-3/4 h-1 bg-slate-400 rounded-[1px]" />
+                         <div className="w-5/6 h-1 bg-slate-400 rounded-[1px]" />
+                      </div>
+                      <div className="w-12 h-full bg-blue-50 border border-blue-200 flex items-end gap-[3px] p-1 justify-center rounded-[1px]">
+                         <div className="w-2.5 h-1/2 bg-blue-400 rounded-t-[1px]" />
+                         <div className="w-2.5 h-3/4 bg-blue-600 rounded-t-[1px]" />
+                         <div className="w-2.5 h-full bg-blue-800 rounded-t-[1px]" />
+                      </div>
+                   </motion.div>
+
+                   {/* 4. Dark Theme */}
+                   <motion.div animate={{ opacity: [0, 0, 0, 1, 0, 0] }} transition={{ duration: 12.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], repeat: Infinity }} className="absolute inset-0 bg-slate-900 shadow-sm border border-slate-700 p-2 flex flex-col gap-2 rounded-sm relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/20 rounded-full blur-xl" />
+                      <div className="absolute bottom-0 left-0 w-16 h-16 bg-indigo-500/20 rounded-full blur-xl" />
+                      <div className="w-2/3 h-2 bg-transparent border border-purple-500/50 rounded-sm z-10" />
+                      <div className="flex gap-2 w-full flex-1 z-10">
+                        <div className="flex-1 h-full bg-slate-800/80 rounded border border-slate-700 flex flex-col gap-1 p-1">
+                           <div className="w-full h-1 bg-slate-600 rounded-sm" />
+                           <div className="w-1/2 h-1 bg-slate-600 rounded-sm" />
+                        </div>
+                        <div className="flex-1 h-full bg-gradient-to-br from-purple-500 to-indigo-500 rounded shadow-[0_0_10px_rgba(168,85,247,0.4)]" />
+                      </div>
+                   </motion.div>
+
+                   {/* 5. Creative Theme */}
+                   <motion.div animate={{ opacity: [0, 0, 0, 0, 1, 0] }} transition={{ duration: 12.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], repeat: Infinity }} className="absolute inset-0 bg-orange-50 shadow-sm border-[2px] border-orange-200 p-2 flex gap-2 rounded-xl">
+                      <div className="w-12 h-12 bg-rose-400 rounded-full mt-1 border-2 border-white shadow-sm flex-shrink-0" />
+                      <div className="flex-1 flex flex-col gap-1.5 justify-center">
+                         <div className="w-full h-3 bg-orange-500 rounded-full" />
+                         <div className="w-3/4 h-2 bg-orange-300 rounded-full" />
+                         <div className="w-5/6 h-2 bg-rose-300 rounded-full mt-1" />
+                      </div>
+                   </motion.div>
+                 </div>
               </RealWebMockup>
             )
           case 'Speaker Notes':
