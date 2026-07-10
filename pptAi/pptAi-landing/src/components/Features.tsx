@@ -40,8 +40,8 @@ const getIconAnimation = (title: string) => {
 
 const RealWebMockup = ({ children, activeTab = 'layout' }: { children: React.ReactNode, activeTab?: 'layout'|'image'|'themes'|'notes'|'none' }) => {
   return (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="w-[260px] h-[90px] bg-white rounded-md border border-slate-200 shadow-md flex overflow-hidden relative">
+    <div className="w-full flex items-start justify-center h-[120px] sm:h-[140px] md:h-[160px] mt-2">
+      <div className="w-[260px] h-[90px] bg-white rounded-md border border-slate-200 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] flex overflow-hidden relative transform scale-[1.25] sm:scale-[1.4] md:scale-[1.6] origin-top transition-transform duration-300">
         {/* Navbar / Topbar */}
         <div className="absolute top-0 w-full h-3 bg-slate-50 border-b border-slate-200 flex items-center px-1.5 gap-1 z-30">
           <div className="w-1.5 h-1.5 rounded-full bg-rose-400" />
@@ -68,10 +68,9 @@ const ExpandedAnimation = ({ title, color }: { title: string, color: string }) =
   return (
     <motion.div 
       initial={{ opacity: 0, height: 0, marginTop: 0 }} 
-      animate={{ opacity: 1, height: 96, marginTop: 16 }} 
+      animate={{ opacity: 1, height: 'auto', marginTop: 16 }} 
       exit={{ opacity: 0, height: 0, marginTop: 0 }}
       className="w-full rounded-lg flex items-center justify-center overflow-hidden relative"
-      style={{ backgroundColor: `${color}10` }}
     >
       {(() => {
         switch (title) {
@@ -360,7 +359,9 @@ export default function Features() {
                     boxShadow: "0 20px 40px -15px rgba(0,0,0,0.05)",
                   }
                 }}
-                className="bg-white/70 backdrop-blur-xl rounded-2xl p-6 group relative overflow-hidden ring-1 ring-white/50 shadow-sm transition-all duration-300"
+                className={`bg-white/70 backdrop-blur-xl rounded-2xl p-6 group relative overflow-hidden ring-1 ring-white/50 shadow-sm transition-all duration-500 ${
+                  expandedIdx === i ? 'sm:col-span-2 ring-indigo-200/50 shadow-md' : 'col-span-1'
+                }`}
               >
                 {/* Interactive Expand Arrow */}
                 <div 
