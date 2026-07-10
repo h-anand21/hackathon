@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, BrainCog, Image, Download, CheckCircle, ArrowDown, ChevronUp, ChevronDown } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -52,73 +52,99 @@ const PROMPTS = [
 
 const TypewriterText = () => {
   const [promptIndex, setPromptIndex] = useState(0)
-  const [displayText, setDisplayText] = useState('')
+  const [direction, setDirection] = useState(1)
   const [charIndex, setCharIndex] = useState(0)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [isManual, setIsManual] = useState(false)
 
+  // Auto typing logic
   useEffect(() => {
+    if (isManual) return
     const currentText = PROMPTS[promptIndex]
     let timer: NodeJS.Timeout
 
-    if (!isDeleting && charIndex < currentText.length) {
-      timer = setTimeout(() => setCharIndex(c => c + 1), 40)
-    } else if (isDeleting && charIndex > 0) {
-      timer = setTimeout(() => setCharIndex(c => c - 1), 20)
-    } else if (!isDeleting && charIndex === currentText.length) {
-      timer = setTimeout(() => setIsDeleting(true), 2500)
-    } else if (isDeleting && charIndex === 0) {
-      setIsDeleting(false)
-      setPromptIndex((prev) => (prev + 1) % PROMPTS.length)
+    if (charIndex < currentText.length) {
+      timer = setTimeout(() => setCharIndex(c => c + 1), 35)
+    } else {
+      timer = setTimeout(() => {
+        setDirection(1)
+        setCharIndex(0)
+        setPromptIndex(prev => (prev + 1) % PROMPTS.length)
+      }, 3000)
     }
-
-    setDisplayText(currentText.substring(0, charIndex))
     return () => clearTimeout(timer)
-  }, [charIndex, isDeleting, promptIndex])
+  }, [charIndex, isManual, promptIndex])
+
+  // Resume auto-typing after manual interaction
+  useEffect(() => {
+    if (isManual) {
+      const resetTimer = setTimeout(() => {
+        setIsManual(false)
+        setCharIndex(0)
+        setDirection(1)
+        setPromptIndex(prev => (prev + 1) % PROMPTS.length)
+      }, 5000)
+      return () => clearTimeout(resetTimer)
+    }
+  }, [isManual, promptIndex])
 
   const handleNext = () => {
-    setIsDeleting(false)
-    setCharIndex(0)
+    setIsManual(true)
+    setDirection(1)
     setPromptIndex((prev) => (prev + 1) % PROMPTS.length)
   }
 
   const handlePrev = () => {
-    setIsDeleting(false)
-    setCharIndex(0)
+    setIsManual(true)
+    setDirection(-1)
     setPromptIndex((prev) => (prev - 1 + PROMPTS.length) % PROMPTS.length)
   }
 
+  const currentText = PROMPTS[promptIndex]
+  const displayText = isManual ? currentText : currentText.substring(0, charIndex)
+  const isTyping = !isManual && charIndex < currentText.length
+
   return (
-    <div className="flex items-center gap-3 bg-white border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] rounded-lg p-3 mt-3 w-full">
-      <div className="flex-1 min-h-[40px] flex items-center">
-        <span className="text-gray-700 font-medium italic">
-          "{displayText}
-          <motion.span
-            animate={{ opacity: [1, 0] }}
-            transition={{ repeat: Infinity, duration: 0.8 }}
-            className="w-[2px] h-[1em] bg-indigo-500 ml-0.5 inline-block align-middle"
-          />"
-        </span>
+    <div className={`flex items-center gap-3 bg-white border shadow-sm rounded-lg p-3 mt-3 w-full relative transition-all duration-500 ${isTyping ? 'border-indigo-400 ring-4 ring-indigo-500/10' : 'border-gray-200'}`}>
+      <div className="flex-1 min-h-[48px] flex items-center relative overflow-hidden">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={promptIndex}
+            custom={direction}
+            initial={{ y: direction === 1 ? 30 : -30, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: direction === 1 ? -30 : 30, opacity: 0, scale: 0.95, position: 'absolute' }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="w-full text-gray-800 font-medium leading-relaxed pr-2"
+          >
+            "{displayText}
+            {isTyping && (
+              <motion.span
+                animate={{ opacity: [1, 0] }}
+                transition={{ repeat: Infinity, duration: 0.8 }}
+                className="w-[2px] h-[1.2em] bg-indigo-500 ml-0.5 inline-block align-middle"
+              />
+            )}"
+          </motion.div>
+        </AnimatePresence>
       </div>
       
-      <div className="flex flex-col gap-0.5 shrink-0 bg-gray-50 rounded-md border border-gray-100 p-0.5 shadow-sm">
-        <button 
-          onClick={handleNext}
-          title="Next prompt"
-          className="hover:bg-white p-1 rounded-sm transition-all text-indigo-400 hover:text-indigo-600 shadow-[0_1px_2px_rgba(0,0,0,0.05)_inset] hover:shadow-sm"
-        >
-          <motion.div animate={{ y: [-1.5, 1.5, -1.5] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
-            <ChevronUp size={14} strokeWidth={2.5} />
-          </motion.div>
-        </button>
-        <button 
+      <div className="flex flex-col gap-0.5 shrink-0 bg-gray-50 rounded-md border border-gray-100 p-0.5 shadow-sm z-10 relative">
+        <motion.button 
+          whileTap={{ scale: 0.85, backgroundColor: '#eef2ff' }}
           onClick={handlePrev}
           title="Previous prompt"
           className="hover:bg-white p-1 rounded-sm transition-all text-indigo-400 hover:text-indigo-600 shadow-[0_1px_2px_rgba(0,0,0,0.05)_inset] hover:shadow-sm"
         >
-          <motion.div animate={{ y: [1.5, -1.5, 1.5] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", delay: 0.75 }}>
-            <ChevronDown size={14} strokeWidth={2.5} />
-          </motion.div>
-        </button>
+          <ChevronUp size={16} strokeWidth={2.5} />
+        </motion.button>
+        <motion.button 
+          whileTap={{ scale: 0.85, backgroundColor: '#eef2ff' }}
+          onClick={handleNext}
+          title="Next prompt"
+          className="hover:bg-white p-1 rounded-sm transition-all text-indigo-400 hover:text-indigo-600 shadow-[0_1px_2px_rgba(0,0,0,0.05)_inset] hover:shadow-sm"
+        >
+          <ChevronDown size={16} strokeWidth={2.5} />
+        </motion.button>
       </div>
     </div>
   )
