@@ -1,154 +1,238 @@
-import { motion } from 'framer-motion'
-import { Sparkles, BrainCircuit, Wand2, Blocks, ArrowRight } from 'lucide-react'
+import { useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { Sparkles, BrainCircuit, Wand2, Blocks, ArrowRight, Lightbulb, PenTool, LayoutDashboard, Rocket } from 'lucide-react'
 
-const containerVariants = {
+const fadeUp = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+}
+
+const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.2
-    }
+    transition: { staggerChildren: 0.2 }
   }
 }
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-}
-
 export default function About() {
+  const targetRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+    offset: ["start end", "end start"]
+  })
+
+  const y1 = useTransform(scrollYProgress, [0, 1], [100, -200])
+  const y2 = useTransform(scrollYProgress, [0, 1], [200, -300])
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+
   return (
-    <main className="relative z-10 min-h-screen pt-32 pb-24 px-6 flex flex-col items-center overflow-hidden">
+    <main className="relative z-10 min-h-screen pt-32 pb-24 flex flex-col items-center overflow-hidden">
       
       {/* Background Orbs */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-blue-400/20 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-sky-400/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 -left-32 w-[600px] h-[600px] bg-blue-300/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 -right-32 w-[600px] h-[600px] bg-sky-300/20 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Header */}
+      {/* Hero Section */}
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="max-w-4xl w-full text-center mb-24 relative"
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-4xl w-full text-center mb-32 relative px-6 mt-12"
       >
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-full text-blue-600 font-bold text-xs uppercase tracking-widest mb-6"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50/80 backdrop-blur-md border border-blue-100 rounded-full text-blue-600 font-bold text-xs uppercase tracking-widest mb-8 shadow-sm"
         >
           <Sparkles className="w-4 h-4" /> The Story of pptAI
         </motion.div>
         
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 mb-6 tracking-tight leading-tight">
-          Building the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-sky-500">Brain</span> behind your Next Presentation
+        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-slate-900 mb-8 tracking-tight leading-[1.1]">
+          We are building the <br className="hidden sm:block" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-sky-500 to-blue-500 relative">
+            Next Generation
+            <motion.span 
+              initial={{ width: 0 }}
+              animate={{ width: "100%" }}
+              transition={{ delay: 1, duration: 0.8 }}
+              className="absolute -bottom-2 left-0 h-2 bg-blue-400/30 rounded-full"
+            />
+          </span> of Creation
         </h1>
-        <p className="text-slate-600 text-lg max-w-2xl mx-auto leading-relaxed">
-          pptAI is a fresh startup with a single, massive goal: eliminating the hours spent staring at a blank slide. We combine cutting-edge language models with dynamic layout algorithms to turn text into beautiful decks instantly.
+        <p className="text-slate-600 text-xl max-w-2xl mx-auto leading-relaxed">
+          pptAI isn't just another wrapper. We combine deeply customized language models with a dynamic rendering engine to give you something truly magical.
         </p>
       </motion.div>
 
-      {/* The Problem vs Solution */}
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 mb-32"
-      >
-        <motion.div variants={itemVariants} className="bg-slate-50 border border-slate-200 rounded-[2.5rem] p-10 sm:p-12 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-slate-200/50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
-          <h3 className="text-xl font-bold text-slate-400 mb-4 uppercase tracking-wider">The Old Way</h3>
-          <p className="text-2xl sm:text-3xl font-bold text-slate-900 leading-snug mb-8">
-            Hours of searching for templates, fighting with formatting, and copying text.
-          </p>
-          <ul className="space-y-4 text-slate-500 font-medium">
-            <li className="flex items-center gap-3">❌ Blank canvas syndrome</li>
-            <li className="flex items-center gap-3">❌ Misaligned text boxes</li>
-            <li className="flex items-center gap-3">❌ Generic stock images</li>
-          </ul>
-        </motion.div>
+      {/* Why We Are Different Section (Parallax) */}
+      <div ref={targetRef} className="w-full bg-slate-900 text-white py-32 px-6 relative overflow-hidden">
+        {/* Animated background grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] opacity-20" />
+        
+        <motion.div style={{ opacity }} className="max-w-6xl mx-auto relative z-10">
+          <div className="text-center mb-24">
+            <h2 className="text-4xl sm:text-5xl font-black mb-6">Why pptAI is Different?</h2>
+            <p className="text-blue-200 text-lg max-w-2xl mx-auto">
+              Most AI presentation tools just dump generic text into pre-made templates. We completely reimagined the architecture from the ground up.
+            </p>
+          </div>
 
-        <motion.div variants={itemVariants} className="bg-gradient-to-br from-blue-600 to-sky-500 rounded-[2.5rem] p-10 sm:p-12 relative overflow-hidden group shadow-2xl shadow-blue-500/20 text-white">
-          <div className="absolute bottom-0 right-0 w-48 h-48 bg-white/10 rounded-tl-full -mr-4 -mb-4 transition-transform group-hover:scale-110" />
-          <h3 className="text-xl font-bold text-blue-100 mb-4 uppercase tracking-wider">The pptAI Way</h3>
-          <p className="text-2xl sm:text-3xl font-bold leading-snug mb-8">
-            Type a topic. Let AI generate the content, structure, and design in seconds.
-          </p>
-          <ul className="space-y-4 text-blue-50 font-medium">
-            <li className="flex items-center gap-3">✅ Gemini-powered logical structures</li>
-            <li className="flex items-center gap-3">✅ DALL-E 3 generated custom visuals</li>
-            <li className="flex items-center gap-3">✅ Auto-formatting & Smart Layouts</li>
-          </ul>
-        </motion.div>
-      </motion.div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center">
+            
+            {/* The Competition */}
+            <motion.div style={{ y: y1 }} className="space-y-8">
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-3xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-2 h-full bg-red-500/50" />
+                <h3 className="text-xl font-bold text-slate-300 mb-2 uppercase tracking-wider">Other AI Tools</h3>
+                <p className="text-red-300 font-medium mb-6 text-sm">Rigid, repetitive, and boring.</p>
+                <ul className="space-y-4 text-slate-400">
+                  <li className="flex items-start gap-3">
+                    <div className="mt-1">❌</div>
+                    <span>Uses basic templates and forces text into predefined, rigid boxes.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="mt-1">❌</div>
+                    <span>Images are usually generic stock photos that don't match the context.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="mt-1">❌</div>
+                    <span>Lacks a real narrative structure. It just summarizes text randomly.</span>
+                  </li>
+                </ul>
+              </div>
+            </motion.div>
 
-      {/* App Architecture / How it works */}
-      <div className="max-w-5xl w-full">
+            {/* Us */}
+            <motion.div style={{ y: y2 }} className="space-y-8">
+              <div className="bg-gradient-to-br from-blue-900/50 to-sky-900/50 backdrop-blur-md border border-blue-500/30 p-8 sm:p-10 rounded-3xl relative overflow-hidden shadow-2xl shadow-blue-900/50">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px]" />
+                <div className="absolute top-0 left-0 w-2 h-full bg-blue-500" />
+                
+                <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-wider flex items-center gap-2">
+                  <Sparkles className="text-blue-400" /> pptAI
+                </h3>
+                <p className="text-blue-300 font-bold mb-6 text-sm">Dynamic, context-aware, and stunning.</p>
+                
+                <ul className="space-y-5 text-blue-50 relative z-10">
+                  <li className="flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 border border-blue-400/30">
+                      <Blocks className="w-4 h-4 text-blue-400" />
+                    </div>
+                    <div>
+                      <strong className="block text-white mb-1">Dynamic Rendering Engine</strong>
+                      <span className="text-sm opacity-80 leading-relaxed block">We don't use fixed templates. Our React-based engine calculates the best layout mathematically based on your exact text length and image dimensions.</span>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center shrink-0 border border-sky-400/30">
+                      <BrainCircuit className="w-4 h-4 text-sky-400" />
+                    </div>
+                    <div>
+                      <strong className="block text-white mb-1">Narrative Intelligence</strong>
+                      <span className="text-sm opacity-80 leading-relaxed block">Gemini AI is prompted to think like an expert storyteller. It structures your presentation with a hook, body, and compelling conclusion.</span>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 border border-blue-400/30">
+                      <Wand2 className="w-4 h-4 text-blue-400" />
+                    </div>
+                    <div>
+                      <strong className="block text-white mb-1">Hyper-Specific DALL-E Art</strong>
+                      <span className="text-sm opacity-80 leading-relaxed block">We analyze the slide's specific context to generate custom, on-brand DALL-E 3 images that perfectly illustrate your exact point.</span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </motion.div>
+
+          </div>
+        </motion.div>
+      </div>
+
+      {/* How It Thinks (Timeline) */}
+      <div className="w-full max-w-5xl mx-auto py-32 px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-24"
         >
-          <h2 className="text-3xl font-black text-slate-900 mb-4">Under the Hood</h2>
-          <p className="text-slate-600">A powerful stack designed exclusively for generation speed.</p>
+          <h2 className="text-4xl font-black text-slate-900 mb-6">How Our AI Thinks</h2>
+          <p className="text-slate-600 text-lg">A peek into the split-second decisions made when you click generate.</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="relative">
+          {/* Vertical Line */}
+          <div className="absolute top-0 bottom-0 left-8 md:left-1/2 w-1 bg-blue-100 -translate-x-1/2 rounded-full" />
+          
           <motion.div 
-            whileHover={{ y: -10 }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm"
+            variants={staggerContainer} 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true, margin: "-100px" }}
+            className="space-y-12 md:space-y-24"
           >
-            <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-6 border border-blue-100">
-              <BrainCircuit className="w-7 h-7 text-blue-600" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">Cognitive Engine</h3>
-            <p className="text-slate-600 leading-relaxed text-sm">
-              We leverage large language models to understand your intent, break it down into logical chapters, and write compelling slide bullet points.
-            </p>
-          </motion.div>
+            {/* Step 1 */}
+            <motion.div variants={fadeUp} className="relative flex flex-col md:flex-row items-center md:justify-between group">
+              <div className="hidden md:block w-5/12 text-right pr-12">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">1. Topic Analysis</h3>
+                <p className="text-slate-600">The AI dissects your prompt to understand the audience, tone, and core message required.</p>
+              </div>
+              <div className="absolute left-8 md:left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-4 border-blue-100 rounded-full flex items-center justify-center z-10 group-hover:border-blue-500 group-hover:scale-110 transition-all duration-300">
+                <Lightbulb className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="md:hidden w-full pl-24 pt-2">
+                <h3 className="text-xl font-bold text-slate-900 mb-2">1. Topic Analysis</h3>
+                <p className="text-slate-600 text-sm">The AI dissects your prompt to understand the audience, tone, and core message required.</p>
+              </div>
+              <div className="hidden md:block w-5/12" />
+            </motion.div>
 
-          <motion.div 
-            whileHover={{ y: -10 }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm"
-          >
-            <div className="w-14 h-14 rounded-full bg-sky-50 flex items-center justify-center mb-6 border border-sky-100">
-              <Blocks className="w-7 h-7 text-sky-600" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">Dynamic Layouts</h3>
-            <p className="text-slate-600 leading-relaxed text-sm">
-              Our custom React engine maps the generated content to the perfect visual hierarchy, calculating spacing and font sizes dynamically.
-            </p>
-          </motion.div>
+            {/* Step 2 */}
+            <motion.div variants={fadeUp} className="relative flex flex-col md:flex-row items-center md:justify-between group">
+              <div className="hidden md:block w-5/12" />
+              <div className="absolute left-8 md:left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-4 border-blue-100 rounded-full flex items-center justify-center z-10 group-hover:border-blue-500 group-hover:scale-110 transition-all duration-300">
+                <PenTool className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="md:w-5/12 w-full pl-24 md:pl-12 pt-2">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">2. Storyboarding</h3>
+                <p className="text-slate-600 md:text-base text-sm">Gemini acts as a scriptwriter, distributing the narrative across 10-15 slides with perfect pacing and logical flow.</p>
+              </div>
+            </motion.div>
 
-          <motion.div 
-            whileHover={{ y: -10 }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm"
-          >
-            <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-6 border border-blue-100">
-              <Wand2 className="w-7 h-7 text-blue-500" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">Visual Synthesis</h3>
-            <p className="text-slate-600 leading-relaxed text-sm">
-              No more boring stock photos. The app contextually queries image generators to create distinct, on-brand graphics tailored perfectly for the slide.
-            </p>
+            {/* Step 3 */}
+            <motion.div variants={fadeUp} className="relative flex flex-col md:flex-row items-center md:justify-between group">
+              <div className="hidden md:block w-5/12 text-right pr-12">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">3. Layout Engine</h3>
+                <p className="text-slate-600">The React engine determines if a slide needs a full-bleed image, a 2-column comparison, or a bold quote layout based on the text density.</p>
+              </div>
+              <div className="absolute left-8 md:left-1/2 -translate-x-1/2 w-16 h-16 bg-white border-4 border-blue-100 rounded-full flex items-center justify-center z-10 group-hover:border-blue-500 group-hover:scale-110 transition-all duration-300">
+                <LayoutDashboard className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="md:hidden w-full pl-24 pt-2">
+                <h3 className="text-xl font-bold text-slate-900 mb-2">3. Layout Engine</h3>
+                <p className="text-slate-600 text-sm">The React engine determines if a slide needs a full-bleed image, a 2-column comparison, or a bold quote layout based on the text density.</p>
+              </div>
+              <div className="hidden md:block w-5/12" />
+            </motion.div>
+
+            {/* Step 4 */}
+            <motion.div variants={fadeUp} className="relative flex flex-col md:flex-row items-center md:justify-between group">
+              <div className="hidden md:block w-5/12" />
+              <div className="absolute left-8 md:left-1/2 -translate-x-1/2 w-16 h-16 bg-blue-600 shadow-xl shadow-blue-500/30 rounded-full flex items-center justify-center z-10 group-hover:scale-110 transition-all duration-300">
+                <Rocket className="w-6 h-6 text-white" />
+              </div>
+              <div className="md:w-5/12 w-full pl-24 md:pl-12 pt-2">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">4. Final Assembly</h3>
+                <p className="text-slate-600 md:text-base text-sm">DALL-E images are injected, typography is scaled mathematically, and the beautiful, ready-to-present deck is served to you in milliseconds.</p>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>
+
     </main>
   )
 }
