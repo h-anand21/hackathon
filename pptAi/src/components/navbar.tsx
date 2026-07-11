@@ -1,8 +1,7 @@
 import { authClient } from '#/lib/auth-client'
 import { cn } from '#/lib/utils'
 import { Link, useRouter } from '@tanstack/react-router'
-import { LogOut, Moon, Sun, User } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { LogOut, User } from 'lucide-react'
 import { Logo } from '#/components/Logo'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
@@ -15,34 +14,9 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 
-type Theme = 'light' | 'dark'
-
-function getInitialTheme(): Theme {
-  if (typeof window === 'undefined') return 'dark'
-  const stored = localStorage.getItem('theme')
-  if (stored === 'light' || stored === 'dark') return stored
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light'
-}
-
 export default function Navbar() {
   const router = useRouter()
   const { data: session, isPending } = authClient.useSession()
-  const [theme, setTheme] = useState<Theme>('dark')
-
-  useEffect(() => {
-    const initial = getInitialTheme()
-    setTheme(initial)
-    document.documentElement.classList.toggle('dark', initial === 'dark')
-  }, [])
-
-  const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark'
-    setTheme(next)
-    localStorage.setItem('theme', next)
-    document.documentElement.classList.toggle('dark', next === 'dark')
-  }
 
   const handleSignOut = async () => {
     await authClient.signOut()
@@ -63,20 +37,6 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            {/* Theme toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="rounded-xl"
-            >
-              {theme === 'dark' ? (
-                <Sun className="size-5" />
-              ) : (
-                <Moon className="size-5" />
-              )}
-            </Button>
-
             {/* User menu */}
             {isPending ? (
               <div className="size-9 rounded-full bg-muted animate-pulse" />

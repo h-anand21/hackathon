@@ -6,11 +6,15 @@ import {
 } from '#/components/ui/card'
 import { Link } from '@tanstack/react-router'
 import { Database, Network, Briefcase, Bot, Star, MoreVertical } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 import type { Presentation } from '../types/presentation.types'
 
 type PresentationCardProps = {
   presentation: Presentation
+  isFavorite: boolean
+  onToggleFavorite: (id: string) => void
 }
 
 const THEMES = [
@@ -20,7 +24,8 @@ const THEMES = [
   { icon: Bot, gradient: 'from-purple-500/20 to-transparent', iconColor: 'text-purple-500', glow: 'shadow-[0_0_25px_rgba(168,85,247,0.3)]' },
 ]
 
-export function PresentationCard({ presentation: p }: PresentationCardProps) {
+export function PresentationCard({ presentation: p, isFavorite, onToggleFavorite }: PresentationCardProps) {
+
   const updated = new Date(p.updatedAt).toLocaleString(undefined, {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -50,10 +55,20 @@ export function PresentationCard({ presentation: p }: PresentationCardProps) {
             </div>
             
             <div className="flex items-center gap-2">
-              <button className="text-gray-500 hover:text-white transition-colors" onClick={(e) => e.preventDefault()}>
-                <Star className="size-4" />
+              <button 
+                className={`transition-colors ${isFavorite ? 'text-yellow-500 hover:text-yellow-400' : 'text-gray-500 hover:text-white'}`} 
+                onClick={(e) => {
+                  e.preventDefault()
+                  onToggleFavorite(p.id)
+                  toast.success(!isFavorite ? 'Added to favorites' : 'Removed from favorites')
+                }}
+              >
+                <Star className={`size-4 ${isFavorite ? 'fill-current' : ''}`} />
               </button>
-              <button className="text-gray-500 hover:text-white transition-colors" onClick={(e) => e.preventDefault()}>
+              <button className="text-gray-500 hover:text-white transition-colors" onClick={(e) => {
+                e.preventDefault()
+                toast.info('More options coming soon!')
+              }}>
                 <MoreVertical className="size-4" />
               </button>
             </div>

@@ -78,6 +78,19 @@ function HomePage() {
   const search = Route.useSearch()
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return []
+    try { return JSON.parse(localStorage.getItem('ppt_favorites') || '[]') } catch { return [] }
+  })
+
+  const toggleFavorite = (id: string) => {
+    setFavoriteIds(prev => {
+      const next = prev.includes(id) ? prev.filter(fid => fid !== id) : [...prev, id]
+      if (typeof window !== 'undefined') localStorage.setItem('ppt_favorites', JSON.stringify(next))
+      return next
+    })
+  }
 
   const [form, setForm] = useState<HomeFormState>({
     content: search.prompt || '',
@@ -153,11 +166,20 @@ function HomePage() {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-hide">
-          <SidebarItem icon={Home} label="Home" isOpen={isSidebarOpen} active onClick={() => document.getElementById('main-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })} />
-          <SidebarItem icon={FolderOpen} label="My Presentations" isOpen={isSidebarOpen} onClick={() => document.getElementById('recent-presentations')?.scrollIntoView({ behavior: 'smooth' })} />
+          <SidebarItem icon={Home} label="Home" isOpen={isSidebarOpen} active={!showFavoritesOnly} onClick={() => {
+            setShowFavoritesOnly(false)
+            document.getElementById('main-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
+          }} />
+          <SidebarItem icon={FolderOpen} label="My Presentations" isOpen={isSidebarOpen} active={!showFavoritesOnly} onClick={() => {
+            setShowFavoritesOnly(false)
+            document.getElementById('recent-presentations')?.scrollIntoView({ behavior: 'smooth' })
+          }} />
           <SidebarItem icon={LayoutTemplate} label="Templates" isOpen={isSidebarOpen} onClick={() => document.getElementById('templates')?.scrollIntoView({ behavior: 'smooth' })} />
           <SidebarItem icon={MessageSquare} label="AI Prompt" isOpen={isSidebarOpen} onClick={() => document.querySelector('textarea')?.focus()} />
-          <SidebarItem icon={Star} label="Favorites" isOpen={isSidebarOpen} onClick={() => toast.info('Favorites coming soon!')} />
+          <SidebarItem icon={Star} label="Favorites" isOpen={isSidebarOpen} active={showFavoritesOnly} onClick={() => {
+            setShowFavoritesOnly(true)
+            document.getElementById('recent-presentations')?.scrollIntoView({ behavior: 'smooth' })
+          }} />
           
           <div className="my-4 border-t border-white/5" />
           
@@ -315,6 +337,9 @@ function HomePage() {
             <PresentationListSection
               presentations={presentations}
               isPending={listPending}
+              favoriteIds={favoriteIds}
+              onToggleFavorite={toggleFavorite}
+              showFavoritesOnly={showFavoritesOnly}
             />
           </div>
 
