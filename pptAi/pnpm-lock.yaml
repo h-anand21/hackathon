@@ -70,7 +70,7 @@ importers:
         version: 2.1.1
       inngest:
         specifier: ^4.2.4
-        version: 4.2.4(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(hono@4.12.14)(react@19.2.5)(typescript@5.9.3)(zod@4.3.6)
+        version: 4.2.4(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(h3@2.0.1-rc.24(crossws@0.4.9(srvx@0.11.21)))(hono@4.12.14)(react@19.2.5)(typescript@5.9.3)(zod@4.3.6)
       lucide-react:
         specifier: ^0.577.0
         version: 0.577.0(react@19.2.5)
@@ -144,11 +144,14 @@ importers:
       dotenv-cli:
         specifier: ^11.0.0
         version: 11.0.0
+      h3:
+        specifier: 2.0.1-rc.24
+        version: 2.0.1-rc.24(crossws@0.4.9(srvx@0.11.21))
       jsdom:
         specifier: ^28.1.0
         version: 28.1.0(@noble/hashes@2.2.0)
       nitro:
-        specifier: ^3.0.260610-beta
+        specifier: 3.0.260610-beta
         version: 3.0.260610-beta(@electric-sql/pglite@0.4.1)(chokidar@5.0.0)(dotenv@17.4.2)(giget@2.0.0)(jiti@2.7.0)(lru-cache@11.3.5)(mysql2@3.15.3)(vite@8.0.8(@types/node@22.19.17)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))
       prettier:
         specifier: ^3.8.1
@@ -4014,6 +4017,16 @@ packages:
       crossws:
         optional: true
 
+  h3@2.0.1-rc.24:
+    resolution: {integrity: sha512-saxpbF+/oPUCVvdkrcjiXhH5b7US1tul9qe0w9t6FMMBXYeuTB1tPxSEY8AFsA6g9sT8VmQGN7jERxdX5ew1Ow==}
+    engines: {node: '>=20.11.1'}
+    hasBin: true
+    peerDependencies:
+      crossws: ^0.4.9
+    peerDependenciesMeta:
+      crossws:
+        optional: true
+
   hash.js@1.1.7:
     resolution: {integrity: sha512-taOaskGt4z4SOANNseOviYDvjEJinIkRgmp7LbKP2YTTmVxWBl87s/uzK9r+44BclBSp2X7K1hqeNfz9JbBeXA==}
 
@@ -4776,6 +4789,9 @@ packages:
 
   rou3@0.8.1:
     resolution: {integrity: sha512-ePa+XGk00/3HuCqrEnK3LxJW7I0SdNg6EFzKUJG73hMAdDcOUC/i/aSz7LSDwLrGr33kal/rqOGydzwl6U7zBA==}
+
+  rou3@0.9.1:
+    resolution: {integrity: sha512-z/sSmzvtwMDDnxsPVhfWMuG6F6mbmhFDXoVqLmMfbpDD9qfV3GDmSQpf0+W296/ZDIpW2wcMmBfpVFzcnOi/nA==}
 
   safe-buffer@5.1.2:
     resolution: {integrity: sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==}
@@ -9376,6 +9392,13 @@ snapshots:
     optionalDependencies:
       crossws: 0.4.9(srvx@0.11.21)
 
+  h3@2.0.1-rc.24(crossws@0.4.9(srvx@0.11.21)):
+    dependencies:
+      rou3: 0.9.1
+      srvx: 0.11.21
+    optionalDependencies:
+      crossws: 0.4.9(srvx@0.11.21)
+
   hash.js@1.1.7:
     dependencies:
       inherits: 2.0.4
@@ -9447,7 +9470,7 @@ snapshots:
 
   inherits@2.0.4: {}
 
-  inngest@4.2.4(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(hono@4.12.14)(react@19.2.5)(typescript@5.9.3)(zod@4.3.6):
+  inngest@4.2.4(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(h3@2.0.1-rc.24(crossws@0.4.9(srvx@0.11.21)))(hono@4.12.14)(react@19.2.5)(typescript@5.9.3)(zod@4.3.6):
     dependencies:
       '@bufbuild/protobuf': 2.11.0
       '@inngest/ai': 0.1.7
@@ -9474,6 +9497,7 @@ snapshots:
       ulid: 2.4.0
       zod: 4.3.6
     optionalDependencies:
+      h3: 2.0.1-rc.24(crossws@0.4.9(srvx@0.11.21))
       hono: 4.12.14
       react: 19.2.5
       typescript: 5.9.3
@@ -10235,6 +10259,8 @@ snapshots:
   rou3@0.7.12: {}
 
   rou3@0.8.1: {}
+
+  rou3@0.9.1: {}
 
   safe-buffer@5.1.2: {}
 
