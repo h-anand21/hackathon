@@ -493,11 +493,6 @@ function PresentationDetailPage() {
                     <Loader2 className="size-3 animate-spin text-[#FF8A2A]" /> Thinking...
                   </div>
                 )}
-                {chatError && (
-                  <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs">
-                    Error: {chatError.message || String(chatError)}
-                  </div>
-                )}
               </div>
               <form className="p-4 border-t border-white/5 bg-[#0A0C11]" onSubmit={handleChatSubmit}>
                 <div className="relative">
@@ -907,13 +902,7 @@ function PresentationDetailPage() {
                   </div>
                 )}
                 
-                {/* Copilot FAB */}
-                <button
-                  className="absolute bottom-6 right-6 w-12 h-12 rounded-full bg-gradient-to-br from-[#FF8A2A] to-pink-500 shadow-[0_10px_30px_rgba(255,138,42,0.4)] flex items-center justify-center text-white hover:scale-110 transition-transform duration-300 z-30 group"
-                  onClick={() => toast.info('AI Copilot coming soon')}
-                >
-                  <Bot className="size-6 group-hover:rotate-12 transition-transform duration-300" />
-                </button>
+
               </div>
 
               {/* Nav controls */}
