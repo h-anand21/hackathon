@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ViewPresentationIdRouteImport } from './routes/view.$presentationId'
 import { Route as PresentationsPresentationIdRouteImport } from './routes/presentations.$presentationId'
 import { Route as ApiInngestRouteImport } from './routes/api/inngest'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -48,6 +49,11 @@ const ApiInngestRoute = ApiInngestRouteImport.update({
   path: '/api/inngest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/login': typeof AuthLoginRoute
+  '/api/chat': typeof ApiChatRoute
   '/api/inngest': typeof ApiInngestRoute
   '/presentations/$presentationId': typeof PresentationsPresentationIdRoute
   '/view/$presentationId': typeof ViewPresentationIdRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/login': typeof AuthLoginRoute
+  '/api/chat': typeof ApiChatRoute
   '/api/inngest': typeof ApiInngestRoute
   '/presentations/$presentationId': typeof PresentationsPresentationIdRoute
   '/view/$presentationId': typeof ViewPresentationIdRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/_auth/login': typeof AuthLoginRoute
+  '/api/chat': typeof ApiChatRoute
   '/api/inngest': typeof ApiInngestRoute
   '/presentations/$presentationId': typeof PresentationsPresentationIdRoute
   '/view/$presentationId': typeof ViewPresentationIdRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/login'
+    | '/api/chat'
     | '/api/inngest'
     | '/presentations/$presentationId'
     | '/view/$presentationId'
@@ -103,6 +113,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/login'
+    | '/api/chat'
     | '/api/inngest'
     | '/presentations/$presentationId'
     | '/view/$presentationId'
@@ -113,6 +124,7 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/about'
     | '/_auth/login'
+    | '/api/chat'
     | '/api/inngest'
     | '/presentations/$presentationId'
     | '/view/$presentationId'
@@ -123,6 +135,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
+  ApiChatRoute: typeof ApiChatRoute
   ApiInngestRoute: typeof ApiInngestRoute
   PresentationsPresentationIdRoute: typeof PresentationsPresentationIdRoute
   ViewPresentationIdRoute: typeof ViewPresentationIdRoute
@@ -173,6 +186,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiInngestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_auth/login': {
       id: '/_auth/login'
       path: '/login'
@@ -206,6 +226,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   AboutRoute: AboutRoute,
+  ApiChatRoute: ApiChatRoute,
   ApiInngestRoute: ApiInngestRoute,
   PresentationsPresentationIdRoute: PresentationsPresentationIdRoute,
   ViewPresentationIdRoute: ViewPresentationIdRoute,

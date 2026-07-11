@@ -67,6 +67,7 @@ model Slide {
   content        String       @db.Text
   notes          String?      @db.Text
   imageUrl       String?
+  imageStyle     String?      @default("cover")
   imagePrompt    String?
   layoutType     String?      @default("split-right")
   diagramType    String?

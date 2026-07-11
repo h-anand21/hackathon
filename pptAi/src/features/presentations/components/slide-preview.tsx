@@ -8,6 +8,8 @@ type SlideData = {
   content: string
   notes?: string | null
   imageUrl?: string | null
+  imageStyle?: string | null
+  imagePrompt?: string | null
   layoutType?: string | null
   diagramType?: string | null
   diagramData?: string | null
@@ -43,6 +45,7 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
   const bullets = parseBullets(slide.content)
   const scale = isFullscreen ? 1 : 1
 
+  
   const outerClass = isFullscreen
     ? 'w-full h-full'
     : 'glass rounded-2xl overflow-hidden'
@@ -51,6 +54,10 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
     background: t.bg,
     fontFamily: "'Inter', 'Segoe UI', sans-serif",
   }
+
+  // Image crop helpers based on slide.imageStyle
+  const fitClass = slide.imageStyle === 'contain' ? 'object-contain bg-black/40' : 'object-cover'
+  const posStyle = slide.imageStyle === 'cover-top' ? 'top center' : slide.imageStyle === 'cover-bottom' ? 'bottom center' : 'center center'
 
   // ── HERO layout (title/cover) ─────────────────────────────────────────────
   if (layout === 'hero') {
@@ -66,7 +73,8 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
               <img
                 src={slide.imageUrl}
                 alt=""
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${imageLoaded ? 'opacity-60' : 'opacity-0'}`}
+                className={`absolute inset-0 w-full h-full ${fitClass} transition-opacity duration-700 ${imageLoaded ? 'opacity-60' : 'opacity-0'}`}
+                style={{ objectPosition: posStyle }}
                 onLoad={() => setImageLoaded(true)}
               />
               <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.5) 100%)' }} />
@@ -228,8 +236,8 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
             <img
               src={slide.imageUrl}
               alt={slide.title}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-              style={{ objectPosition: 'center center' }}
+              className={`absolute inset-0 w-full h-full ${fitClass} transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              style={{ objectPosition: posStyle }}
               onLoad={() => setImageLoaded(true)}
             />
           ) : (

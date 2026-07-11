@@ -125,6 +125,7 @@ export const SlideScalarFieldEnum = {
   content: 'content',
   notes: 'notes',
   imageUrl: 'imageUrl',
+  imageStyle: 'imageStyle',
   imagePrompt: 'imagePrompt',
   layoutType: 'layoutType',
   diagramType: 'diagramType',

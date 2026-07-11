@@ -42,6 +42,7 @@ export type SlideMinAggregateOutputType = {
   content: string | null
   notes: string | null
   imageUrl: string | null
+  imageStyle: string | null
   imagePrompt: string | null
   layoutType: string | null
   diagramType: string | null
@@ -59,6 +60,7 @@ export type SlideMaxAggregateOutputType = {
   content: string | null
   notes: string | null
   imageUrl: string | null
+  imageStyle: string | null
   imagePrompt: string | null
   layoutType: string | null
   diagramType: string | null
@@ -76,6 +78,7 @@ export type SlideCountAggregateOutputType = {
   content: number
   notes: number
   imageUrl: number
+  imageStyle: number
   imagePrompt: number
   layoutType: number
   diagramType: number
@@ -103,6 +106,7 @@ export type SlideMinAggregateInputType = {
   content?: true
   notes?: true
   imageUrl?: true
+  imageStyle?: true
   imagePrompt?: true
   layoutType?: true
   diagramType?: true
@@ -120,6 +124,7 @@ export type SlideMaxAggregateInputType = {
   content?: true
   notes?: true
   imageUrl?: true
+  imageStyle?: true
   imagePrompt?: true
   layoutType?: true
   diagramType?: true
@@ -137,6 +142,7 @@ export type SlideCountAggregateInputType = {
   content?: true
   notes?: true
   imageUrl?: true
+  imageStyle?: true
   imagePrompt?: true
   layoutType?: true
   diagramType?: true
@@ -241,6 +247,7 @@ export type SlideGroupByOutputType = {
   content: string
   notes: string | null
   imageUrl: string | null
+  imageStyle: string | null
   imagePrompt: string | null
   layoutType: string | null
   diagramType: string | null
@@ -281,6 +288,7 @@ export type SlideWhereInput = {
   content?: Prisma.StringFilter<"Slide"> | string
   notes?: Prisma.StringNullableFilter<"Slide"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"Slide"> | string | null
+  imageStyle?: Prisma.StringNullableFilter<"Slide"> | string | null
   imagePrompt?: Prisma.StringNullableFilter<"Slide"> | string | null
   layoutType?: Prisma.StringNullableFilter<"Slide"> | string | null
   diagramType?: Prisma.StringNullableFilter<"Slide"> | string | null
@@ -299,6 +307,7 @@ export type SlideOrderByWithRelationInput = {
   content?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  imageStyle?: Prisma.SortOrderInput | Prisma.SortOrder
   imagePrompt?: Prisma.SortOrderInput | Prisma.SortOrder
   layoutType?: Prisma.SortOrderInput | Prisma.SortOrder
   diagramType?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -320,6 +329,7 @@ export type SlideWhereUniqueInput = Prisma.AtLeast<{
   content?: Prisma.StringFilter<"Slide"> | string
   notes?: Prisma.StringNullableFilter<"Slide"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"Slide"> | string | null
+  imageStyle?: Prisma.StringNullableFilter<"Slide"> | string | null
   imagePrompt?: Prisma.StringNullableFilter<"Slide"> | string | null
   layoutType?: Prisma.StringNullableFilter<"Slide"> | string | null
   diagramType?: Prisma.StringNullableFilter<"Slide"> | string | null
@@ -338,6 +348,7 @@ export type SlideOrderByWithAggregationInput = {
   content?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  imageStyle?: Prisma.SortOrderInput | Prisma.SortOrder
   imagePrompt?: Prisma.SortOrderInput | Prisma.SortOrder
   layoutType?: Prisma.SortOrderInput | Prisma.SortOrder
   diagramType?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -363,6 +374,7 @@ export type SlideScalarWhereWithAggregatesInput = {
   content?: Prisma.StringWithAggregatesFilter<"Slide"> | string
   notes?: Prisma.StringNullableWithAggregatesFilter<"Slide"> | string | null
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"Slide"> | string | null
+  imageStyle?: Prisma.StringNullableWithAggregatesFilter<"Slide"> | string | null
   imagePrompt?: Prisma.StringNullableWithAggregatesFilter<"Slide"> | string | null
   layoutType?: Prisma.StringNullableWithAggregatesFilter<"Slide"> | string | null
   diagramType?: Prisma.StringNullableWithAggregatesFilter<"Slide"> | string | null
@@ -379,6 +391,7 @@ export type SlideCreateInput = {
   content: string
   notes?: string | null
   imageUrl?: string | null
+  imageStyle?: string | null
   imagePrompt?: string | null
   layoutType?: string | null
   diagramType?: string | null
@@ -397,6 +410,7 @@ export type SlideUncheckedCreateInput = {
   content: string
   notes?: string | null
   imageUrl?: string | null
+  imageStyle?: string | null
   imagePrompt?: string | null
   layoutType?: string | null
   diagramType?: string | null
@@ -413,6 +427,7 @@ export type SlideUpdateInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -431,6 +446,7 @@ export type SlideUncheckedUpdateInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -448,6 +464,7 @@ export type SlideCreateManyInput = {
   content: string
   notes?: string | null
   imageUrl?: string | null
+  imageStyle?: string | null
   imagePrompt?: string | null
   layoutType?: string | null
   diagramType?: string | null
@@ -464,6 +481,7 @@ export type SlideUpdateManyMutationInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -481,6 +499,7 @@ export type SlideUncheckedUpdateManyInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -508,6 +527,7 @@ export type SlideCountOrderByAggregateInput = {
   content?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  imageStyle?: Prisma.SortOrder
   imagePrompt?: Prisma.SortOrder
   layoutType?: Prisma.SortOrder
   diagramType?: Prisma.SortOrder
@@ -529,6 +549,7 @@ export type SlideMaxOrderByAggregateInput = {
   content?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  imageStyle?: Prisma.SortOrder
   imagePrompt?: Prisma.SortOrder
   layoutType?: Prisma.SortOrder
   diagramType?: Prisma.SortOrder
@@ -546,6 +567,7 @@ export type SlideMinOrderByAggregateInput = {
   content?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  imageStyle?: Prisma.SortOrder
   imagePrompt?: Prisma.SortOrder
   layoutType?: Prisma.SortOrder
   diagramType?: Prisma.SortOrder
@@ -608,6 +630,7 @@ export type SlideCreateWithoutPresentationInput = {
   content: string
   notes?: string | null
   imageUrl?: string | null
+  imageStyle?: string | null
   imagePrompt?: string | null
   layoutType?: string | null
   diagramType?: string | null
@@ -624,6 +647,7 @@ export type SlideUncheckedCreateWithoutPresentationInput = {
   content: string
   notes?: string | null
   imageUrl?: string | null
+  imageStyle?: string | null
   imagePrompt?: string | null
   layoutType?: string | null
   diagramType?: string | null
@@ -670,6 +694,7 @@ export type SlideScalarWhereInput = {
   content?: Prisma.StringFilter<"Slide"> | string
   notes?: Prisma.StringNullableFilter<"Slide"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"Slide"> | string | null
+  imageStyle?: Prisma.StringNullableFilter<"Slide"> | string | null
   imagePrompt?: Prisma.StringNullableFilter<"Slide"> | string | null
   layoutType?: Prisma.StringNullableFilter<"Slide"> | string | null
   diagramType?: Prisma.StringNullableFilter<"Slide"> | string | null
@@ -686,6 +711,7 @@ export type SlideCreateManyPresentationInput = {
   content: string
   notes?: string | null
   imageUrl?: string | null
+  imageStyle?: string | null
   imagePrompt?: string | null
   layoutType?: string | null
   diagramType?: string | null
@@ -702,6 +728,7 @@ export type SlideUpdateWithoutPresentationInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -718,6 +745,7 @@ export type SlideUncheckedUpdateWithoutPresentationInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -734,6 +762,7 @@ export type SlideUncheckedUpdateManyWithoutPresentationInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -753,6 +782,7 @@ export type SlideSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   content?: boolean
   notes?: boolean
   imageUrl?: boolean
+  imageStyle?: boolean
   imagePrompt?: boolean
   layoutType?: boolean
   diagramType?: boolean
@@ -771,6 +801,7 @@ export type SlideSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   content?: boolean
   notes?: boolean
   imageUrl?: boolean
+  imageStyle?: boolean
   imagePrompt?: boolean
   layoutType?: boolean
   diagramType?: boolean
@@ -789,6 +820,7 @@ export type SlideSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   content?: boolean
   notes?: boolean
   imageUrl?: boolean
+  imageStyle?: boolean
   imagePrompt?: boolean
   layoutType?: boolean
   diagramType?: boolean
@@ -807,6 +839,7 @@ export type SlideSelectScalar = {
   content?: boolean
   notes?: boolean
   imageUrl?: boolean
+  imageStyle?: boolean
   imagePrompt?: boolean
   layoutType?: boolean
   diagramType?: boolean
@@ -816,7 +849,7 @@ export type SlideSelectScalar = {
   updatedAt?: boolean
 }
 
-export type SlideOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "presentationId" | "order" | "title" | "content" | "notes" | "imageUrl" | "imagePrompt" | "layoutType" | "diagramType" | "diagramData" | "isPublic" | "createdAt" | "updatedAt", ExtArgs["result"]["slide"]>
+export type SlideOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "presentationId" | "order" | "title" | "content" | "notes" | "imageUrl" | "imageStyle" | "imagePrompt" | "layoutType" | "diagramType" | "diagramData" | "isPublic" | "createdAt" | "updatedAt", ExtArgs["result"]["slide"]>
 export type SlideInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   presentation?: boolean | Prisma.PresentationDefaultArgs<ExtArgs>
 }
@@ -840,6 +873,7 @@ export type $SlidePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     content: string
     notes: string | null
     imageUrl: string | null
+    imageStyle: string | null
     imagePrompt: string | null
     layoutType: string | null
     diagramType: string | null
@@ -1278,6 +1312,7 @@ export interface SlideFieldRefs {
   readonly content: Prisma.FieldRef<"Slide", 'String'>
   readonly notes: Prisma.FieldRef<"Slide", 'String'>
   readonly imageUrl: Prisma.FieldRef<"Slide", 'String'>
+  readonly imageStyle: Prisma.FieldRef<"Slide", 'String'>
   readonly imagePrompt: Prisma.FieldRef<"Slide", 'String'>
   readonly layoutType: Prisma.FieldRef<"Slide", 'String'>
   readonly diagramType: Prisma.FieldRef<"Slide", 'String'>

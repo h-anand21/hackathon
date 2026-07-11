@@ -81,13 +81,16 @@ import {
   Type,
   Bot,
   User,
-  LogOut
+  LogOut,
+  Loader2
 } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useMemo, useRef, useEffect } from 'react'
 import { toast } from 'sonner'
 import { SlideshowModal } from '#/features/presentations/components/slideshow-modal'
 import { exportToPptx } from '#/features/presentations/lib/export-pptx'
 import { Logo } from '#/components/Logo'
+import { useChat } from '@ai-sdk/react'
+import { DefaultChatTransport } from 'ai'
 
 export const Route = createFileRoute('/presentations/$presentationId')({
   beforeLoad: async ({ location }) => {
@@ -137,12 +140,16 @@ function PresentationDetailPage() {
   const [canvasTitle, setCanvasTitle] = useState('')
   const [canvasContent, setCanvasContent] = useState('')
   const [canvasImagePrompt, setCanvasImagePrompt] = useState('')
+  const [canvasImageStyle, setCanvasImageStyle] = useState('cover')
   // Chart builder state
   const [chartType, setChartType] = useState<'bar'|'pie'|'line'>('bar')
   const [chartRows, setChartRows] = useState([{label:'Q1',value:'40'},{label:'Q2',value:'65'},{label:'Q3',value:'50'},{label:'Q4',value:'80'}])
 
   // Media state
   const [uploadedImages, setUploadedImages] = useState<{name: string, url: string}[]>([])
+
+  // Chat local state
+  const [chatInput, setChatInput] = useState('')
 
   const {
     query,
@@ -158,6 +165,35 @@ function PresentationDetailPage() {
   } = usePresentationDetail(presentationId, {
     onDeleted: () => navigate({ to: '/' }),
   })
+
+  const presentationContext = useMemo(() => {
+    return slides.map((s, i) => `Slide ${i + 1}:\nTitle: ${s.title}\nContent: ${s.content}`).join('\n\n')
+  }, [slides])
+
+  const { messages = [], sendMessage, status: chatStatus, error: chatError } = useChat({
+    transport: new DefaultChatTransport({
+      api: '/api/chat',
+      body: { context: presentationContext }
+    })
+  } as any) as any
+
+  useEffect(() => {
+    if (chatError) console.error("Chat UI Error:", chatError);
+    console.log("Chat messages updated:", messages);
+    console.log("Chat status:", chatStatus);
+  }, [chatError, messages, chatStatus])
+
+  const isChatLoading = chatStatus === 'submitted'
+
+  const handleChatSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!chatInput.trim() || isChatLoading) return
+    if (sendMessage) {
+      console.log("Sending message:", chatInput.trim());
+      sendMessage({ role: 'user', content: chatInput.trim() })
+      setChatInput('')
+    }
+  }
 
   // Reset edit state when slide changes
   const prevSlideId = slides[activeSlideIndex]?.id
@@ -436,20 +472,47 @@ function PresentationDetailPage() {
                 <Sparkles className="size-4 text-[#FF8A2A] mr-2" />
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">AI Assistant</span>
               </div>
-              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 flex flex-col">
                 <div className="bg-[#10131B] border border-white/5 rounded-xl p-3 text-xs text-slate-300 leading-relaxed relative before:content-[''] before:absolute before:-left-1.5 before:top-4 before:w-3 before:h-3 before:bg-[#10131B] before:border-l before:border-b before:border-white/5 before:rotate-45">
                   <p>Hi! I'm your AI Copilot.</p>
-                  <p className="mt-1">I can help you rewrite this slide, generate a matching image, or suggest better bullet points.</p>
+                  <p className="mt-1">I can help you rewrite slides, brainstorm content, or structure your presentation.</p>
                 </div>
+                
+                {messages.map((m) => (
+                  <div key={m.id} className={`flex flex-col max-w-[90%] ${m.role === 'user' ? 'self-end' : 'self-start'}`}>
+                    <div className={`text-[10px] text-slate-500 mb-1 px-1 font-medium ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
+                      {m.role === 'user' ? 'You' : 'AI'}
+                    </div>
+                    <div className={`p-3 rounded-xl text-xs leading-relaxed whitespace-pre-wrap ${m.role === 'user' ? 'bg-[#FF8A2A] text-white rounded-br-sm shadow-md' : 'bg-[#10131B] border border-white/5 text-slate-300 rounded-bl-sm relative before:content-[\'\'] before:absolute before:-left-1.5 before:top-4 before:w-3 before:h-3 before:bg-[#10131B] before:border-l before:border-b before:border-white/5 before:rotate-45'}`}>
+                      {m.content || (m as any).parts?.map((p: any) => p.text).join('')}
+                    </div>
+                  </div>
+                ))}
+                {isChatLoading && (
+                  <div className="flex gap-1 items-center self-start bg-[#10131B] border border-white/5 p-3 rounded-xl rounded-bl-sm text-xs text-slate-400">
+                    <Loader2 className="size-3 animate-spin text-[#FF8A2A]" /> Thinking...
+                  </div>
+                )}
+                {chatError && (
+                  <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs">
+                    Error: {chatError.message || String(chatError)}
+                  </div>
+                )}
               </div>
-              <div className="p-4 border-t border-white/5 bg-[#0A0C11]">
+              <form className="p-4 border-t border-white/5 bg-[#0A0C11]" onSubmit={handleChatSubmit}>
                 <div className="relative">
-                  <input type="text" placeholder="Ask AI to modify..." className="w-full bg-[#10131B] border border-white/10 rounded-xl px-3 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-[#FF8A2A] transition-colors" />
-                  <Button size="icon" className="absolute right-1 top-1 size-7 bg-[#FF8A2A] hover:bg-orange-500 rounded-lg text-white" onClick={() => toast.info('AI Chat coming soon')}>
+                  <input 
+                    type="text" 
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Ask AI about your slides..." 
+                    className="w-full bg-[#10131B] border border-white/10 rounded-xl px-3 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-[#FF8A2A] transition-colors" 
+                  />
+                  <Button type="submit" disabled={isChatLoading || !chatInput.trim()} size="icon" className="absolute right-1 top-1 size-7 bg-[#FF8A2A] hover:bg-orange-500 rounded-lg text-white disabled:opacity-50">
                     <Wand2 className="size-3.5" />
                   </Button>
                 </div>
-              </div>
+              </form>
             </div>
           )}
 
@@ -752,6 +815,7 @@ function PresentationDetailPage() {
                         setCanvasTitle(activeSlide.title)
                         setCanvasContent(activeSlide.content)
                         setCanvasImagePrompt(activeSlide.imagePrompt || '')
+                        setCanvasImageStyle(activeSlide.imageStyle || 'cover')
                         setCanvasEditing(true)
                       }}
                     >
@@ -761,52 +825,63 @@ function PresentationDetailPage() {
                       </div>
                     </div>
                   )}
+                </div>
 
-                  {canvasEditing && (
-                    <div className="absolute inset-0 flex flex-col bg-[#090B10]/95 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
-                        <span className="text-xs font-semibold text-[#FF8A2A]">✏️ Editing Slide</span>
-                        <div className="flex gap-2">
-                          <button
-                            className="text-xs px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
-                            onClick={() => setCanvasEditing(false)}
-                          >Cancel</button>
-                          <button
-                            className="text-xs px-3 py-1.5 rounded-lg bg-[#FF8A2A] hover:bg-orange-500 text-white font-medium transition-colors"
-                            onClick={() => {
-                              if (!activeSlide) return
-                              updateSlideMut.mutate(
-                                { id: activeSlide.id, title: canvasTitle, content: canvasContent, imagePrompt: canvasImagePrompt },
-                                { onSuccess: () => { setCanvasEditing(false); toast.success('Slide saved!') } }
-                              )
-                            }}
-                          >{updateSlideMut.isPending ? 'Saving…' : 'Save'}</button>
-                        </div>
+                {/* Editor Overlay (Moved outside scaled container for proper 100% zoom behavior) */}
+                {canvasEditing && (
+                  <div className="absolute inset-8 z-50 flex flex-col bg-[#090B10]/98 backdrop-blur-xl rounded-[24px] border border-[#FF8A2A]/40 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5">
+                      <span className="text-sm font-bold text-[#FF8A2A] flex items-center gap-2"><Type className="size-4" /> Editing Slide</span>
+                      <div className="flex gap-3">
+                        <button
+                          className="text-sm px-4 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+                          onClick={() => setCanvasEditing(false)}
+                        >Cancel</button>
+                        <button
+                          className="text-sm px-4 py-1.5 rounded-xl bg-[#FF8A2A] hover:bg-orange-500 text-white font-bold transition-colors"
+                          onClick={() => {
+                            if (!activeSlide) return
+                            updateSlideMut.mutate(
+                              { id: activeSlide.id, title: canvasTitle, content: canvasContent, imagePrompt: canvasImagePrompt, imageStyle: canvasImageStyle },
+                              { onSuccess: () => { setCanvasEditing(false); toast.success('Slide saved!') } }
+                            )
+                          }}
+                        >{updateSlideMut.isPending ? 'Saving…' : 'Save Changes'}</button>
                       </div>
-                      <div className="flex-1 flex flex-col gap-4 p-5 overflow-auto">
-                        <div>
-                          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold block mb-1.5">Slide Title</label>
-                          <input
-                            autoFocus
-                            value={canvasTitle}
-                            onChange={(e) => setCanvasTitle(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 focus:border-[#FF8A2A] rounded-xl px-4 py-3 text-2xl font-bold text-white focus:outline-none transition-colors"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold block mb-1.5">Content (one bullet per line)</label>
-                          <textarea
-                            value={canvasContent}
-                            onChange={(e) => setCanvasContent(e.target.value)}
-                            className="w-full h-32 bg-white/5 border border-white/10 focus:border-[#FF8A2A] rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none resize-none transition-colors leading-relaxed"
-                          />
-                        </div>
-                        <div className="pt-2 border-t border-white/5">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <label className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold block">AI Image Prompt (for regenerating)</label>
-                            {activeSlide.imageUrl && (
+                    </div>
+                    <div className="flex-1 flex flex-col gap-6 p-6 overflow-auto">
+                      <div>
+                        <label className="text-xs text-slate-400 uppercase tracking-widest font-bold block mb-2">Slide Title</label>
+                        <input
+                          autoFocus
+                          value={canvasTitle}
+                          onChange={(e) => setCanvasTitle(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 focus:border-[#FF8A2A] rounded-xl px-4 py-3 text-2xl font-bold text-white focus:outline-none transition-colors"
+                        />
+                      </div>
+                      <div className="flex-1 min-h-[200px]">
+                        <label className="text-xs text-slate-400 uppercase tracking-widest font-bold block mb-2">Content (one bullet per line)</label>
+                        <textarea
+                          value={canvasContent}
+                          onChange={(e) => setCanvasContent(e.target.value)}
+                          className="w-full h-full bg-white/5 border border-white/10 focus:border-[#FF8A2A] rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none resize-none transition-colors leading-relaxed"
+                        />
+                      </div>
+                      <div className="pt-4 border-t border-white/10">
+                        <div className="flex flex-wrap gap-4 items-center justify-between mb-3">
+                          <label className="text-xs text-slate-400 uppercase tracking-widest font-bold block">Image Settings</label>
+                          
+                          {activeSlide.imageUrl && (
+                            <div className="flex flex-wrap items-center gap-3">
+                              <div className="flex items-center gap-1 bg-white/5 p-1 rounded-lg">
+                                <button className={`text-[10px] px-2 py-1 rounded-md font-medium transition-colors ${canvasImageStyle === 'cover' ? 'bg-cyan-500 text-white' : 'text-slate-400 hover:text-white'}`} onClick={() => setCanvasImageStyle('cover')}>Fill</button>
+                                <button className={`text-[10px] px-2 py-1 rounded-md font-medium transition-colors ${canvasImageStyle === 'contain' ? 'bg-cyan-500 text-white' : 'text-slate-400 hover:text-white'}`} onClick={() => setCanvasImageStyle('contain')}>Fit (Contain)</button>
+                                <button className={`text-[10px] px-2 py-1 rounded-md font-medium transition-colors ${canvasImageStyle === 'cover-top' ? 'bg-cyan-500 text-white' : 'text-slate-400 hover:text-white'}`} onClick={() => setCanvasImageStyle('cover-top')}>Show Top</button>
+                                <button className={`text-[10px] px-2 py-1 rounded-md font-medium transition-colors ${canvasImageStyle === 'cover-bottom' ? 'bg-cyan-500 text-white' : 'text-slate-400 hover:text-white'}`} onClick={() => setCanvasImageStyle('cover-bottom')}>Show Bottom</button>
+                              </div>
+
                               <button
-                                className="text-[10px] text-red-400 hover:text-red-300 transition-colors font-medium bg-red-400/10 px-2 py-0.5 rounded-md"
+                                className="text-[11px] text-red-400 hover:text-red-300 transition-colors font-semibold bg-red-400/10 px-3 py-1.5 rounded-lg"
                                 onClick={() => {
                                   if (!activeSlide) return
                                   updateSlideMut.mutate(
@@ -815,21 +890,22 @@ function PresentationDetailPage() {
                                   )
                                 }}
                               >
-                                Remove Current Image
+                                Remove Image
                               </button>
-                            )}
-                          </div>
-                          <textarea
-                            value={canvasImagePrompt}
-                            onChange={(e) => setCanvasImagePrompt(e.target.value)}
-                            placeholder="Describe the image you want for this slide..."
-                            className="w-full h-16 bg-white/5 border border-white/10 focus:border-cyan-500 rounded-xl px-4 py-2 text-xs text-slate-300 focus:outline-none resize-none transition-colors"
-                          />
+                            </div>
+                          )}
                         </div>
+                        <label className="text-[10px] text-slate-500 uppercase tracking-widest font-bold block mb-1">AI Image Prompt (for regenerating)</label>
+                        <textarea
+                          value={canvasImagePrompt}
+                          onChange={(e) => setCanvasImagePrompt(e.target.value)}
+                          placeholder="Describe the image you want for this slide..."
+                          className="w-full h-16 bg-black/20 border border-white/10 focus:border-cyan-500 rounded-xl px-4 py-2 text-xs text-slate-300 focus:outline-none resize-none transition-colors"
+                        />
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
                 
                 {/* Copilot FAB */}
                 <button
