@@ -7,6 +7,7 @@ import { serve } from 'inngest/edge'
 const handler = serve({
   client: inngest,
   functions: [helloWorld, generatePresentation],
+  signingKey: process.env.INNGEST_SIGNING_KEY,
 })
 
 export const Route = createFileRoute("/api/inngest")({
