@@ -92,34 +92,59 @@ export default function About() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="bg-white rounded-[2rem] p-6 shadow-lg shadow-slate-200/40 border border-slate-100 group cursor-default"
           >
-            {/* Large Visual Block */}
-            <div className="w-full h-48 bg-slate-50 group-hover:bg-blue-50/50 rounded-3xl mb-8 relative overflow-hidden transition-colors duration-500 flex flex-col items-center justify-center p-4 border border-slate-100 group-hover:border-blue-100">
-              {/* User Prompt */}
-              <motion.div 
-                className="w-full bg-white p-3 rounded-2xl rounded-br-sm shadow-sm border border-slate-100 mb-3 origin-bottom-right"
-                initial={{ opacity: 1, scale: 1 }}
-                whileHover={{ scale: 1.05 }}
-              >
-                <div className="w-2/3 h-2 bg-slate-200 rounded-full mb-2" />
-                <div className="w-1/3 h-2 bg-slate-200 rounded-full" />
-              </motion.div>
+            {/* Human Relatable Visual Block: Prompt Typing */}
+            <div className="w-full h-48 bg-slate-50 group-hover:bg-blue-50/40 rounded-3xl mb-8 relative overflow-hidden transition-colors duration-500 flex flex-col items-center justify-center p-4 border border-slate-100 group-hover:border-blue-100">
               
-              {/* AI Response */}
-              <motion.div 
-                className="w-full max-w-[85%] self-start bg-blue-600 p-3 rounded-2xl rounded-bl-sm shadow-md shadow-blue-500/20 origin-bottom-left"
-                initial={{ opacity: 0.5, scale: 0.95 }}
-                whileHover={{ opacity: 1, scale: 1 }}
-              >
-                <div className="flex gap-1 mb-2">
-                  <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1.5 h-1.5 bg-white rounded-full" />
-                  <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-white rounded-full" />
-                  <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-white rounded-full" />
-                </div>
-                <div className="w-full h-1.5 bg-blue-400 rounded-full mb-1.5" />
-                <div className="w-4/5 h-1.5 bg-blue-400 rounded-full" />
-              </motion.div>
+              {/* Fake Browser/Input UI */}
+              <div className="w-[95%] bg-white rounded-xl shadow-sm border border-slate-200 p-3 relative z-10 flex flex-col">
+                 {/* Fake Mac window dots */}
+                 <div className="flex items-center gap-1.5 mb-3 border-b border-slate-100 pb-2">
+                   <div className="w-2.5 h-2.5 rounded-full bg-slate-200 group-hover:bg-red-400 transition-colors" />
+                   <div className="w-2.5 h-2.5 rounded-full bg-slate-200 group-hover:bg-yellow-400 transition-colors delay-75" />
+                   <div className="w-2.5 h-2.5 rounded-full bg-slate-200 group-hover:bg-green-400 transition-colors delay-150" />
+                 </div>
+                 
+                 <div className="flex items-center gap-2 relative">
+                   <div className="flex-1 bg-slate-50 rounded-lg text-[10px] text-slate-600 font-mono px-2.5 py-1.5 flex items-center h-8 overflow-hidden border border-slate-200">
+                     <span className="mr-2 text-blue-500 font-bold">✨</span>
+                     <div className="relative">
+                       {/* Ghost text */}
+                       <span className="text-slate-300 absolute top-0 left-0 whitespace-nowrap">Enter a topic...</span>
+                       {/* Animated typing text */}
+                       <motion.span 
+                         initial={{ width: 0 }} 
+                         whileHover={{ width: "100%" }} 
+                         transition={{ duration: 2, ease: "linear" }}
+                         className="whitespace-nowrap overflow-hidden inline-block text-slate-800 relative z-10 border-r-2 border-blue-500 pr-1"
+                       >
+                         Pitch deck for a Coffee AI startup...
+                       </motion.span>
+                     </div>
+                   </div>
+                   
+                   {/* Generate Button */}
+                   <motion.div 
+                      initial={{ scale: 0.9, backgroundColor: "#f8fafc", color: "#94a3b8" }}
+                      whileHover={{ scale: 1.05, backgroundColor: "#2563eb", color: "#ffffff" }}
+                      transition={{ duration: 0.2, delay: 2.1 }}
+                      className="h-8 px-3 rounded-lg text-[10px] font-bold flex items-center justify-center border border-slate-200 group-hover:border-transparent transition-all"
+                   >
+                     GENERATE
+                   </motion.div>
+                 </div>
+              </div>
 
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors" />
+              {/* Fake Mouse Cursor */}
+              <motion.div 
+                className="absolute z-20 pointer-events-none"
+                initial={{ top: "100%", right: "10%", opacity: 0 }}
+                whileHover={{ top: "60%", right: "20%", opacity: 1 }}
+                transition={{ duration: 1.5, ease: "easeInOut", delay: 1 }}
+              >
+                <div className="text-black transform -rotate-12 drop-shadow-md">
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="black" strokeWidth="1.5"><path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87a.5.5 0 0 0 .35-.85L5.5 3.21z" /></svg>
+                </div>
+              </motion.div>
             </div>
 
             <div className="flex items-center gap-4 mb-4">
@@ -142,29 +167,58 @@ export default function About() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="bg-white rounded-[2rem] p-6 shadow-lg shadow-slate-200/40 border border-slate-100 group cursor-default"
           >
-            {/* Large Visual Block */}
-            <div className="w-full h-48 bg-slate-50 group-hover:bg-sky-50/50 rounded-3xl mb-8 relative overflow-hidden transition-colors duration-500 flex items-center justify-center border border-slate-100 group-hover:border-sky-100">
+            {/* Human Relatable Visual Block: Smart Guides Snapping */}
+            <div className="w-full h-48 bg-slate-50 group-hover:bg-sky-50/40 rounded-3xl mb-8 relative overflow-hidden transition-colors duration-500 flex items-center justify-center border border-slate-100 group-hover:border-sky-100 p-4">
               
-              <div className="w-4/5 h-28 bg-white rounded-xl shadow-sm border border-slate-200 p-2 relative">
-                {/* Pre-animation (Messy layout) visible initially */}
-                <motion.div className="absolute inset-2" initial={{ opacity: 1 }} whileHover={{ opacity: 0 }}>
-                  <div className="absolute top-2 left-4 w-12 h-4 bg-slate-200 rounded-sm rotate-6" />
-                  <div className="absolute top-10 left-2 w-20 h-12 bg-slate-200 rounded-md -rotate-3" />
-                  <div className="absolute top-8 right-2 w-16 h-16 bg-sky-100 rounded-md rotate-12" />
+              <div className="w-full h-full bg-white rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
+                {/* Alignment Guides (appear on hover when snapped) */}
+                <motion.div 
+                  className="absolute top-0 bottom-0 left-1/2 w-[1px] z-0" 
+                  initial={{ backgroundColor: "rgba(56, 189, 248, 0)" }}
+                  whileHover={{ backgroundColor: "rgba(56, 189, 248, 0.4)" }} 
+                  transition={{ delay: 0.7 }}
+                />
+                <motion.div 
+                  className="absolute left-0 right-0 top-1/2 h-[1px] z-0" 
+                  initial={{ backgroundColor: "rgba(56, 189, 248, 0)" }}
+                  whileHover={{ backgroundColor: "rgba(56, 189, 248, 0.4)" }} 
+                  transition={{ delay: 0.7 }}
+                />
+                
+                {/* Image Block (Messy to Clean) */}
+                <motion.div 
+                  className="absolute z-10 bg-slate-100 rounded-lg border-2 border-slate-200 flex items-center justify-center shadow-sm"
+                  initial={{ top: 10, left: 10, width: 70, height: 50, rotate: -6 }}
+                  whileHover={{ top: 24, left: 24, width: 80, height: 80, rotate: 0 }}
+                  transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
+                >
+                  <div className="w-8 h-8 bg-slate-200 rounded-md" />
                 </motion.div>
 
-                {/* Post-animation (Clean layout) visible on hover */}
-                <motion.div className="absolute inset-2 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="flex-1 flex flex-col justify-center gap-2">
-                    <motion.div initial={{ x: -10, opacity: 0 }} whileHover={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="w-full h-3 bg-slate-800 rounded-sm" />
-                    <motion.div initial={{ x: -10, opacity: 0 }} whileHover={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="w-3/4 h-2 bg-slate-300 rounded-sm" />
-                    <motion.div initial={{ x: -10, opacity: 0 }} whileHover={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="w-1/2 h-2 bg-slate-300 rounded-sm" />
-                  </div>
-                  <motion.div initial={{ scale: 0.8, opacity: 0 }} whileHover={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring" }} className="w-16 h-full bg-sky-200 rounded-lg border-2 border-sky-300 border-dashed" />
-                </motion.div>
+                {/* Text Block 1 (Header) */}
+                <motion.div 
+                  className="absolute z-10 bg-slate-800 rounded-md"
+                  initial={{ top: 60, left: 100, width: 60, height: 12, rotate: 4 }}
+                  whileHover={{ top: 34, left: 120, width: 80, height: 12, rotate: 0 }}
+                  transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.1 }}
+                />
+
+                {/* Text Block 2 (Paragraph) */}
+                <motion.div 
+                  className="absolute z-10 bg-slate-300 rounded-md"
+                  initial={{ top: 80, left: 90, width: 80, height: 6, rotate: -3 }}
+                  whileHover={{ top: 60, left: 120, width: 100, height: 6, rotate: 0 }}
+                  transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.2 }}
+                />
+                
+                {/* Text Block 3 (Paragraph line 2) */}
+                <motion.div 
+                  className="absolute z-10 bg-slate-300 rounded-md"
+                  initial={{ top: 95, left: 110, width: 50, height: 6, rotate: 2 }}
+                  whileHover={{ top: 74, left: 120, width: 70, height: 6, rotate: 0 }}
+                  transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.3 }}
+                />
               </div>
-
-              <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-sky-500/10 rounded-full blur-2xl group-hover:bg-sky-500/20 transition-colors" />
             </div>
 
             <div className="flex items-center gap-4 mb-4">
@@ -187,31 +241,54 @@ export default function About() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="bg-white rounded-[2rem] p-6 shadow-lg shadow-slate-200/40 border border-slate-100 group cursor-default"
           >
-            {/* Large Visual Block */}
-            <div className="w-full h-48 bg-slate-50 group-hover:bg-emerald-50/50 rounded-3xl mb-8 relative overflow-hidden transition-colors duration-500 flex items-center justify-center border border-slate-100 group-hover:border-emerald-100">
-              
-              <div className="relative w-24 h-24 flex items-center justify-center">
-                <motion.svg className="absolute inset-0 w-full h-full text-emerald-200 -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="45" fill="none" strokeWidth="6" stroke="currentColor" />
-                  <motion.circle 
-                    cx="50" cy="50" r="45" fill="none" strokeWidth="6" className="text-emerald-500" stroke="currentColor"
-                    initial={{ strokeDasharray: "283 283", strokeDashoffset: 283 }}
-                    whileHover={{ strokeDashoffset: 0 }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                  />
-                </motion.svg>
-                
-                <motion.div 
-                  className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30 text-white"
-                  initial={{ scale: 1 }}
-                  whileHover={{ scale: [1, 0.8, 1.1, 1], rotate: [0, 0, 0, 360] }}
-                  transition={{ duration: 1.5, ease: "easeInOut" }}
-                >
-                  <Rocket className="w-6 h-6" />
-                </motion.div>
-              </div>
-
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-colors" />
+            {/* Human Relatable Visual Block: Download PPTX */}
+            <div className="w-full h-48 bg-slate-50 group-hover:bg-emerald-50/40 rounded-3xl mb-8 relative overflow-hidden transition-colors duration-500 flex flex-col items-center justify-center p-4 border border-slate-100 group-hover:border-emerald-100">
+               
+               {/* Realistic Modal UI */}
+               <div className="w-[85%] bg-white rounded-xl shadow-md border border-slate-200 p-4 relative z-10 flex flex-col items-center">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mb-3">
+                    <span className="text-emerald-600 text-lg">🎉</span>
+                  </div>
+                  <div className="text-xs font-black text-slate-800 mb-1">Deck Generated!</div>
+                  <div className="text-[9px] text-slate-500 mb-4 font-mono">Q3_Pitch_vFinal.pptx</div>
+                  
+                  {/* Download Button / Progress Bar */}
+                  <motion.div 
+                    className="w-full h-8 bg-slate-100 text-slate-600 rounded-lg flex items-center justify-center gap-2 text-[10px] font-bold border border-slate-200 relative overflow-hidden group/btn cursor-pointer"
+                    whileHover={{ scale: 1.02 }}
+                  >
+                     {/* Progress fill */}
+                     <motion.div 
+                       className="absolute inset-0 bg-emerald-500 z-0 origin-left"
+                       initial={{ scaleX: 0 }}
+                       whileHover={{ scaleX: 1 }}
+                       transition={{ duration: 1.5, ease: "easeInOut" }}
+                     />
+                     
+                     <motion.div 
+                        className="relative z-10 flex items-center gap-2"
+                        initial={{ color: "#475569" }}
+                        whileHover={{ color: "#ffffff" }}
+                        transition={{ duration: 0.1, delay: 0.2 }}
+                     >
+                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                       <motion.span
+                         initial={{ opacity: 1, display: "block" }}
+                         whileHover={{ opacity: 0, display: "none" }}
+                         transition={{ duration: 0.1, delay: 1.5 }}
+                       >
+                         DOWNLOAD PPTX
+                       </motion.span>
+                       <motion.span
+                         initial={{ opacity: 0, display: "none" }}
+                         whileHover={{ opacity: 1, display: "block" }}
+                         transition={{ duration: 0.1, delay: 1.5 }}
+                       >
+                         OPENING...
+                       </motion.span>
+                     </motion.div>
+                  </motion.div>
+               </div>
             </div>
 
             <div className="flex items-center gap-4 mb-4">
@@ -224,7 +301,6 @@ export default function About() {
               Once generated, your slides are immediately ready to be presented on the web, downloaded, or shared with your team.
             </p>
           </motion.div>
-
         </div>
       </div>
 
