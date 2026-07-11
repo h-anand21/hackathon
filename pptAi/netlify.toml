@@ -1,0 +1,13 @@
+[build]
+  base = "."
+  command = "npx prisma generate && vite build"
+  publish = "dist/client"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
