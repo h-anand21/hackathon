@@ -51,6 +51,7 @@ import {
   Settings2,
   Palette,
   StickyNote,
+  Presentation,
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
@@ -152,10 +153,14 @@ function PresentationDetailPage() {
     <div className="flex flex-col h-screen overflow-hidden bg-[#080E1A]">
       {/* ── TOP BAR ─────────────────────────────────────────────────── */}
       <header className="flex items-center gap-3 px-4 py-2.5 border-b border-white/5 bg-[#0B1121] flex-shrink-0">
-        <Button asChild variant="ghost" size="sm" className="rounded-lg gap-1.5 text-slate-400 hover:text-white">
-          <Link to="/"><ArrowLeft className="size-4" />Home</Link>
-        </Button>
-
+        <Link to="/" className="flex items-center gap-2 group mr-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F8A87D] text-black group-hover:scale-105 transition-transform">
+            <Presentation className="h-4 w-4" />
+          </div>
+          <span className="text-lg font-bold text-white tracking-tight">
+            PPT<span className="text-[#F8A87D]">.ai</span>
+          </span>
+        </Link>
         <div className="w-px h-4 bg-white/10" />
 
         <div className="flex-1 min-w-0">

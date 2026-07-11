@@ -105,10 +105,10 @@ export function DiagramRenderer({ diagramType, diagramData, theme = 'dark-slate'
               className="text-5xl font-black tracking-tight"
               style={{ color: accent, lineHeight: 1 }}
             >
-              {stat.value}
+              {stat?.value}
             </div>
             <div className="text-sm text-center font-medium" style={{ color: textMuted }}>
-              {stat.label}
+              {stat?.label}
             </div>
           </div>
         ))}
@@ -133,9 +133,9 @@ export function DiagramRenderer({ diagramType, diagramData, theme = 'dark-slate'
                   style={{ background: i === 0 ? accent : 'transparent', borderColor: accent }}
                 />
                 {/* Year */}
-                <div className="text-xs font-bold" style={{ color: accent }}>{ev.year}</div>
+                <div className="text-xs font-bold" style={{ color: accent }}>{ev?.year}</div>
                 {/* Label */}
-                <div className="text-xs text-center px-2" style={{ color: textMuted, maxWidth: '100px' }}>{ev.label}</div>
+                <div className="text-xs text-center px-2" style={{ color: textMuted, maxWidth: '100px' }}>{ev?.label}</div>
               </div>
             ))}
           </div>
