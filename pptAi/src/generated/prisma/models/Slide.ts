@@ -43,6 +43,10 @@ export type SlideMinAggregateOutputType = {
   notes: string | null
   imageUrl: string | null
   imagePrompt: string | null
+  layoutType: string | null
+  diagramType: string | null
+  diagramData: string | null
+  isPublic: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +60,10 @@ export type SlideMaxAggregateOutputType = {
   notes: string | null
   imageUrl: string | null
   imagePrompt: string | null
+  layoutType: string | null
+  diagramType: string | null
+  diagramData: string | null
+  isPublic: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -69,6 +77,10 @@ export type SlideCountAggregateOutputType = {
   notes: number
   imageUrl: number
   imagePrompt: number
+  layoutType: number
+  diagramType: number
+  diagramData: number
+  isPublic: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -92,6 +104,10 @@ export type SlideMinAggregateInputType = {
   notes?: true
   imageUrl?: true
   imagePrompt?: true
+  layoutType?: true
+  diagramType?: true
+  diagramData?: true
+  isPublic?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -105,6 +121,10 @@ export type SlideMaxAggregateInputType = {
   notes?: true
   imageUrl?: true
   imagePrompt?: true
+  layoutType?: true
+  diagramType?: true
+  diagramData?: true
+  isPublic?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -118,6 +138,10 @@ export type SlideCountAggregateInputType = {
   notes?: true
   imageUrl?: true
   imagePrompt?: true
+  layoutType?: true
+  diagramType?: true
+  diagramData?: true
+  isPublic?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -218,6 +242,10 @@ export type SlideGroupByOutputType = {
   notes: string | null
   imageUrl: string | null
   imagePrompt: string | null
+  layoutType: string | null
+  diagramType: string | null
+  diagramData: string | null
+  isPublic: boolean
   createdAt: Date
   updatedAt: Date
   _count: SlideCountAggregateOutputType | null
@@ -254,6 +282,10 @@ export type SlideWhereInput = {
   notes?: Prisma.StringNullableFilter<"Slide"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"Slide"> | string | null
   imagePrompt?: Prisma.StringNullableFilter<"Slide"> | string | null
+  layoutType?: Prisma.StringNullableFilter<"Slide"> | string | null
+  diagramType?: Prisma.StringNullableFilter<"Slide"> | string | null
+  diagramData?: Prisma.StringNullableFilter<"Slide"> | string | null
+  isPublic?: Prisma.BoolFilter<"Slide"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Slide"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Slide"> | Date | string
   presentation?: Prisma.XOR<Prisma.PresentationScalarRelationFilter, Prisma.PresentationWhereInput>
@@ -268,6 +300,10 @@ export type SlideOrderByWithRelationInput = {
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   imagePrompt?: Prisma.SortOrderInput | Prisma.SortOrder
+  layoutType?: Prisma.SortOrderInput | Prisma.SortOrder
+  diagramType?: Prisma.SortOrderInput | Prisma.SortOrder
+  diagramData?: Prisma.SortOrderInput | Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   presentation?: Prisma.PresentationOrderByWithRelationInput
@@ -285,6 +321,10 @@ export type SlideWhereUniqueInput = Prisma.AtLeast<{
   notes?: Prisma.StringNullableFilter<"Slide"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"Slide"> | string | null
   imagePrompt?: Prisma.StringNullableFilter<"Slide"> | string | null
+  layoutType?: Prisma.StringNullableFilter<"Slide"> | string | null
+  diagramType?: Prisma.StringNullableFilter<"Slide"> | string | null
+  diagramData?: Prisma.StringNullableFilter<"Slide"> | string | null
+  isPublic?: Prisma.BoolFilter<"Slide"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Slide"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Slide"> | Date | string
   presentation?: Prisma.XOR<Prisma.PresentationScalarRelationFilter, Prisma.PresentationWhereInput>
@@ -299,6 +339,10 @@ export type SlideOrderByWithAggregationInput = {
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   imagePrompt?: Prisma.SortOrderInput | Prisma.SortOrder
+  layoutType?: Prisma.SortOrderInput | Prisma.SortOrder
+  diagramType?: Prisma.SortOrderInput | Prisma.SortOrder
+  diagramData?: Prisma.SortOrderInput | Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SlideCountOrderByAggregateInput
@@ -320,6 +364,10 @@ export type SlideScalarWhereWithAggregatesInput = {
   notes?: Prisma.StringNullableWithAggregatesFilter<"Slide"> | string | null
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"Slide"> | string | null
   imagePrompt?: Prisma.StringNullableWithAggregatesFilter<"Slide"> | string | null
+  layoutType?: Prisma.StringNullableWithAggregatesFilter<"Slide"> | string | null
+  diagramType?: Prisma.StringNullableWithAggregatesFilter<"Slide"> | string | null
+  diagramData?: Prisma.StringNullableWithAggregatesFilter<"Slide"> | string | null
+  isPublic?: Prisma.BoolWithAggregatesFilter<"Slide"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Slide"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Slide"> | Date | string
 }
@@ -332,6 +380,10 @@ export type SlideCreateInput = {
   notes?: string | null
   imageUrl?: string | null
   imagePrompt?: string | null
+  layoutType?: string | null
+  diagramType?: string | null
+  diagramData?: string | null
+  isPublic?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   presentation: Prisma.PresentationCreateNestedOneWithoutSlidesInput
@@ -346,6 +398,10 @@ export type SlideUncheckedCreateInput = {
   notes?: string | null
   imageUrl?: string | null
   imagePrompt?: string | null
+  layoutType?: string | null
+  diagramType?: string | null
+  diagramData?: string | null
+  isPublic?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -358,6 +414,10 @@ export type SlideUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   presentation?: Prisma.PresentationUpdateOneRequiredWithoutSlidesNestedInput
@@ -372,6 +432,10 @@ export type SlideUncheckedUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -385,6 +449,10 @@ export type SlideCreateManyInput = {
   notes?: string | null
   imageUrl?: string | null
   imagePrompt?: string | null
+  layoutType?: string | null
+  diagramType?: string | null
+  diagramData?: string | null
+  isPublic?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -397,6 +465,10 @@ export type SlideUpdateManyMutationInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -410,6 +482,10 @@ export type SlideUncheckedUpdateManyInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -433,6 +509,10 @@ export type SlideCountOrderByAggregateInput = {
   notes?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imagePrompt?: Prisma.SortOrder
+  layoutType?: Prisma.SortOrder
+  diagramType?: Prisma.SortOrder
+  diagramData?: Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -450,6 +530,10 @@ export type SlideMaxOrderByAggregateInput = {
   notes?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imagePrompt?: Prisma.SortOrder
+  layoutType?: Prisma.SortOrder
+  diagramType?: Prisma.SortOrder
+  diagramData?: Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -463,6 +547,10 @@ export type SlideMinOrderByAggregateInput = {
   notes?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imagePrompt?: Prisma.SortOrder
+  layoutType?: Prisma.SortOrder
+  diagramType?: Prisma.SortOrder
+  diagramData?: Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -521,6 +609,10 @@ export type SlideCreateWithoutPresentationInput = {
   notes?: string | null
   imageUrl?: string | null
   imagePrompt?: string | null
+  layoutType?: string | null
+  diagramType?: string | null
+  diagramData?: string | null
+  isPublic?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -533,6 +625,10 @@ export type SlideUncheckedCreateWithoutPresentationInput = {
   notes?: string | null
   imageUrl?: string | null
   imagePrompt?: string | null
+  layoutType?: string | null
+  diagramType?: string | null
+  diagramData?: string | null
+  isPublic?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -575,6 +671,10 @@ export type SlideScalarWhereInput = {
   notes?: Prisma.StringNullableFilter<"Slide"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"Slide"> | string | null
   imagePrompt?: Prisma.StringNullableFilter<"Slide"> | string | null
+  layoutType?: Prisma.StringNullableFilter<"Slide"> | string | null
+  diagramType?: Prisma.StringNullableFilter<"Slide"> | string | null
+  diagramData?: Prisma.StringNullableFilter<"Slide"> | string | null
+  isPublic?: Prisma.BoolFilter<"Slide"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Slide"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Slide"> | Date | string
 }
@@ -587,6 +687,10 @@ export type SlideCreateManyPresentationInput = {
   notes?: string | null
   imageUrl?: string | null
   imagePrompt?: string | null
+  layoutType?: string | null
+  diagramType?: string | null
+  diagramData?: string | null
+  isPublic?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -599,6 +703,10 @@ export type SlideUpdateWithoutPresentationInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -611,6 +719,10 @@ export type SlideUncheckedUpdateWithoutPresentationInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -623,6 +735,10 @@ export type SlideUncheckedUpdateManyWithoutPresentationInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  layoutType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  diagramData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -638,6 +754,10 @@ export type SlideSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   notes?: boolean
   imageUrl?: boolean
   imagePrompt?: boolean
+  layoutType?: boolean
+  diagramType?: boolean
+  diagramData?: boolean
+  isPublic?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   presentation?: boolean | Prisma.PresentationDefaultArgs<ExtArgs>
@@ -652,6 +772,10 @@ export type SlideSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   notes?: boolean
   imageUrl?: boolean
   imagePrompt?: boolean
+  layoutType?: boolean
+  diagramType?: boolean
+  diagramData?: boolean
+  isPublic?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   presentation?: boolean | Prisma.PresentationDefaultArgs<ExtArgs>
@@ -666,6 +790,10 @@ export type SlideSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   notes?: boolean
   imageUrl?: boolean
   imagePrompt?: boolean
+  layoutType?: boolean
+  diagramType?: boolean
+  diagramData?: boolean
+  isPublic?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   presentation?: boolean | Prisma.PresentationDefaultArgs<ExtArgs>
@@ -680,11 +808,15 @@ export type SlideSelectScalar = {
   notes?: boolean
   imageUrl?: boolean
   imagePrompt?: boolean
+  layoutType?: boolean
+  diagramType?: boolean
+  diagramData?: boolean
+  isPublic?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SlideOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "presentationId" | "order" | "title" | "content" | "notes" | "imageUrl" | "imagePrompt" | "createdAt" | "updatedAt", ExtArgs["result"]["slide"]>
+export type SlideOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "presentationId" | "order" | "title" | "content" | "notes" | "imageUrl" | "imagePrompt" | "layoutType" | "diagramType" | "diagramData" | "isPublic" | "createdAt" | "updatedAt", ExtArgs["result"]["slide"]>
 export type SlideInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   presentation?: boolean | Prisma.PresentationDefaultArgs<ExtArgs>
 }
@@ -709,6 +841,10 @@ export type $SlidePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     notes: string | null
     imageUrl: string | null
     imagePrompt: string | null
+    layoutType: string | null
+    diagramType: string | null
+    diagramData: string | null
+    isPublic: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["slide"]>
@@ -1143,6 +1279,10 @@ export interface SlideFieldRefs {
   readonly notes: Prisma.FieldRef<"Slide", 'String'>
   readonly imageUrl: Prisma.FieldRef<"Slide", 'String'>
   readonly imagePrompt: Prisma.FieldRef<"Slide", 'String'>
+  readonly layoutType: Prisma.FieldRef<"Slide", 'String'>
+  readonly diagramType: Prisma.FieldRef<"Slide", 'String'>
+  readonly diagramData: Prisma.FieldRef<"Slide", 'String'>
+  readonly isPublic: Prisma.FieldRef<"Slide", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Slide", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Slide", 'DateTime'>
 }

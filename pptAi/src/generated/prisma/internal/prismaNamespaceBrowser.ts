@@ -108,6 +108,8 @@ export const PresentationScalarFieldEnum = {
   tone: 'tone',
   layout: 'layout',
   status: 'status',
+  isPublic: 'isPublic',
+  theme: 'theme',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -124,6 +126,10 @@ export const SlideScalarFieldEnum = {
   notes: 'notes',
   imageUrl: 'imageUrl',
   imagePrompt: 'imagePrompt',
+  layoutType: 'layoutType',
+  diagramType: 'diagramType',
+  diagramData: 'diagramData',
+  isPublic: 'isPublic',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

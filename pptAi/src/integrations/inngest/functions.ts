@@ -62,14 +62,37 @@ function cleanAndParseJSON(text: string): any {
 // Schemas
 // ---------------------------------------------------------------------------
 
+const IMAGE_STYLE_MAP: Record<string, string> = {
+  professional: 'clean flat vector illustration, muted blue and white palette, minimal',
+  creative: 'vibrant 3D render, colorful gradients, modern digital art style',
+  bold: 'high contrast photorealistic, dramatic lighting, cinematic',
+  minimal: 'simple thin line art on white background, monochrome, elegant',
+}
+
 const slideSchema = z.object({
-  title: z.string().describe('Slide title'),
-  content: z.string().describe('Main content / bullet points for the slide'),
-  notes: z.string().optional().describe('Speaker notes'),
+  title: z.string().describe('Slide title — short and punchy'),
+  content: z.string().describe('Main content (bullet points or short paragraphs). Use • for bullets.'),
+  notes: z.string().optional().describe('Speaker notes for the presenter'),
+  layoutType: z
+    .enum(['hero', 'split-right', 'split-left', 'text-only', 'stat-card', 'diagram'])
+    .describe(
+      'Layout for this slide. Use "hero" for title/cover slides. Use "split-right" or "split-left" for content slides alternating. Use "text-only" for quotes or key statements. Use "stat-card" for slides with 2-3 big numbers/stats. Use "diagram" for process steps, timelines, comparisons, or how-it-works slides.',
+    ),
+  diagramType: z
+    .enum(['flow', 'comparison', 'stats', 'timeline', 'none'])
+    .describe(
+      'Only if layoutType is "diagram". Use "flow" for step-by-step processes. Use "comparison" for A vs B. Use "stats" for data/numbers. Use "timeline" for roadmaps. Otherwise "none".',
+    ),
+  diagramData: z
+    .string()
+    .optional()
+    .describe(
+      'JSON string of diagram data. For flow: {"steps":["Step 1","Step 2","Step 3"]}. For comparison: {"left":{"label":"Option A","points":["Fast","Cheap"]},"right":{"label":"Option B","points":["Slow","Expensive"]}}. For stats: {"stats":[{"value":"73%","label":"Users satisfied"},{"value":"3x","label":"Faster results"}]}. For timeline: {"events":[{"year":"2022","label":"Founded"},{"year":"2023","label":"Launch"}]}. Leave empty if diagramType is "none".',
+    ),
   imagePrompt: z
     .string()
     .describe(
-      'A concise prompt to generate an illustration for this slide (professional, clean style, no text in image)',
+      'ONLY fill if layoutType is NOT "diagram", "text-only", or "stat-card". Describe a VERY SPECIFIC image: include the subject, setting, style, and color. Example: "A diverse team of 3 engineers collaborating over a laptop in a modern office, flat vector illustration, blue and white palette". No generic prompts.',
     ),
 })
 
@@ -101,33 +124,42 @@ export const generatePresentation = inngest.createFunction(
       })
     })
 
+    const imageStyle = IMAGE_STYLE_MAP[presentation.style] ?? IMAGE_STYLE_MAP.professional
+
     const { slides } = await step.run('generate-slides-content', async () => {
-      const systemPrompt = `You are an expert presentation designer. Given a user's content/prompt, create a compelling presentation.
+      const systemPrompt = `You are a world-class presentation designer. Create a compelling, visually intelligent presentation.
 
 Style: ${presentation.style}
 Tone: ${presentation.tone}
 Layout preference: ${presentation.layout}
-Number of slides requested: ${presentation.slideCount}
+Number of slides: ${presentation.slideCount}
+Image style for this presentation: ${imageStyle}
 
-Guidelines:
-- Create exactly ${presentation.slideCount} slides
-- First slide should be a title slide
-- Last slide should be a summary or call-to-action
-- Keep content concise and impactful
-- For imagePrompt, describe a professional illustration that complements the slide (no text in images)
+Rules:
+- Slide 1: ALWAYS use layoutType "hero" (title/cover slide)
+- Slide 2-last: Alternate between "split-right" and "split-left" for content slides
+- Use "stat-card" when the slide is about data, metrics, or numbers
+- Use "diagram" when the slide is about a process, steps, timeline, or comparison — in this case set diagramType and diagramData properly
+- Use "text-only" for impactful quote slides or key statements
+- Last slide: Use "hero" for conclusion/CTA
+- For imagePrompt, be VERY specific. Match the slide topic exactly. Include: subject + setting + style + color palette. Never use generic prompts.
+- For diagram slides, skip imagePrompt (leave it empty) — the diagram IS the visual
 
-You MUST respond with a JSON object matching this schema:
+You MUST respond with ONLY a valid JSON object. No markdown, no explanation.
+Schema:
 {
   "slides": [
     {
-      "title": "Slide Title",
-      "content": "Slide content / bullet points",
-      "notes": "Speaker notes (optional)",
-      "imagePrompt": "A concise prompt to generate an illustration for this slide"
+      "title": "string",
+      "content": "string (use • for bullets)",
+      "notes": "string (optional)",
+      "layoutType": "hero|split-right|split-left|text-only|stat-card|diagram",
+      "diagramType": "flow|comparison|stats|timeline|none",
+      "diagramData": "JSON string or empty",
+      "imagePrompt": "very specific image description or empty"
     }
   ]
-}
-`
+}`
 
       const result = await generateText({
         model: mesh.chat('google/gemini-3.5-flash'),
@@ -147,41 +179,48 @@ You MUST respond with a JSON object matching this schema:
     })
 
     await step.run('create-slides', async () => {
+      const NO_IMAGE_LAYOUTS = new Set(['diagram', 'text-only', 'stat-card'])
+
       const data = await Promise.all(
         slides.map(async (s, i) => {
-          let imageUrl = buildImageKitUrl(s.imagePrompt, `slide-${presentationId}-${i}`)
+          const needsImage = !NO_IMAGE_LAYOUTS.has(s.layoutType) && s.imagePrompt?.trim()
+          let imageUrl: string | null = null
 
-          try {
-            const response = await fetch('https://api.meshapi.ai/v1/images/generations', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${process.env.MESH_API_KEY}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                model: 'openai/gpt-image-1',
-                prompt: s.imagePrompt,
-                n: 1,
-                size: '1024x1024',
-              }),
-            })
+          if (needsImage) {
+            imageUrl = buildImageKitUrl(s.imagePrompt, `slide-${presentationId}-${i}`)
 
-            if (response.ok) {
-              const resJson = await response.json()
-              const tempUrl = resJson.data?.[0]?.url
-              if (tempUrl) {
-                const permanentUrl = await uploadImageFromUrl(
-                  tempUrl,
-                  `slide-${presentationId}-${i}`,
-                )
-                imageUrl = permanentUrl
+            try {
+              const response = await fetch('https://api.meshapi.ai/v1/images/generations', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${process.env.MESH_API_KEY}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  model: 'openai/gpt-image-1',
+                  prompt: s.imagePrompt,
+                  n: 1,
+                  size: '1024x1024',
+                }),
+              })
+
+              if (response.ok) {
+                const resJson = await response.json()
+                const tempUrl = resJson.data?.[0]?.url
+                if (tempUrl) {
+                  const permanentUrl = await uploadImageFromUrl(
+                    tempUrl,
+                    `slide-${presentationId}-${i}`,
+                  )
+                  imageUrl = permanentUrl
+                }
+              } else {
+                const errText = await response.text()
+                console.warn(`MeshAPI image generation returned status ${response.status}: ${errText}`)
               }
-            } else {
-              const errText = await response.text()
-              console.warn(`MeshAPI image generation returned status ${response.status}: ${errText}`)
+            } catch (err) {
+              console.warn(`Failed to generate image for slide ${i} via MeshAPI:`, err)
             }
-          } catch (err) {
-            console.warn(`Failed to generate image for slide ${i} via MeshAPI:`, err)
           }
 
           return {
@@ -190,8 +229,11 @@ You MUST respond with a JSON object matching this schema:
             title: s.title,
             content: s.content,
             notes: s.notes ?? null,
-            imagePrompt: s.imagePrompt,
+            imagePrompt: s.imagePrompt ?? null,
             imageUrl,
+            layoutType: s.layoutType,
+            diagramType: s.diagramType !== 'none' ? s.diagramType : null,
+            diagramData: s.diagramData ?? null,
           }
         })
       )

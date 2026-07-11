@@ -57,7 +57,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="font-sans antialiased bg-background text-foreground selection:bg-primary/20">
+      <body suppressHydrationWarning className="font-sans antialiased bg-background text-foreground selection:bg-primary/20">
         <QueryClientProvider>
           {children}
           <Toaster closeButton position="top-center" richColors />

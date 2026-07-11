@@ -40,7 +40,7 @@ export function usePresentationDetail(
     prompt: '',
     slideCount: 8,
     style: 'minimal',
-    tone: 'professional',
+    tone: 'formal',
     layout: 'balanced',
   })
 
@@ -50,9 +50,9 @@ export function usePresentationDetail(
       title: query.data.title,
       prompt: query.data.prompt,
       slideCount: query.data.slideCount,
-      style: query.data.style,
-      tone: query.data.tone,
-      layout: query.data.layout,
+      style: query.data.style as any,
+      tone: query.data.tone as any,
+      layout: query.data.layout as any,
     })
   }, [query.data])
 

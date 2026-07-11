@@ -44,6 +44,8 @@ export type PresentationMinAggregateOutputType = {
   tone: string | null
   layout: string | null
   status: $Enums.PresentationStatus | null
+  isPublic: boolean | null
+  theme: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -58,6 +60,8 @@ export type PresentationMaxAggregateOutputType = {
   tone: string | null
   layout: string | null
   status: $Enums.PresentationStatus | null
+  isPublic: boolean | null
+  theme: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -72,6 +76,8 @@ export type PresentationCountAggregateOutputType = {
   tone: number
   layout: number
   status: number
+  isPublic: number
+  theme: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -96,6 +102,8 @@ export type PresentationMinAggregateInputType = {
   tone?: true
   layout?: true
   status?: true
+  isPublic?: true
+  theme?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -110,6 +118,8 @@ export type PresentationMaxAggregateInputType = {
   tone?: true
   layout?: true
   status?: true
+  isPublic?: true
+  theme?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -124,6 +134,8 @@ export type PresentationCountAggregateInputType = {
   tone?: true
   layout?: true
   status?: true
+  isPublic?: true
+  theme?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -225,6 +237,8 @@ export type PresentationGroupByOutputType = {
   tone: string
   layout: string
   status: $Enums.PresentationStatus
+  isPublic: boolean
+  theme: string
   createdAt: Date
   updatedAt: Date
   _count: PresentationCountAggregateOutputType | null
@@ -262,6 +276,8 @@ export type PresentationWhereInput = {
   tone?: Prisma.StringFilter<"Presentation"> | string
   layout?: Prisma.StringFilter<"Presentation"> | string
   status?: Prisma.EnumPresentationStatusFilter<"Presentation"> | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolFilter<"Presentation"> | boolean
+  theme?: Prisma.StringFilter<"Presentation"> | string
   createdAt?: Prisma.DateTimeFilter<"Presentation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Presentation"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -278,6 +294,8 @@ export type PresentationOrderByWithRelationInput = {
   tone?: Prisma.SortOrder
   layout?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
+  theme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -297,6 +315,8 @@ export type PresentationWhereUniqueInput = Prisma.AtLeast<{
   tone?: Prisma.StringFilter<"Presentation"> | string
   layout?: Prisma.StringFilter<"Presentation"> | string
   status?: Prisma.EnumPresentationStatusFilter<"Presentation"> | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolFilter<"Presentation"> | boolean
+  theme?: Prisma.StringFilter<"Presentation"> | string
   createdAt?: Prisma.DateTimeFilter<"Presentation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Presentation"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -313,6 +333,8 @@ export type PresentationOrderByWithAggregationInput = {
   tone?: Prisma.SortOrder
   layout?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
+  theme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.PresentationCountOrderByAggregateInput
@@ -335,6 +357,8 @@ export type PresentationScalarWhereWithAggregatesInput = {
   tone?: Prisma.StringWithAggregatesFilter<"Presentation"> | string
   layout?: Prisma.StringWithAggregatesFilter<"Presentation"> | string
   status?: Prisma.EnumPresentationStatusWithAggregatesFilter<"Presentation"> | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolWithAggregatesFilter<"Presentation"> | boolean
+  theme?: Prisma.StringWithAggregatesFilter<"Presentation"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Presentation"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Presentation"> | Date | string
 }
@@ -348,6 +372,8 @@ export type PresentationCreateInput = {
   tone: string
   layout: string
   status?: $Enums.PresentationStatus
+  isPublic?: boolean
+  theme?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutPresentationsInput
@@ -364,6 +390,8 @@ export type PresentationUncheckedCreateInput = {
   tone: string
   layout: string
   status?: $Enums.PresentationStatus
+  isPublic?: boolean
+  theme?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   slides?: Prisma.SlideUncheckedCreateNestedManyWithoutPresentationInput
@@ -378,6 +406,8 @@ export type PresentationUpdateInput = {
   tone?: Prisma.StringFieldUpdateOperationsInput | string
   layout?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPresentationStatusFieldUpdateOperationsInput | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  theme?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutPresentationsNestedInput
@@ -394,6 +424,8 @@ export type PresentationUncheckedUpdateInput = {
   tone?: Prisma.StringFieldUpdateOperationsInput | string
   layout?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPresentationStatusFieldUpdateOperationsInput | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  theme?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   slides?: Prisma.SlideUncheckedUpdateManyWithoutPresentationNestedInput
@@ -409,6 +441,8 @@ export type PresentationCreateManyInput = {
   tone: string
   layout: string
   status?: $Enums.PresentationStatus
+  isPublic?: boolean
+  theme?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -422,6 +456,8 @@ export type PresentationUpdateManyMutationInput = {
   tone?: Prisma.StringFieldUpdateOperationsInput | string
   layout?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPresentationStatusFieldUpdateOperationsInput | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  theme?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -436,6 +472,8 @@ export type PresentationUncheckedUpdateManyInput = {
   tone?: Prisma.StringFieldUpdateOperationsInput | string
   layout?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPresentationStatusFieldUpdateOperationsInput | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  theme?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -460,6 +498,8 @@ export type PresentationCountOrderByAggregateInput = {
   tone?: Prisma.SortOrder
   layout?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
+  theme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -478,6 +518,8 @@ export type PresentationMaxOrderByAggregateInput = {
   tone?: Prisma.SortOrder
   layout?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
+  theme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -492,6 +534,8 @@ export type PresentationMinOrderByAggregateInput = {
   tone?: Prisma.SortOrder
   layout?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
+  theme?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -574,6 +618,8 @@ export type PresentationCreateWithoutUserInput = {
   tone: string
   layout: string
   status?: $Enums.PresentationStatus
+  isPublic?: boolean
+  theme?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   slides?: Prisma.SlideCreateNestedManyWithoutPresentationInput
@@ -588,6 +634,8 @@ export type PresentationUncheckedCreateWithoutUserInput = {
   tone: string
   layout: string
   status?: $Enums.PresentationStatus
+  isPublic?: boolean
+  theme?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   slides?: Prisma.SlideUncheckedCreateNestedManyWithoutPresentationInput
@@ -632,6 +680,8 @@ export type PresentationScalarWhereInput = {
   tone?: Prisma.StringFilter<"Presentation"> | string
   layout?: Prisma.StringFilter<"Presentation"> | string
   status?: Prisma.EnumPresentationStatusFilter<"Presentation"> | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolFilter<"Presentation"> | boolean
+  theme?: Prisma.StringFilter<"Presentation"> | string
   createdAt?: Prisma.DateTimeFilter<"Presentation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Presentation"> | Date | string
 }
@@ -645,6 +695,8 @@ export type PresentationCreateWithoutSlidesInput = {
   tone: string
   layout: string
   status?: $Enums.PresentationStatus
+  isPublic?: boolean
+  theme?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutPresentationsInput
@@ -660,6 +712,8 @@ export type PresentationUncheckedCreateWithoutSlidesInput = {
   tone: string
   layout: string
   status?: $Enums.PresentationStatus
+  isPublic?: boolean
+  theme?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -689,6 +743,8 @@ export type PresentationUpdateWithoutSlidesInput = {
   tone?: Prisma.StringFieldUpdateOperationsInput | string
   layout?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPresentationStatusFieldUpdateOperationsInput | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  theme?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutPresentationsNestedInput
@@ -704,6 +760,8 @@ export type PresentationUncheckedUpdateWithoutSlidesInput = {
   tone?: Prisma.StringFieldUpdateOperationsInput | string
   layout?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPresentationStatusFieldUpdateOperationsInput | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  theme?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -717,6 +775,8 @@ export type PresentationCreateManyUserInput = {
   tone: string
   layout: string
   status?: $Enums.PresentationStatus
+  isPublic?: boolean
+  theme?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -730,6 +790,8 @@ export type PresentationUpdateWithoutUserInput = {
   tone?: Prisma.StringFieldUpdateOperationsInput | string
   layout?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPresentationStatusFieldUpdateOperationsInput | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  theme?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   slides?: Prisma.SlideUpdateManyWithoutPresentationNestedInput
@@ -744,6 +806,8 @@ export type PresentationUncheckedUpdateWithoutUserInput = {
   tone?: Prisma.StringFieldUpdateOperationsInput | string
   layout?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPresentationStatusFieldUpdateOperationsInput | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  theme?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   slides?: Prisma.SlideUncheckedUpdateManyWithoutPresentationNestedInput
@@ -758,6 +822,8 @@ export type PresentationUncheckedUpdateManyWithoutUserInput = {
   tone?: Prisma.StringFieldUpdateOperationsInput | string
   layout?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPresentationStatusFieldUpdateOperationsInput | $Enums.PresentationStatus
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  theme?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -803,6 +869,8 @@ export type PresentationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   tone?: boolean
   layout?: boolean
   status?: boolean
+  isPublic?: boolean
+  theme?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -820,6 +888,8 @@ export type PresentationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   tone?: boolean
   layout?: boolean
   status?: boolean
+  isPublic?: boolean
+  theme?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -835,6 +905,8 @@ export type PresentationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   tone?: boolean
   layout?: boolean
   status?: boolean
+  isPublic?: boolean
+  theme?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -850,11 +922,13 @@ export type PresentationSelectScalar = {
   tone?: boolean
   layout?: boolean
   status?: boolean
+  isPublic?: boolean
+  theme?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type PresentationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "title" | "prompt" | "slideCount" | "style" | "tone" | "layout" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["presentation"]>
+export type PresentationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "title" | "prompt" | "slideCount" | "style" | "tone" | "layout" | "status" | "isPublic" | "theme" | "createdAt" | "updatedAt", ExtArgs["result"]["presentation"]>
 export type PresentationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   slides?: boolean | Prisma.Presentation$slidesArgs<ExtArgs>
@@ -883,6 +957,8 @@ export type $PresentationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     tone: string
     layout: string
     status: $Enums.PresentationStatus
+    isPublic: boolean
+    theme: string
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["presentation"]>
@@ -1319,6 +1395,8 @@ export interface PresentationFieldRefs {
   readonly tone: Prisma.FieldRef<"Presentation", 'String'>
   readonly layout: Prisma.FieldRef<"Presentation", 'String'>
   readonly status: Prisma.FieldRef<"Presentation", 'PresentationStatus'>
+  readonly isPublic: Prisma.FieldRef<"Presentation", 'Boolean'>
+  readonly theme: Prisma.FieldRef<"Presentation", 'String'>
   readonly createdAt: Prisma.FieldRef<"Presentation", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Presentation", 'DateTime'>
 }

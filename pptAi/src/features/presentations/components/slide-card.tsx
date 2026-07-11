@@ -9,6 +9,9 @@ type SlideCardProps = {
     content: string
     notes?: string | null
     imageUrl?: string | null
+    layoutType?: string | null
+    diagramType?: string | null
+    diagramData?: string | null
   }
   isActive?: boolean
   onClick?: () => void

@@ -1,21 +1,27 @@
-import ImageKit from '@imagekit/nodejs'
-
-export const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
-  urlEndpoint: process.env.IMAGEKIT_BASE_URL!,
-})
+import fs from 'fs/promises'
+import path from 'path'
 
 export async function uploadImageFromUrl(
   url: string,
   fileName: string,
   folder = 'slides',
 ): Promise<string> {
-  const result = await imagekit.upload({
-    file: url,
-    fileName,
-    folder,
-    useUniqueFileName: true,
-  })
-  return result.url
+  try {
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`Failed to fetch image: ${res.statusText}`)
+    const arrayBuffer = await res.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+    
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
+    await fs.mkdir(uploadsDir, { recursive: true })
+    
+    const safeName = `${fileName}-${Date.now()}.png`
+    const filePath = path.join(uploadsDir, safeName)
+    await fs.writeFile(filePath, buffer)
+    
+    return `/uploads/${safeName}`
+  } catch (err) {
+    console.error('Failed to save image locally:', err)
+    return ''
+  }
 }
