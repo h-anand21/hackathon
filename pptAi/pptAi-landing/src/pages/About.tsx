@@ -4,7 +4,7 @@ import { Sparkles, BrainCircuit, Wand2, Blocks, ArrowRight, Lightbulb, PenTool, 
 
 const fadeUp: any = {
   hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
 }
 
 const staggerContainer = {
@@ -37,7 +37,7 @@ export default function About() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 1, ease: "easeOut" }}
         className="max-w-4xl w-full text-center mb-32 relative px-6 mt-12"
       >
         <motion.div 
