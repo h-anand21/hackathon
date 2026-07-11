@@ -2,6 +2,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { Sparkles, ArrowUp } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import DashboardMockup from './DashboardMockup'
+import DemoOverlay from './DemoOverlay'
 
 const PLACEHOLDERS = [
   "A pitch deck for a new SaaS product...",
@@ -20,6 +21,7 @@ export default function Hero() {
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [charIndex, setCharIndex] = useState(0)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isDemoOpen, setIsDemoOpen] = useState(false)
 
   useEffect(() => {
     const currentText = PLACEHOLDERS[placeholderIndex]
@@ -41,9 +43,26 @@ export default function Hero() {
     return () => clearTimeout(timer)
   }, [charIndex, isDeleting, placeholderIndex])
 
+  const handleGenerate = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault()
+    setIsDemoOpen(true)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleGenerate()
+    }
+  }
+
   return (
     <section className="relative min-h-[100svh] overflow-hidden flex flex-col pt-16 sm:pt-0">
       
+      <DemoOverlay 
+        isOpen={isDemoOpen} 
+        onClose={() => setIsDemoOpen(false)} 
+        prompt={inputValue} 
+      />
+
       <div className="flex-1 min-h-8 sm:min-h-12 lg:min-h-16 shrink-0" />
 
       {/* Hero Content with Parallax */}
@@ -95,6 +114,7 @@ export default function Hero() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="flex-1 px-4 text-gray-900 text-[15px] outline-none bg-transparent h-full relative z-10"
             />
             <div className="relative z-10 flex items-center justify-center">
@@ -104,7 +124,10 @@ export default function Hero() {
                 transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
                 className="absolute inset-0 bg-blue-500 rounded-full"
               />
-              <button className="relative flex-shrink-0 w-10 h-10 rounded-full bg-[#0F172A] text-white flex items-center justify-center hover:bg-gray-800 transition-colors">
+              <button 
+                onClick={handleGenerate}
+                className="relative flex-shrink-0 w-10 h-10 rounded-full bg-[#0F172A] text-white flex items-center justify-center hover:bg-gray-800 transition-colors"
+              >
                 <motion.div
                   animate={{ y: [-2, 2, -2] }}
                   transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
@@ -132,9 +155,12 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="flex items-center gap-4 mt-8"
         >
-          <button className="px-6 py-2.5 rounded-full bg-[#0F172A] text-white text-sm font-medium hover:bg-gray-800 transition-colors shadow-lg shadow-gray-900/10">
+          <a 
+            href={import.meta.env.VITE_APP_URL || 'http://localhost:3000'}
+            className="px-6 py-2.5 rounded-full bg-[#0F172A] text-white text-sm font-medium hover:bg-gray-800 transition-colors shadow-lg shadow-gray-900/10"
+          >
             Try It Free
-          </button>
+          </a>
           <button className="px-6 py-2.5 rounded-full bg-white/60 backdrop-blur-md text-gray-700 text-sm font-medium hover:bg-white hover:text-gray-900 transition-colors border border-gray-200/60 shadow-sm">
             Watch Demo
           </button>
