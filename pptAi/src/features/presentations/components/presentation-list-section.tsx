@@ -8,6 +8,10 @@ type PresentationListSectionProps = {
   favoriteIds: string[]
   onToggleFavorite: (id: string) => void
   showFavoritesOnly?: boolean
+  trashedIds?: string[]
+  showTrashOnly?: boolean
+  onTrash?: (id: string) => void
+  onRestore?: (id: string) => void
 }
 
 export function PresentationListSection({
@@ -15,14 +19,27 @@ export function PresentationListSection({
   isPending,
   favoriteIds,
   onToggleFavorite,
-  showFavoritesOnly
+  showFavoritesOnly,
+  trashedIds = [],
+  showTrashOnly,
+  onTrash,
+  onRestore
 }: PresentationListSectionProps) {
-  const filtered = showFavoritesOnly ? presentations.filter(p => favoriteIds.includes(p.id)) : presentations
+  const filtered = presentations.filter(p => {
+    const isTrashed = trashedIds.includes(p.id)
+    if (showTrashOnly) return isTrashed
+    if (isTrashed) return false
+    if (showFavoritesOnly) return favoriteIds.includes(p.id)
+    return true
+  })
+  
+  const title = showTrashOnly ? "Trash" : "Recent Presentations"
+  
   return (
     <section className="mb-12 w-full max-w-5xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-1 h-5 bg-[#FF8A2A] rounded-full" />
-        <h2 className="text-xl font-bold text-white tracking-tight">Recent Presentations</h2>
+        <h2 className="text-xl font-bold text-white tracking-tight">{title}</h2>
       </div>
       {isPending ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
@@ -38,6 +55,9 @@ export function PresentationListSection({
                 presentation={p} 
                 isFavorite={favoriteIds.includes(p.id)}
                 onToggleFavorite={onToggleFavorite}
+                isTrashed={trashedIds.includes(p.id)}
+                onTrash={onTrash}
+                onRestore={onRestore}
               />
             </li>
           ))}

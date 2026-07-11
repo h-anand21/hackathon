@@ -5,7 +5,7 @@ import {
   CardTitle,
 } from '#/components/ui/card'
 import { Link } from '@tanstack/react-router'
-import { Database, Network, Briefcase, Bot, Star, MoreVertical } from 'lucide-react'
+import { Database, Network, Briefcase, Bot, Star, MoreVertical, Trash2, RefreshCcw } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -15,6 +15,9 @@ type PresentationCardProps = {
   presentation: Presentation
   isFavorite: boolean
   onToggleFavorite: (id: string) => void
+  isTrashed?: boolean
+  onTrash?: (id: string) => void
+  onRestore?: (id: string) => void
 }
 
 const THEMES = [
@@ -24,7 +27,7 @@ const THEMES = [
   { icon: Bot, gradient: 'from-purple-500/20 to-transparent', iconColor: 'text-purple-500', glow: 'shadow-[0_0_25px_rgba(168,85,247,0.3)]' },
 ]
 
-export function PresentationCard({ presentation: p, isFavorite, onToggleFavorite }: PresentationCardProps) {
+export function PresentationCard({ presentation: p, isFavorite, onToggleFavorite, isTrashed, onTrash, onRestore }: PresentationCardProps) {
 
   const updated = new Date(p.updatedAt).toLocaleString(undefined, {
     dateStyle: 'medium',
@@ -55,22 +58,35 @@ export function PresentationCard({ presentation: p, isFavorite, onToggleFavorite
             </div>
             
             <div className="flex items-center gap-2">
-              <button 
-                className={`transition-colors ${isFavorite ? 'text-yellow-500 hover:text-yellow-400' : 'text-gray-500 hover:text-white'}`} 
-                onClick={(e) => {
+              {!isTrashed && (
+                <button 
+                  className={`transition-colors ${isFavorite ? 'text-yellow-500 hover:text-yellow-400' : 'text-gray-500 hover:text-white'}`} 
+                  onClick={(e) => {
+                    e.preventDefault()
+                    onToggleFavorite(p.id)
+                    toast.success(!isFavorite ? 'Added to favorites' : 'Removed from favorites')
+                  }}
+                >
+                  <Star className={`size-4 ${isFavorite ? 'fill-current' : ''}`} />
+                </button>
+              )}
+              {isTrashed ? (
+                <button className="text-gray-500 hover:text-green-400 transition-colors" onClick={(e) => {
                   e.preventDefault()
-                  onToggleFavorite(p.id)
-                  toast.success(!isFavorite ? 'Added to favorites' : 'Removed from favorites')
-                }}
-              >
-                <Star className={`size-4 ${isFavorite ? 'fill-current' : ''}`} />
-              </button>
-              <button className="text-gray-500 hover:text-white transition-colors" onClick={(e) => {
-                e.preventDefault()
-                toast.info('More options coming soon!')
-              }}>
-                <MoreVertical className="size-4" />
-              </button>
+                  onRestore?.(p.id)
+                  toast.success('Presentation restored')
+                }}>
+                  <RefreshCcw className="size-4" />
+                </button>
+              ) : (
+                <button className="text-gray-500 hover:text-red-400 transition-colors" onClick={(e) => {
+                  e.preventDefault()
+                  onTrash?.(p.id)
+                  toast.success('Moved to trash (30 days)')
+                }}>
+                  <Trash2 className="size-4" />
+                </button>
+              )}
             </div>
           </div>
 

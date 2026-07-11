@@ -1,6 +1,6 @@
 import { authClient } from '#/lib/auth-client'
 import { cn } from '#/lib/utils'
-import { Link, useRouter } from '@tanstack/react-router'
+import { Link, useRouter, useLocation } from '@tanstack/react-router'
 import { LogOut, User } from 'lucide-react'
 import { Logo } from '#/components/Logo'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
@@ -16,11 +16,17 @@ import {
 
 export default function Navbar() {
   const router = useRouter()
+  const location = useLocation()
   const { data: session, isPending } = authClient.useSession()
 
   const handleSignOut = async () => {
     await authClient.signOut()
     router.navigate({ to: '/login' })
+  }
+
+  // Hide the global navbar when in the presentation editor view (it has its own top nav)
+  if (location.pathname.startsWith('/presentations/')) {
+    return null
   }
 
   return (
