@@ -83,7 +83,7 @@ export function usePresentationDetail(
   })
 
   const updateSlideMut = useMutation({
-    mutationFn: (vars: { id: string; title?: string; content?: string; notes?: string; imageUrl?: string }) =>
+    mutationFn: (vars: { id: string; title?: string; content?: string; notes?: string; imageUrl?: string | null; imagePrompt?: string | null }) =>
       updateSlide({ data: vars }),
     onSuccess: () => {
       queryClient.invalidateQueries({

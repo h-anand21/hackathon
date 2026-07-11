@@ -136,6 +136,7 @@ function PresentationDetailPage() {
   const [canvasEditing, setCanvasEditing] = useState(false)
   const [canvasTitle, setCanvasTitle] = useState('')
   const [canvasContent, setCanvasContent] = useState('')
+  const [canvasImagePrompt, setCanvasImagePrompt] = useState('')
   // Chart builder state
   const [chartType, setChartType] = useState<'bar'|'pie'|'line'>('bar')
   const [chartRows, setChartRows] = useState([{label:'Q1',value:'40'},{label:'Q2',value:'65'},{label:'Q3',value:'50'},{label:'Q4',value:'80'}])
@@ -750,6 +751,7 @@ function PresentationDetailPage() {
                       onClick={() => {
                         setCanvasTitle(activeSlide.title)
                         setCanvasContent(activeSlide.content)
+                        setCanvasImagePrompt(activeSlide.imagePrompt || '')
                         setCanvasEditing(true)
                       }}
                     >
@@ -774,7 +776,7 @@ function PresentationDetailPage() {
                             onClick={() => {
                               if (!activeSlide) return
                               updateSlideMut.mutate(
-                                { id: activeSlide.id, title: canvasTitle, content: canvasContent },
+                                { id: activeSlide.id, title: canvasTitle, content: canvasContent, imagePrompt: canvasImagePrompt },
                                 { onSuccess: () => { setCanvasEditing(false); toast.success('Slide saved!') } }
                               )
                             }}
@@ -796,7 +798,32 @@ function PresentationDetailPage() {
                           <textarea
                             value={canvasContent}
                             onChange={(e) => setCanvasContent(e.target.value)}
-                            className="w-full h-48 bg-white/5 border border-white/10 focus:border-[#FF8A2A] rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none resize-none transition-colors leading-relaxed"
+                            className="w-full h-32 bg-white/5 border border-white/10 focus:border-[#FF8A2A] rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none resize-none transition-colors leading-relaxed"
+                          />
+                        </div>
+                        <div className="pt-2 border-t border-white/5">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold block">AI Image Prompt (for regenerating)</label>
+                            {activeSlide.imageUrl && (
+                              <button
+                                className="text-[10px] text-red-400 hover:text-red-300 transition-colors font-medium bg-red-400/10 px-2 py-0.5 rounded-md"
+                                onClick={() => {
+                                  if (!activeSlide) return
+                                  updateSlideMut.mutate(
+                                    { id: activeSlide.id, imageUrl: null },
+                                    { onSuccess: () => toast.success('Image removed from slide') }
+                                  )
+                                }}
+                              >
+                                Remove Current Image
+                              </button>
+                            )}
+                          </div>
+                          <textarea
+                            value={canvasImagePrompt}
+                            onChange={(e) => setCanvasImagePrompt(e.target.value)}
+                            placeholder="Describe the image you want for this slide..."
+                            className="w-full h-16 bg-white/5 border border-white/10 focus:border-cyan-500 rounded-xl px-4 py-2 text-xs text-slate-300 focus:outline-none resize-none transition-colors"
                           />
                         </div>
                       </div>

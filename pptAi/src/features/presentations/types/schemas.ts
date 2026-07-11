@@ -54,7 +54,8 @@ export const updateSlideInputSchema = z.object({
   title: z.string().min(1).max(500).optional(),
   content: z.string().optional(),
   notes: z.string().optional(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.string().nullable().optional(),
+  imagePrompt: z.string().nullable().optional(),
 })
 
 
