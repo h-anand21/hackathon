@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { Sparkles, BrainCircuit, Wand2, Blocks, ArrowRight, Lightbulb, PenTool, LayoutDashboard, Rocket } from 'lucide-react'

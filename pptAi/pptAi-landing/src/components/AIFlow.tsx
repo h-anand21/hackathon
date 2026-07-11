@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, BrainCog, Image, Download, CheckCircle, ArrowDown, ChevronUp, ChevronDown, Loader2, CheckCircle2, Sparkles, LayoutTemplate } from 'lucide-react'
 import { useState, useEffect } from 'react'

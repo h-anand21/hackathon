@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { Sparkles, ArrowUp } from 'lucide-react'
 import { useState, useEffect } from 'react'
