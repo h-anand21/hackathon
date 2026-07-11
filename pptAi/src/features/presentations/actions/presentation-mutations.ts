@@ -8,6 +8,7 @@ import {
   createPresentationInputSchema,
   presentationIdInputSchema,
   updatePresentationInputSchema,
+  updateSlideInputSchema,
 } from '../types/schemas'
 
 export const createPresentation = createServerFn({ method: 'POST' })
@@ -83,4 +84,12 @@ export const regeneratePresentation = createServerFn({ method: 'POST' })
     })
 
     return { ok: true as const }
+  })
+
+export const updateSlide = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) => updateSlideInputSchema.parse(data))
+  .handler(async ({ data }) => {
+    await requirePresentationUserId()
+    const { id, ...patch } = data
+    return prisma.slide.update({ where: { id }, data: patch })
   })

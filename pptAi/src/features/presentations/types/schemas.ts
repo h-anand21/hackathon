@@ -48,3 +48,13 @@ export const updatePresentationInputSchema = z
     },
     { message: 'At least one field is required to update' },
   )
+
+export const updateSlideInputSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1).max(500).optional(),
+  content: z.string().optional(),
+  notes: z.string().optional(),
+  imageUrl: z.string().optional(),
+})
+
+

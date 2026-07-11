@@ -9,6 +9,7 @@ import {
   deletePresentation,
   regeneratePresentation,
   updatePresentation,
+  updateSlide,
 } from '../actions/presentation-mutations'
 
 type SettingsForm = {
@@ -81,6 +82,19 @@ export function usePresentationDetail(
     },
   })
 
+  const updateSlideMut = useMutation({
+    mutationFn: (vars: { id: string; title?: string; content?: string; notes?: string; imageUrl?: string }) =>
+      updateSlide({ data: vars }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: presentationQueryKeys.detail(presentationId),
+      })
+    },
+    onError: (e) => {
+      toast.error(e instanceof Error ? e.message : 'Could not save slide')
+    },
+  })
+
   const regenerateMut = useMutation({
     mutationFn: () => regeneratePresentation({ data: { id: presentationId } }),
     onSuccess: () => {
@@ -128,6 +142,7 @@ export function usePresentationDetail(
     form,
     setForm,
     updateMut,
+    updateSlideMut,
     regenerateMut,
     deleteMut,
   }

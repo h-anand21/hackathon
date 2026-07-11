@@ -66,10 +66,10 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
               <img
                 src={slide.imageUrl}
                 alt=""
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${imageLoaded ? 'opacity-40' : 'opacity-0'}`}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${imageLoaded ? 'opacity-60' : 'opacity-0'}`}
                 onLoad={() => setImageLoaded(true)}
               />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 100%)' }} />
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.5) 100%)' }} />
             </>
           )}
           {/* Accent line */}
@@ -223,29 +223,31 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
         </div>
 
         {/* Image side */}
-        <div className="flex-shrink-0 relative overflow-hidden" style={{ width: isFullscreen ? '42%' : '42%' }}>
+        <div className="flex-shrink-0 relative overflow-hidden" style={{ width: '45%' }}>
           {slide.imageUrl ? (
             <img
               src={slide.imageUrl}
               alt={slide.title}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              style={{ objectPosition: 'center center' }}
               onLoad={() => setImageLoaded(true)}
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center" style={{ background: t.surface }}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={t.muted} strokeWidth="1.5">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3" style={{ background: `linear-gradient(135deg, ${t.surface}, ${t.accent}15)` }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={t.accent} strokeWidth="1" opacity={0.4}>
                 <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" />
                 <polyline points="21 15 16 10 5 21" />
               </svg>
+              <span style={{ color: t.muted, fontSize: '0.65rem', opacity: 0.6 }}>No image</span>
             </div>
           )}
-          {/* Gradient fade on text side */}
+          {/* Gradient fade toward text */}
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 pointer-events-none"
             style={{
               background: imageOnRight
-                ? `linear-gradient(to right, ${t.bg} 0%, transparent 30%)`
-                : `linear-gradient(to left, ${t.bg} 0%, transparent 30%)`,
+                ? `linear-gradient(to right, ${t.bg} 0%, transparent 20%)`
+                : `linear-gradient(to left, ${t.bg} 0%, transparent 20%)`,
             }}
           />
         </div>

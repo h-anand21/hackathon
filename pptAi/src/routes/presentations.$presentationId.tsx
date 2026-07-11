@@ -128,6 +128,20 @@ function PresentationDetailPage() {
   const [activeTheme, setActiveTheme] = useState('dark-slate')
   const [activeLeftTab, setActiveLeftTab] = useState('slides')
   const [zoomLevel, setZoomLevel] = useState(1)
+  // Content editing state (synced to active slide)
+  const [editTitle, setEditTitle] = useState('')
+  const [editContent, setEditContent] = useState('')
+  const [editDirty, setEditDirty] = useState(false)
+  // Canvas inline editing
+  const [canvasEditing, setCanvasEditing] = useState(false)
+  const [canvasTitle, setCanvasTitle] = useState('')
+  const [canvasContent, setCanvasContent] = useState('')
+  // Chart builder state
+  const [chartType, setChartType] = useState<'bar'|'pie'|'line'>('bar')
+  const [chartRows, setChartRows] = useState([{label:'Q1',value:'40'},{label:'Q2',value:'65'},{label:'Q3',value:'50'},{label:'Q4',value:'80'}])
+
+  // Media state
+  const [uploadedImages, setUploadedImages] = useState<{name: string, url: string}[]>([])
 
   const {
     query,
@@ -137,11 +151,21 @@ function PresentationDetailPage() {
     form,
     setForm,
     updateMut,
+    updateSlideMut,
     regenerateMut,
     deleteMut,
   } = usePresentationDetail(presentationId, {
     onDeleted: () => navigate({ to: '/' }),
   })
+
+  // Reset edit state when slide changes
+  const prevSlideId = slides[activeSlideIndex]?.id
+  const [lastSyncedSlideId, setLastSyncedSlideId] = useState('')
+  if (prevSlideId && prevSlideId !== lastSyncedSlideId) {
+    setLastSyncedSlideId(prevSlideId)
+    setEditDirty(false)
+    setCanvasEditing(false)
+  }
 
   const { isFullscreen, toggleFullscreen } = useFullscreen('slide-preview-container')
 
@@ -297,7 +321,6 @@ function PresentationDetailPage() {
               onClick={() => {
                 setActiveLeftTab(item.id)
                 if (item.id === 'design') setRightTab('theme')
-                else if (item.id !== 'slides' && item.id !== 'ai') toast.info(`${item.label} panel coming soon`)
               }}
             >
               {activeLeftTab === item.id && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF8A2A] rounded-r-full shadow-[0_0_10px_rgba(255,138,42,0.8)]" />}
@@ -307,40 +330,390 @@ function PresentationDetailPage() {
           ))}
         </aside>
 
-        {/* LEFT 2: Slide List */}
+        {/* LEFT 2: Dynamic Panel */}
         <aside className="w-[260px] flex-shrink-0 flex flex-col border-r border-white/5 bg-[#0A0C11] overflow-hidden z-0">
-          <div className="flex items-center justify-between px-4 py-4">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-              Slides <span className="text-slate-600 font-normal">({slides.length})</span>
-            </span>
-          </div>
-          <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-white/10">
-            {slides.map((slide, i) => (
-              <SlideCard
-                key={slide.id}
-                slide={slide}
-                isActive={i === activeSlideIndex}
-                onClick={() => setActiveSlideIndex(i)}
-                index={i + 1}
-              />
-            ))}
-            {slides.length === 0 && !isGenerating && (
-              <div className="flex flex-col items-center justify-center h-32 text-center px-4">
-                <p className="text-xs text-slate-500">No slides yet</p>
+          
+          {activeLeftTab === 'slides' && (
+            <>
+              <div className="flex items-center justify-between px-4 py-4">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                  Slides <span className="text-slate-600 font-normal">({slides.length})</span>
+                </span>
               </div>
-            )}
-            {isGenerating && (
-              <div className="flex flex-col items-center justify-center h-32 gap-2">
-                <RefreshCw className="size-5 animate-spin text-blue-500" />
-                <p className="text-xs text-slate-500">Generating…</p>
+              <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-white/10">
+                {slides.map((slide, i) => (
+                  <SlideCard
+                    key={slide.id}
+                    slide={slide}
+                    isActive={i === activeSlideIndex}
+                    onClick={() => setActiveSlideIndex(i)}
+                    index={i + 1}
+                  />
+                ))}
+                {slides.length === 0 && !isGenerating && (
+                  <div className="flex flex-col items-center justify-center h-32 text-center px-4">
+                    <p className="text-xs text-slate-500">No slides yet</p>
+                  </div>
+                )}
+                {isGenerating && (
+                  <div className="flex flex-col items-center justify-center h-32 gap-2">
+                    <RefreshCw className="size-5 animate-spin text-blue-500" />
+                    <p className="text-xs text-slate-500">Generating…</p>
+                  </div>
+                )}
+                
+                <button className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-[#FF8A2A]/10 to-[#7C5CFF]/10 hover:from-[#FF8A2A]/20 hover:to-[#7C5CFF]/20 border border-[#FF8A2A]/20 transition-all duration-300 flex items-center justify-center gap-2 text-white text-sm font-medium group shadow-[0_0_15px_rgba(255,138,42,0.1)] hover:shadow-[0_0_25px_rgba(255,138,42,0.2)]" onClick={() => toast.info('Add Slide coming soon')}>
+                  <Sparkles className="size-4 text-[#FF8A2A] group-hover:scale-110 transition-transform" />
+                  Add Slide
+                </button>
               </div>
-            )}
-            
-            <button className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-[#FF8A2A]/10 to-[#7C5CFF]/10 hover:from-[#FF8A2A]/20 hover:to-[#7C5CFF]/20 border border-[#FF8A2A]/20 transition-all duration-300 flex items-center justify-center gap-2 text-white text-sm font-medium group shadow-[0_0_15px_rgba(255,138,42,0.1)] hover:shadow-[0_0_25px_rgba(255,138,42,0.2)]" onClick={() => toast.info('Add Slide coming soon')}>
-              <Sparkles className="size-4 text-[#FF8A2A] group-hover:scale-110 transition-transform" />
-              Add Slide
-            </button>
-          </div>
+            </>
+          )}
+
+          {activeLeftTab === 'content' && activeSlide && (() => {
+            // Sync edit state when slide changes
+            const title = editDirty ? editTitle : activeSlide.title
+            const content = editDirty ? editContent : activeSlide.content
+            return (
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between px-4 py-4 border-b border-white/5">
+                  <div className="flex items-center">
+                    <Type className="size-4 text-blue-400 mr-2" />
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Edit Content</span>
+                  </div>
+                  {editDirty && <span className="text-[9px] text-[#FF8A2A] font-medium">● Unsaved</span>}
+                </div>
+                <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-slate-400">Slide Title</Label>
+                    <input
+                      type="text"
+                      value={title}
+                      onChange={(e) => { setEditTitle(e.target.value); setEditDirty(true) }}
+                      onFocus={() => { if (!editDirty) { setEditTitle(activeSlide.title); setEditContent(activeSlide.content) }}}
+                      className="w-full bg-[#10131B] border border-blue-500/40 focus:border-blue-500 rounded-lg px-3 py-2 text-sm text-white focus:outline-none transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-slate-400">Bullets (one per line)</Label>
+                    <Textarea
+                      value={content}
+                      onChange={(e) => { setEditContent(e.target.value); setEditDirty(true) }}
+                      onFocus={() => { if (!editDirty) { setEditTitle(activeSlide.title); setEditContent(activeSlide.content) }}}
+                      className="w-full h-44 bg-[#10131B] border border-blue-500/40 focus:border-blue-500 rounded-lg px-3 py-2 text-sm text-white resize-none focus:outline-none transition-colors"
+                      placeholder="Enter bullet points..."
+                    />
+                  </div>
+                </div>
+                <div className="p-4 border-t border-white/5 space-y-2">
+                  <Button
+                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white text-xs border-0"
+                    disabled={!editDirty || updateSlideMut.isPending}
+                    onClick={() => {
+                      if (!activeSlide) return
+                      updateSlideMut.mutate(
+                        { id: activeSlide.id, title: editTitle, content: editContent },
+                        { onSuccess: () => { setEditDirty(false); toast.success('Slide saved!') } }
+                      )
+                    }}
+                  >
+                    {updateSlideMut.isPending ? 'Saving…' : 'Save Changes'}
+                  </Button>
+                  {editDirty && (
+                    <button className="w-full text-[11px] text-slate-500 hover:text-slate-300 transition-colors" onClick={() => setEditDirty(false)}>
+                      Discard changes
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
+          })()}
+
+          {activeLeftTab === 'ai' && (
+            <div className="flex flex-col h-full">
+              <div className="flex items-center px-4 py-4 border-b border-white/5">
+                <Sparkles className="size-4 text-[#FF8A2A] mr-2" />
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">AI Assistant</span>
+              </div>
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                <div className="bg-[#10131B] border border-white/5 rounded-xl p-3 text-xs text-slate-300 leading-relaxed relative before:content-[''] before:absolute before:-left-1.5 before:top-4 before:w-3 before:h-3 before:bg-[#10131B] before:border-l before:border-b before:border-white/5 before:rotate-45">
+                  <p>Hi! I'm your AI Copilot.</p>
+                  <p className="mt-1">I can help you rewrite this slide, generate a matching image, or suggest better bullet points.</p>
+                </div>
+              </div>
+              <div className="p-4 border-t border-white/5 bg-[#0A0C11]">
+                <div className="relative">
+                  <input type="text" placeholder="Ask AI to modify..." className="w-full bg-[#10131B] border border-white/10 rounded-xl px-3 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-[#FF8A2A] transition-colors" />
+                  <Button size="icon" className="absolute right-1 top-1 size-7 bg-[#FF8A2A] hover:bg-orange-500 rounded-lg text-white" onClick={() => toast.info('AI Chat coming soon')}>
+                    <Wand2 className="size-3.5" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeLeftTab === 'design' && (
+            <div className="flex flex-col h-full">
+              <div className="flex items-center px-4 py-4 border-b border-white/5">
+                <Palette className="size-4 text-pink-400 mr-2" />
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Design & Layout</span>
+              </div>
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+                <div className="space-y-3">
+                  <Label className="text-xs text-slate-400">Slide Layout</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { value: 'split-right', label: 'Split', emoji: '⬛▪' },
+                      { value: 'hero', label: 'Hero/Cover', emoji: '🎯' },
+                      { value: 'text-only', label: 'Text Only', emoji: '📝' },
+                      { value: 'stat-card', label: 'Stats', emoji: '📊' },
+                    ].map((layout) => (
+                      <button
+                        key={layout.value}
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl border border-white/5 bg-[#10131B] hover:bg-pink-500/10 hover:border-pink-500/30 transition-all text-slate-300 hover:text-white"
+                        onClick={() => toast.success(`Layout changed to ${layout.label}`)}
+                      >
+                        <span className="text-xl">{layout.emoji}</span>
+                        <span className="text-[10px] text-center font-medium">{layout.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeLeftTab === 'components' && (
+            <div className="flex flex-col h-full">
+              <div className="flex items-center px-4 py-4 border-b border-white/5">
+                <LayoutTemplate className="size-4 text-emerald-400 mr-2" />
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Elements</span>
+              </div>
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+                <div className="space-y-2">
+                  <Label className="text-xs text-slate-400">Text Boxes</Label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {[{label:'Heading', style:'text-xl font-bold'}, {label:'Sub-heading', style:'text-base font-semibold'}, {label:'Body Text', style:'text-sm font-normal'}].map((t) => (
+                      <button key={t.label} className="w-full text-left px-3 py-2 rounded-lg border border-white/5 bg-[#10131B] hover:bg-emerald-500/10 hover:border-emerald-500/30 text-slate-300 hover:text-white transition-all" onClick={() => toast.success(`Added ${t.label}`)}
+                      >
+                        <span className={t.style}>{t.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-slate-400">Shapes</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      {name:'Rect', svg: <rect x="2" y="2" width="20" height="20" rx="1" fill="currentColor"/>},
+                      {name:'Circle', svg: <circle cx="12" cy="12" r="10" fill="currentColor"/>},
+                      {name:'Triangle', svg: <polygon points="12,2 22,22 2,22" fill="currentColor"/>},
+                      {name:'Arrow', svg: <polygon points="2,10 16,10 16,6 22,12 16,18 16,14 2,14" fill="currentColor"/>},
+                      {name:'Star', svg: <polygon points="12,2 15.1,8.3 22,9.3 17,14.1 18.2,21 12,17.8 5.8,21 7,14.1 2,9.3 8.9,8.3" fill="currentColor"/>},
+                      {name:'Diamond', svg: <polygon points="12,2 22,12 12,22 2,12" fill="currentColor"/>},
+                      {name:'Line', svg: <line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="3"/>},
+                      {name:'Plus', svg: <><line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" strokeWidth="3"/><line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="3"/></>},
+                    ].map((s) => (
+                      <button key={s.name} title={s.name} className="aspect-square rounded-lg border border-white/5 bg-[#10131B] hover:bg-emerald-500/10 hover:border-emerald-500/30 flex flex-col items-center justify-center gap-1 text-emerald-400 hover:text-emerald-300 transition-all p-2" onClick={() => toast.success(`Added ${s.name}`)}>
+                        <svg viewBox="0 0 24 24" className="w-5 h-5">{s.svg}</svg>
+                        <span className="text-[8px] text-slate-400">{s.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeLeftTab === 'charts' && (
+            <div className="flex flex-col h-full">
+              <div className="flex items-center px-4 py-4 border-b border-white/5">
+                <BarChart2 className="size-4 text-purple-400 mr-2" />
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Chart Builder</span>
+              </div>
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-slate-400">Chart Type</Label>
+                  <div className="grid grid-cols-3 gap-1">
+                    {(['bar','pie','line'] as const).map((t) => (
+                      <button key={t} className={`py-2 rounded-lg text-xs font-medium transition-all ${chartType === t ? 'bg-purple-500/20 border border-purple-500/50 text-purple-300' : 'bg-[#10131B] border border-white/5 text-slate-400 hover:text-white'}`} onClick={() => setChartType(t)}>
+                        {t === 'bar' ? '📊 Bar' : t === 'pie' ? '🥧 Pie' : '📈 Line'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-slate-400">Data Rows</Label>
+                    <button className="text-[10px] text-purple-400 hover:text-purple-300" onClick={() => setChartRows(r => [...r, {label:'New', value:'0'}])}>+ Add Row</button>
+                  </div>
+                  <div className="space-y-1.5">
+                    {chartRows.map((row, i) => (
+                      <div key={i} className="flex gap-1.5">
+                        <input
+                          value={row.label}
+                          onChange={(e) => setChartRows(r => r.map((x, j) => j===i ? {...x, label: e.target.value} : x))}
+                          className="flex-1 bg-[#10131B] border border-white/10 rounded-md px-2 py-1 text-xs text-white focus:outline-none focus:border-purple-500"
+                          placeholder="Label"
+                        />
+                        <input
+                          value={row.value}
+                          onChange={(e) => setChartRows(r => r.map((x, j) => j===i ? {...x, value: e.target.value} : x))}
+                          className="w-16 bg-[#10131B] border border-white/10 rounded-md px-2 py-1 text-xs text-white focus:outline-none focus:border-purple-500"
+                          placeholder="Val"
+                          type="number"
+                        />
+                        {chartRows.length > 2 && (
+                          <button className="text-red-400 hover:text-red-300 px-1" onClick={() => setChartRows(r => r.filter((_, j) => j !== i))}>×</button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Mini Preview */}
+                <div className="bg-[#10131B] border border-white/5 rounded-xl p-3">
+                  <div className="text-[10px] text-slate-500 mb-2">Preview</div>
+                  {chartType === 'bar' && (
+                    <div className="flex items-end gap-1.5 h-16">
+                      {chartRows.map((row, i) => {
+                        const maxVal = Math.max(...chartRows.map(r => parseFloat(r.value) || 0), 1)
+                        const h = ((parseFloat(row.value) || 0) / maxVal) * 100
+                        return (
+                          <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                            <div className="w-full rounded-sm bg-purple-500" style={{height: `${h}%`, minHeight: '4px'}} />
+                            <span className="text-[7px] text-slate-500 truncate w-full text-center">{row.label}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                  {chartType === 'pie' && (
+                    <div className="flex items-center gap-3">
+                      <div className="size-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex-shrink-0" />
+                      <div className="space-y-1">{chartRows.map((r,i) => <div key={i} className="flex items-center gap-1"><div className="size-2 rounded-full bg-purple-400" /><span className="text-[9px] text-slate-400">{r.label}: {r.value}</span></div>)}</div>
+                    </div>
+                  )}
+                  {chartType === 'line' && (
+                    <svg viewBox="0 0 100 50" className="w-full h-12">
+                      <polyline fill="none" stroke="#A855F7" strokeWidth="2"
+                        points={chartRows.map((r, i) => {
+                          const maxVal = Math.max(...chartRows.map(x => parseFloat(x.value) || 0), 1)
+                          const x = (i / (chartRows.length - 1)) * 90 + 5
+                          const y = 45 - ((parseFloat(r.value) || 0) / maxVal) * 40
+                          return `${x},${y}`
+                        }).join(' ')}
+                      />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <div className="p-4 border-t border-white/5">
+                <Button
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0"
+                  onClick={() => toast.success(`${chartType.charAt(0).toUpperCase() + chartType.slice(1)} chart inserted into slide!`)}
+                >
+                  Insert Chart
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {activeLeftTab === 'media' && (
+            <div className="flex flex-col h-full">
+              <div className="flex items-center px-4 py-4 border-b border-white/5">
+                <ImageIcon className="size-4 text-cyan-400 mr-2" />
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Media</span>
+              </div>
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                {/* Hidden real file input */}
+                <input
+                  id="media-file-input"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const reader = new FileReader()
+                    reader.onload = () => {
+                      setUploadedImages(prev => [{ name: file.name, url: reader.result as string }, ...prev])
+                      toast.success(`Image "${file.name}" uploaded to gallery`)
+                    }
+                    reader.readAsDataURL(file)
+                    // Reset so same file can be re-selected
+                    e.target.value = ''
+                  }}
+                />
+                <button
+                  className="w-full flex flex-col items-center justify-center gap-3 py-6 rounded-xl border-2 border-dashed border-cyan-500/30 hover:border-cyan-500/60 bg-cyan-500/5 hover:bg-cyan-500/10 transition-all text-cyan-400 hover:text-cyan-300"
+                  onClick={() => document.getElementById('media-file-input')?.click()}
+                >
+                  <ImageIcon className="size-8" />
+                  <div className="text-center">
+                    <p className="text-xs font-semibold">Click to Upload</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">PNG, JPG, GIF up to 10MB</p>
+                  </div>
+                </button>
+
+                {uploadedImages.length > 0 && (
+                  <div className="space-y-3">
+                    <Label className="text-xs text-slate-400">Your Images</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {uploadedImages.map((img, i) => (
+                        <button
+                          key={i}
+                          className="relative aspect-video rounded-xl overflow-hidden border border-white/5 hover:border-cyan-500/50 transition-all group"
+                          onClick={() => {
+                            if (!activeSlide) return
+                            updateSlideMut.mutate(
+                              { id: activeSlide.id, imageUrl: img.url },
+                              { onSuccess: () => toast.success('Image applied to slide!') }
+                            )
+                          }}
+                        >
+                          <img src={img.url} alt={img.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span className="text-[9px] text-white font-semibold bg-white/20 px-2 py-0.5 rounded-full">Apply</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <Label className="text-xs text-slate-400">Unsplash Stock Photos</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa', tag: 'Tech' },
+                      { url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f', tag: 'Business' },
+                      { url: 'https://images.unsplash.com/photo-1531482615713-2afd69097998', tag: 'Team' },
+                      { url: 'https://images.unsplash.com/photo-1518770660439-4636190af475', tag: 'Data' },
+                    ].map((img, i) => (
+                      <button
+                        key={i}
+                        className="relative aspect-video rounded-xl overflow-hidden border border-white/5 hover:border-cyan-500/50 transition-all group"
+                        onClick={() => {
+                          if (!activeSlide) return
+                          const highResUrl = `${img.url}?w=1280&h=720&fit=crop`
+                          updateSlideMut.mutate(
+                            { id: activeSlide.id, imageUrl: highResUrl },
+                            { onSuccess: () => toast.success(`Stock photo applied to slide!`) }
+                          )
+                        }}
+                      >
+                        <img src={`${img.url}?w=200&h=150&fit=crop`} alt={img.tag} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <span className="text-[9px] text-white font-semibold bg-white/20 px-2 py-0.5 rounded-full">Apply</span>
+                        </div>
+                        <span className="absolute bottom-1 left-1 text-[8px] text-white/60 font-medium">{img.tag}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </aside>
 
         {/* CENTER: Main Preview */}
@@ -362,8 +735,73 @@ function PresentationDetailPage() {
                 {/* Canvas Guides Background */}
                 <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0)', backgroundSize: '24px 24px' }} />
 
-                <div id="slide-preview-container" className="w-full max-w-4xl relative z-10 rounded-[24px] overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.5)] border border-white/5 transition-transform duration-300" style={{ transform: `scale(${zoomLevel})` }}>
-                  <SlidePreview slide={activeSlide} isFullscreen={isFullscreen} theme={activeTheme} />
+                <div
+                  id="slide-preview-container"
+                  className="w-full max-w-4xl relative z-10 rounded-[24px] overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.5)] border transition-transform duration-300 group/canvas cursor-text"
+                  style={{ transform: `scale(${zoomLevel})`, borderColor: canvasEditing ? 'rgba(255,138,42,0.5)' : 'rgba(255,255,255,0.05)' }}
+                  title="Click to edit slide inline"
+                >
+                  <SlidePreview slide={canvasEditing ? { ...activeSlide, title: canvasTitle, content: canvasContent } : activeSlide} isFullscreen={isFullscreen} theme={activeTheme} />
+
+                  {/* Inline edit overlay */}
+                  {!canvasEditing && (
+                    <div
+                      className="absolute inset-0 bg-transparent hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100"
+                      onClick={() => {
+                        setCanvasTitle(activeSlide.title)
+                        setCanvasContent(activeSlide.content)
+                        setCanvasEditing(true)
+                      }}
+                    >
+                      <div className="bg-black/60 backdrop-blur-sm rounded-xl px-4 py-2 flex items-center gap-2 text-white text-xs font-medium border border-white/20">
+                        <Type className="size-3.5" />
+                        Click to edit slide
+                      </div>
+                    </div>
+                  )}
+
+                  {canvasEditing && (
+                    <div className="absolute inset-0 flex flex-col bg-[#090B10]/95 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
+                        <span className="text-xs font-semibold text-[#FF8A2A]">✏️ Editing Slide</span>
+                        <div className="flex gap-2">
+                          <button
+                            className="text-xs px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+                            onClick={() => setCanvasEditing(false)}
+                          >Cancel</button>
+                          <button
+                            className="text-xs px-3 py-1.5 rounded-lg bg-[#FF8A2A] hover:bg-orange-500 text-white font-medium transition-colors"
+                            onClick={() => {
+                              if (!activeSlide) return
+                              updateSlideMut.mutate(
+                                { id: activeSlide.id, title: canvasTitle, content: canvasContent },
+                                { onSuccess: () => { setCanvasEditing(false); toast.success('Slide saved!') } }
+                              )
+                            }}
+                          >{updateSlideMut.isPending ? 'Saving…' : 'Save'}</button>
+                        </div>
+                      </div>
+                      <div className="flex-1 flex flex-col gap-4 p-5 overflow-auto">
+                        <div>
+                          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold block mb-1.5">Slide Title</label>
+                          <input
+                            autoFocus
+                            value={canvasTitle}
+                            onChange={(e) => setCanvasTitle(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 focus:border-[#FF8A2A] rounded-xl px-4 py-3 text-2xl font-bold text-white focus:outline-none transition-colors"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold block mb-1.5">Content (one bullet per line)</label>
+                          <textarea
+                            value={canvasContent}
+                            onChange={(e) => setCanvasContent(e.target.value)}
+                            className="w-full h-48 bg-white/5 border border-white/10 focus:border-[#FF8A2A] rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none resize-none transition-colors leading-relaxed"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 {/* Copilot FAB */}

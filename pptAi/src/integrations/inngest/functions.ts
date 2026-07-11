@@ -16,15 +16,15 @@ const mesh = createOpenAI({
 // Image Generation
 // ---------------------------------------------------------------------------
 
-function buildImageKitUrl(prompt: string, filename: string): string {
-  const baseUrl = process.env.IMAGEKIT_BASE_URL!
-  const sanitizedPrompt = prompt
-    .replace(/[^\w\s-]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 100)
-
-  return `${baseUrl}/ik-genimg-prompt-${encodeURIComponent(sanitizedPrompt)}/${filename}.jpg?tr=w-1280,h-720`
+function buildFallbackImageUrl(prompt: string): string {
+  // Use Unsplash source with relevant keywords from the prompt
+  const keywords = prompt
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 3)
+    .slice(0, 3)
+    .join(',')
+  return `https://images.unsplash.com/random/1280x720?${keywords}&auto=format&fit=crop&q=80`
 }
 
 function cleanAndParseJSON(text: string): any {
@@ -187,7 +187,10 @@ Schema:
           let imageUrl: string | null = null
 
           if (needsImage) {
-            imageUrl = buildImageKitUrl(s.imagePrompt, `slide-${presentationId}-${i}`)
+            // fallback URL — used if AI image generation fails
+            imageUrl = buildFallbackImageUrl(s.imagePrompt)
+            console.log(`[slide ${i}] Generating image for: "${s.imagePrompt.slice(0, 60)}..."`)
+            console.log(`[slide ${i}] MESH_API_KEY set: ${!!process.env.MESH_API_KEY}`)
 
             try {
               const response = await fetch('https://api.meshapi.ai/v1/images/generations', {
@@ -198,28 +201,32 @@ Schema:
                 },
                 body: JSON.stringify({
                   model: 'openai/gpt-image-1',
-                  prompt: s.imagePrompt,
+                  prompt: `${s.imagePrompt}. Presentation slide visual, 16:9 aspect ratio, professional quality.`,
                   n: 1,
                   size: '1024x1024',
                 }),
               })
 
+              console.log(`[slide ${i}] MeshAPI response status: ${response.status}`)
               if (response.ok) {
                 const resJson = await response.json()
                 const tempUrl = resJson.data?.[0]?.url
+                console.log(`[slide ${i}] tempUrl: ${tempUrl ? 'got URL' : 'MISSING'}`)
                 if (tempUrl) {
                   const permanentUrl = await uploadImageFromUrl(
                     tempUrl,
                     `slide-${presentationId}-${i}`,
                   )
-                  imageUrl = permanentUrl
+                  // only update if upload succeeded
+                  if (permanentUrl) imageUrl = permanentUrl
+                  console.log(`[slide ${i}] saved to: ${permanentUrl}`)
                 }
               } else {
                 const errText = await response.text()
-                console.warn(`MeshAPI image generation returned status ${response.status}: ${errText}`)
+                console.warn(`[slide ${i}] MeshAPI error ${response.status}: ${errText.slice(0, 200)}`)
               }
             } catch (err) {
-              console.warn(`Failed to generate image for slide ${i} via MeshAPI:`, err)
+              console.warn(`[slide ${i}] Failed to generate image:`, err)
             }
           }
 
