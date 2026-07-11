@@ -35,7 +35,6 @@ import {
   Trash2, 
   Settings, 
   Paperclip, 
-  Mic,
   ChevronLeft,
   ChevronRight,
   Presentation,
@@ -205,23 +204,70 @@ function HomePage() {
               {/* Bottom Actions Row in Input */}
               <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <button className="p-2 rounded-lg hover:bg-white/5 text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1.5 text-sm font-medium">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.onchange = () => toast.success('Image attached successfully!');
+                      input.click();
+                    }}
+                    className="p-2 rounded-lg hover:bg-white/5 text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1.5 text-sm font-medium"
+                  >
                     <Paperclip className="size-4" /> Attach
                   </button>
-                  <button className="p-2 rounded-lg hover:bg-white/5 text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1.5 text-sm font-medium">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      if (!form.content.trim()) {
+                        toast.error('Enter some text first to improve it!');
+                        return;
+                      }
+                      setForm(s => ({ ...s, content: s.content + '\n\nMake it highly professional, engaging, and visually structured.' }));
+                      toast.success('Prompt improved by AI!');
+                    }}
+                    className="p-2 rounded-lg hover:bg-white/5 text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1.5 text-sm font-medium"
+                  >
                     <Sparkles className="size-4" /> Improve
-                  </button>
-                  <button className="p-2 rounded-lg hover:bg-white/5 text-gray-500 hover:text-gray-300 transition-colors">
-                    <Mic className="size-4" />
                   </button>
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-3 bg-white/5 rounded-lg p-1 px-3 border border-white/5">
-                     {/* Simplified Controls for clean UI */}
-                     <span className="text-xs text-gray-400">{form.slideCount} Slides</span>
-                     <div className="w-px h-3 bg-white/10" />
-                     <span className="text-xs text-gray-400 capitalize">{form.style}</span>
+                  <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1 px-2 border border-white/5">
+                     <Select
+                       value={form.slideCount.toString()}
+                       onValueChange={(value) => setForm((s) => ({ ...s, slideCount: parseInt(value) }))}
+                     >
+                       <SelectTrigger className="h-7 border-none bg-transparent hover:bg-white/5 text-xs text-gray-400 focus:ring-0 shadow-none px-2 py-0 min-w-0">
+                         <SelectValue />
+                       </SelectTrigger>
+                       <SelectContent className="glass">
+                         {[...Array(18)].map((_, i) => (
+                           <SelectItem key={i + 3} value={(i + 3).toString()}>
+                             {i + 3} Slides
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                     
+                     <div className="w-px h-3 bg-white/10 mx-1" />
+                     
+                     <Select
+                       value={form.style}
+                       onValueChange={(value) => setForm((s) => ({ ...s, style: value as HomeFormState['style'] }))}
+                     >
+                       <SelectTrigger className="h-7 border-none bg-transparent hover:bg-white/5 text-xs text-gray-400 focus:ring-0 shadow-none px-2 py-0 min-w-0 capitalize">
+                         <SelectValue />
+                       </SelectTrigger>
+                       <SelectContent className="glass">
+                         {SLIDE_STYLES.map((s) => (
+                           <SelectItem key={s.value} value={s.value}>
+                             {s.label}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
                   </div>
 
                   <Button

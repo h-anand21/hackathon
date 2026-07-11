@@ -1,8 +1,9 @@
 import { authClient } from '#/lib/auth-client'
 import { cn } from '#/lib/utils'
 import { Link, useRouter } from '@tanstack/react-router'
-import { LogOut, Moon, Presentation, Sun, User } from 'lucide-react'
+import { LogOut, Moon, Sun, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Logo } from '#/components/Logo'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 import {
@@ -49,16 +50,14 @@ export default function Navbar() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50">
+    <header className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
       <nav className="mx-auto max-w-5xl px-4 py-3">
-        <div className="glass rounded-2xl px-4 py-2.5 flex items-center justify-between">
+        <div className="glass rounded-2xl px-4 py-2.5 flex items-center justify-between pointer-events-auto">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 no-underline">
-            <div className="size-9 rounded-xl bg-primary flex items-center justify-center">
-              <Presentation className="size-5 text-primary-foreground" />
-            </div>
+            <Logo className="w-7 h-7 text-white" />
             <span className="font-semibold text-lg text-foreground">
-              PPT<span className="text-primary">.ai</span>
+              PPT<span className="text-[#FF8A2A]">.ai</span>
             </span>
           </Link>
 
