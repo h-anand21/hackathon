@@ -17,6 +17,9 @@ const config = defineConfig({
     netlify(),
     viteReact()
   ],
+  ssr: {
+    noExternal: ['pptxgenjs'],
+  },
 })
 
 export default config
