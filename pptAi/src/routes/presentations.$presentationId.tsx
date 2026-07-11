@@ -22,6 +22,16 @@ import {
 } from '#/components/ui/alert-dialog'
 import { Button } from '#/components/ui/button'
 import { Label } from '#/components/ui/label'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '#/components/ui/dropdown-menu'
+import { authClient } from '#/lib/auth-client'
 import {
   Select,
   SelectContent,
@@ -69,7 +79,9 @@ import {
   Wand2,
   CheckCircle2,
   Type,
-  Bot
+  Bot,
+  User,
+  LogOut
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
@@ -102,6 +114,13 @@ type RightPanelTab = 'settings' | 'theme' | 'notes'
 function PresentationDetailPage() {
   const { presentationId } = Route.useParams()
   const navigate = useNavigate()
+  
+  const { data: session, isPending: isSessionPending } = authClient.useSession()
+  const handleSignOut = async () => {
+    await authClient.signOut()
+    navigate({ to: '/login' })
+  }
+
   const [activeSlideIndex, setActiveSlideIndex] = useState(0)
   const [showSlideshow, setShowSlideshow] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
@@ -172,53 +191,91 @@ function PresentationDetailPage() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#090B10] text-white">
-      {/* ── TOP BAR ─────────────────────────────────────────────────── */}
-      <header className="flex items-center justify-between px-4 h-[72px] border-b border-white/5 bg-[#0A0C12]/90 backdrop-blur-xl flex-shrink-0 relative z-20">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="flex items-center gap-2 group mr-2">
-            <Logo className="w-6 h-6 text-white group-hover:scale-105 transition-transform" />
-            <span className="text-lg font-bold text-white tracking-tight">
-              PPT<span className="text-[#FF8A2A]">.ai</span>
-            </span>
-          </Link>
-          <div className="w-px h-6 bg-white/10" />
-          <div className="flex flex-col">
-            <h1 className="text-sm font-semibold text-white truncate max-w-[300px]">AI Prompt: {data.title}</h1>
-            <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
-              <CheckCircle2 className="size-3 text-emerald-500" />
-              <span>Saved · {updatedLabel}</span>
+      {/* ── TOP BAR (GLASS PILL) ─────────────────────────────────────────────────── */}
+      <div className="w-full flex justify-center pt-4 pb-2 px-4 flex-shrink-0 relative z-50">
+        <header className="w-full max-w-6xl glass rounded-2xl px-5 py-2.5 flex items-center justify-between bg-[#0A0C12]/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+          
+          <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+            <Link to="/" className="flex items-center justify-center size-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex-shrink-0 text-slate-300 hover:text-white" title="Back to Home">
+              <ChevronLeft className="size-4" />
+            </Link>
+            
+            <div className="hidden sm:flex items-center gap-2 group flex-shrink-0">
+              <Logo className="w-6 h-6 text-white group-hover:scale-105 transition-transform" />
+              <span className="text-lg font-bold text-white tracking-tight">
+                PPT<span className="text-[#FF8A2A]">.ai</span>
+              </span>
+            </div>
+            
+            <div className="hidden sm:block w-px h-6 bg-white/10 flex-shrink-0" />
+            
+            <div className="flex flex-col min-w-0 flex-1">
+              <h1 className="text-sm font-semibold text-white truncate" title={data.title}>
+                {data.title.replace(/^#?\s*AI Prompt:\s*/i, '')}
+              </h1>
+              <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
+                <CheckCircle2 className="size-3 text-emerald-500 flex-shrink-0" />
+                <span className="truncate">Saved · {updatedLabel}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white" onClick={() => toast.info('Undo coming soon')}><Undo2 className="size-4" /></Button>
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white" onClick={() => toast.info('Redo coming soon')}><Redo2 className="size-4" /></Button>
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white" onClick={() => toast.info('History coming soon')}><History className="size-4" /></Button>
-          <div className="w-px h-4 bg-white/10 mx-2" />
-          <Button variant="ghost" size="sm" className="rounded-lg gap-1.5 text-slate-300 hover:text-white" onClick={() => setShowSlideshow(true)}>
-            <Play className="size-4" />
-            <span className="hidden sm:inline text-xs font-medium">Present</span>
-          </Button>
-          <Button variant="ghost" size="sm" className="rounded-lg gap-1.5 text-slate-300 hover:text-white" onClick={handleExportPptx} disabled={isExporting}>
-            <Download className="size-4" />
-            <span className="hidden sm:inline text-xs font-medium">{isExporting ? 'Exporting…' : 'Export'}</span>
-          </Button>
-          <Button
-            size="sm"
-            className="rounded-lg gap-1.5 bg-gradient-to-r from-[#4F7DFF] to-[#7C5CFF] hover:from-blue-500 hover:to-indigo-500 text-white text-xs border-0 shadow-[0_0_20px_rgba(79,125,255,0.3)] ml-2"
-            disabled={regenerateMut.isPending || isGenerating}
-            onClick={() => regenerateMut.mutate()}
-          >
-            <Sparkles className={`size-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
-            {isGenerating ? 'Generating…' : 'Regenerate'}
-          </Button>
-          <div className="w-px h-4 bg-white/10 mx-2" />
-          <button className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center border-2 border-[#0A0C12] shadow-sm overflow-hidden" onClick={() => toast.info('Profile coming soon')}>
-            <UserCircle className="size-6 text-white/80" />
-          </button>
-        </div>
-      </header>
+          <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+            <Button variant="ghost" size="sm" className="rounded-lg gap-1.5 text-slate-300 hover:text-white" onClick={() => setShowSlideshow(true)}>
+              <Play className="size-4" />
+              <span className="hidden sm:inline text-xs font-medium">Present</span>
+            </Button>
+            <Button variant="ghost" size="sm" className="rounded-lg gap-1.5 text-slate-300 hover:text-white" onClick={handleExportPptx} disabled={isExporting}>
+              <Download className="size-4" />
+              <span className="hidden sm:inline text-xs font-medium">{isExporting ? 'Exporting…' : 'Export'}</span>
+            </Button>
+            <Button
+              size="sm"
+              className="rounded-lg gap-1.5 bg-gradient-to-r from-[#4F7DFF] to-[#7C5CFF] hover:from-blue-500 hover:to-indigo-500 text-white text-xs border-0 shadow-[0_0_20px_rgba(79,125,255,0.3)] ml-2"
+              disabled={regenerateMut.isPending || isGenerating}
+              onClick={() => regenerateMut.mutate()}
+            >
+              <Sparkles className={`size-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
+              {isGenerating ? 'Generating…' : 'Regenerate'}
+            </Button>
+            <div className="w-px h-4 bg-white/10 mx-2" />
+            {isSessionPending ? (
+              <div className="size-8 rounded-full bg-white/10 animate-pulse" />
+            ) : session?.user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative size-8 rounded-full hover:bg-transparent">
+                    <Avatar className="size-8 border-2 border-white/10 shadow-sm hover:scale-105 transition-transform">
+                      <AvatarImage src={session.user.image || undefined} alt={session.user.name} />
+                      <AvatarFallback className="bg-[#FF8A2A]/20 text-[#FF8A2A] text-xs font-medium">
+                        {session.user.name ? session.user.name.slice(0, 2).toUpperCase() : <User className="size-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 glass border-white/10 bg-[#0A0C12]/95 backdrop-blur-xl text-slate-200">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col gap-1">
+                      <p className="text-sm font-medium leading-none text-white">{session.user.name}</p>
+                      <p className="text-xs leading-none text-slate-400 mt-1 truncate">{session.user.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-400 focus:text-red-300 focus:bg-red-400/10 cursor-pointer">
+                    <LogOut className="mr-2 size-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild size="sm" className="rounded-xl bg-white/10 hover:bg-white/20 text-white border-0">
+                <Link to="/login">Sign in</Link>
+              </Button>
+            )}
+          </div>
+          
+        </header>
+      </div>
 
       {/* ── 4-COLUMN BODY ─────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden">

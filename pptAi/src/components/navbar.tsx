@@ -25,7 +25,10 @@ export default function Navbar() {
   }
 
   // Hide the global navbar when in the presentation editor view (it has its own top nav)
-  if (location.pathname.startsWith('/presentations/')) {
+  const isEditor = location.pathname.includes('/presentations/') || 
+                  (typeof window !== 'undefined' && window.location.pathname.includes('/presentations/'))
+  
+  if (isEditor) {
     return null
   }
 

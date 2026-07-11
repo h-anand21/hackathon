@@ -42,10 +42,15 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   shellComponent: RootDocument,
 })
 
+import { useLocation } from '@tanstack/react-router'
+
 function RootLayout() {
+  const location = useLocation()
+  const isEditor = location.pathname.includes('/presentations/')
+
   return (
     <div className="min-h-svh">
-      <Navbar />
+      {!isEditor && <Navbar />}
       <Outlet />
     </div>
   )
