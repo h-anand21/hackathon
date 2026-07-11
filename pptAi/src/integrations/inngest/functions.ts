@@ -213,13 +213,19 @@ Schema:
                 const tempUrl = resJson.data?.[0]?.url
                 console.log(`[slide ${i}] tempUrl: ${tempUrl ? 'got URL' : 'MISSING'}`)
                 if (tempUrl) {
-                  const permanentUrl = await uploadImageFromUrl(
-                    tempUrl,
-                    `slide-${presentationId}-${i}`,
-                  )
-                  // only update if upload succeeded
-                  if (permanentUrl) imageUrl = permanentUrl
-                  console.log(`[slide ${i}] saved to: ${permanentUrl}`)
+                  // Try ImageKit upload, but fall back to direct URL if it fails
+                  try {
+                    const permanentUrl = await uploadImageFromUrl(
+                      tempUrl,
+                      `slide-${presentationId}-${i}`,
+                    )
+                    imageUrl = permanentUrl || tempUrl
+                    console.log(`[slide ${i}] saved to: ${imageUrl}`)
+                  } catch {
+                    // ImageKit failed (quota?), use MeshAPI URL directly
+                    imageUrl = tempUrl
+                    console.log(`[slide ${i}] ImageKit failed, using MeshAPI URL directly`)
+                  }
                 }
               } else {
                 const errText = await response.text()

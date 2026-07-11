@@ -6,6 +6,9 @@
 [build.environment]
   NODE_VERSION = "20"
 
+[functions]
+  included_files = ["src/generated/prisma/**"]
+
 [[headers]]
   for = "/*"
   [headers.values]
