@@ -5,42 +5,70 @@ import {
   CardTitle,
 } from '#/components/ui/card'
 import { Link } from '@tanstack/react-router'
+import { Database, Network, Briefcase, Bot, Star, MoreVertical } from 'lucide-react'
 
 import type { Presentation } from '../types/presentation.types'
-import { presentationThumbnailUrl } from '../utils/thumbnail-url'
 
 type PresentationCardProps = {
   presentation: Presentation
 }
+
+const THEMES = [
+  { icon: Database, gradient: 'from-blue-500/20 to-transparent', iconColor: 'text-blue-500', glow: 'shadow-[0_0_25px_rgba(59,130,246,0.3)]' },
+  { icon: Network, gradient: 'from-green-500/20 to-transparent', iconColor: 'text-green-500', glow: 'shadow-[0_0_25px_rgba(34,197,94,0.3)]' },
+  { icon: Briefcase, gradient: 'from-orange-500/20 to-transparent', iconColor: 'text-orange-500', glow: 'shadow-[0_0_25px_rgba(255,138,42,0.3)]' },
+  { icon: Bot, gradient: 'from-purple-500/20 to-transparent', iconColor: 'text-purple-500', glow: 'shadow-[0_0_25px_rgba(168,85,247,0.3)]' },
+]
 
 export function PresentationCard({ presentation: p }: PresentationCardProps) {
   const updated = new Date(p.updatedAt).toLocaleString(undefined, {
     dateStyle: 'medium',
     timeStyle: 'short',
   })
-  const thumb = presentationThumbnailUrl(p.id)
+
+  // Pick theme deterministically
+  const themeIndex = (p.title.length + p.id.charCodeAt(p.id.length - 1)) % THEMES.length
+  const theme = THEMES[themeIndex]
+  const Icon = theme.icon
 
   return (
     <Link
       to="/presentations/$presentationId"
       params={{ presentationId: p.id }}
-      className="block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      className="block h-full outline-none card-hover-effect group"
     >
-      <Card className="h-full glass border-border/50 py-0 overflow-hidden transition-colors hover:border-primary/40">
-        <div className="flex gap-4 p-4">
-          <img
-            src={thumb}
-            alt=""
-            width={72}
-            height={72}
-            className="rounded-xl border border-border/50 shrink-0 bg-background/30"
-          />
-          <CardHeader className="p-0 gap-1 flex-1 min-w-0">
-            <CardTitle className="text-base line-clamp-2">{p.title}</CardTitle>
-            <CardDescription className="line-clamp-2">
-              {p.slideCount} slides · {p.style} · {p.tone}
+      <Card className="h-full premium-glass py-0 overflow-hidden relative border border-white/5 transition-all">
+        {/* Top Gradient Banner */}
+        <div className={`absolute top-0 left-0 right-0 h-24 bg-gradient-to-b ${theme.gradient} opacity-50 pointer-events-none`} />
+        
+        <div className="flex flex-col gap-4 p-5 relative z-10">
+          
+          <div className="flex items-start justify-between">
+            {/* Glowing Icon Box */}
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-[#07090D] border border-white/10 ${theme.glow}`}>
+              <Icon className={`size-6 ${theme.iconColor}`} />
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button className="text-gray-500 hover:text-white transition-colors" onClick={(e) => e.preventDefault()}>
+                <Star className="size-4" />
+              </button>
+              <button className="text-gray-500 hover:text-white transition-colors" onClick={(e) => e.preventDefault()}>
+                <MoreVertical className="size-4" />
+              </button>
+            </div>
+          </div>
+
+          <CardHeader className="p-0 gap-1.5 flex-1 min-w-0 mt-2">
+            <CardTitle className="text-lg font-semibold text-white leading-tight line-clamp-2">{p.title || 'Untitled Presentation'}</CardTitle>
+            <CardDescription className="text-xs text-gray-400 mt-1 flex items-center gap-2">
+              <span>{p.slideCount} slides</span>
+              <span className="w-1 h-1 rounded-full bg-gray-600" />
+              <span className="capitalize">{p.style}</span>
+              <span className="w-1 h-1 rounded-full bg-gray-600" />
+              <span className="capitalize">{p.tone}</span>
             </CardDescription>
-            <p className="text-xs text-muted-foreground pt-1">
+            <p className="text-[11px] text-gray-500 pt-3 border-t border-white/5 mt-2">
               Updated {updated}
             </p>
           </CardHeader>

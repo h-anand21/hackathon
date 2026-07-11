@@ -181,3 +181,79 @@ body {
   border-radius: 4px;
   background: white;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Premium AI SaaS Overhaul (Dashboard)
+   ───────────────────────────────────────────────────────────── */
+.dashboard-bg {
+  background-color: #07090D;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+  color: #FFFFFF;
+}
+
+.dashboard-card {
+  background: #0F1117;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dashboard-input-bg {
+  background: #11151D;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.radial-glow-orange {
+  position: absolute;
+  top: -10%;
+  left: -5%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255, 138, 42, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.radial-glow-blue {
+  position: absolute;
+  bottom: -20%;
+  right: -10%;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.premium-glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.generate-btn-glow {
+  background: linear-gradient(180deg, #FF8A2A 0%, #FF6A00 100%);
+  box-shadow: 0 0 30px rgba(255, 138, 42, 0.25);
+  transition: all 0.3s ease;
+  color: white;
+  border: none;
+}
+.generate-btn-glow:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 40px rgba(255, 138, 42, 0.4);
+}
+
+.card-hover-effect {
+  transition: all 0.3s ease;
+}
+.card-hover-effect:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 0 35px rgba(255, 138, 42, 0.12);
+}
+
+.input-focus-glow {
+  transition: all 0.3s ease;
+}
+.input-focus-glow:focus-within {
+  box-shadow: 0 0 30px rgba(255, 138, 42, 0.25);
+  border-color: rgba(255, 138, 42, 0.5);
+}

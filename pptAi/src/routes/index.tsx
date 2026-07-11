@@ -23,9 +23,27 @@ import { Textarea } from '#/components/ui/textarea'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { z } from 'zod'
-import { Sparkles, Wand2 } from 'lucide-react'
+import { 
+  Sparkles, 
+  Wand2, 
+  Menu, 
+  Home, 
+  FolderOpen, 
+  LayoutTemplate, 
+  MessageSquare, 
+  Star, 
+  Trash2, 
+  Settings, 
+  Paperclip, 
+  Mic,
+  ChevronLeft,
+  ChevronRight,
+  Presentation,
+  RefreshCw
+} from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { Logo } from '#/components/Logo'
 
 type HomeFormState = {
   content: string
@@ -60,6 +78,8 @@ function HomePage() {
   const queryClient = useQueryClient()
   const search = Route.useSearch()
   
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+
   const [form, setForm] = useState<HomeFormState>({
     content: search.prompt || '',
     slideCount: 8,
@@ -106,193 +126,163 @@ function HomePage() {
   }
 
   return (
-    <main className="min-h-screen pt-24 pb-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <PresentationListSection
-          presentations={presentations}
-          isPending={listPending}
-        />
+    <div className="flex h-screen w-full dashboard-bg overflow-hidden text-white relative">
+      {/* Background Glows */}
+      <div className="radial-glow-orange" />
+      <div className="radial-glow-blue" />
 
-        {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">
-            What do you want to{' '}
-            <span className="text-gradient-peach">create?</span>
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Enter your content and we'll generate a beautiful presentation
-          </p>
+      {/* Sidebar */}
+      <aside 
+        className={`relative z-20 flex flex-col transition-all duration-300 ease-in-out border-r border-white/5 bg-[#07090D]/80 backdrop-blur-xl ${isSidebarOpen ? 'w-[260px]' : 'w-[80px]'}`}
+      >
+        <div className="flex items-center h-16 px-4 shrink-0">
+          <button 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors mr-2"
+          >
+            <Menu className="size-5 text-gray-400 hover:text-white" />
+          </button>
+          
+          {isSidebarOpen && (
+            <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
+              <Logo className="w-6 h-6 text-white" />
+              <span className="text-base font-bold tracking-tight">
+                PPT<span className="text-[#FF8A2A]">.ai</span>
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Main input card */}
-        <div className="glass rounded-3xl p-6 md:p-8 space-y-6">
-          {/* Textarea */}
-          <div className="space-y-2">
-            <Textarea
-              placeholder="Describe your presentation topic, paste your notes, or outline your key points..."
-              value={form.content}
-              onChange={(e) =>
-                setForm((s) => ({
-                  ...s,
-                  content: e.target.value,
-                }))
-              }
-              className="h-[200px] min-h-[200px] max-h-[200px] overflow-y-auto text-base bg-background/50 border-border/50 rounded-2xl resize-none focus-visible:ring-primary/30"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground px-1">
-              <span>{form.content.length.toLocaleString()} characters</span>
-              <span>Markdown supported</span>
-            </div>
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-hide">
+          <SidebarItem icon={Home} label="Home" isOpen={isSidebarOpen} active onClick={() => document.getElementById('main-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })} />
+          <SidebarItem icon={FolderOpen} label="My Presentations" isOpen={isSidebarOpen} onClick={() => document.getElementById('recent-presentations')?.scrollIntoView({ behavior: 'smooth' })} />
+          <SidebarItem icon={LayoutTemplate} label="Templates" isOpen={isSidebarOpen} onClick={() => document.getElementById('templates')?.scrollIntoView({ behavior: 'smooth' })} />
+          <SidebarItem icon={MessageSquare} label="AI Prompt" isOpen={isSidebarOpen} onClick={() => document.querySelector('textarea')?.focus()} />
+          <SidebarItem icon={Star} label="Favorites" isOpen={isSidebarOpen} onClick={() => toast.info('Favorites coming soon!')} />
+          
+          <div className="my-4 border-t border-white/5" />
+          
+          <SidebarItem icon={Trash2} label="Trash" isOpen={isSidebarOpen} onClick={() => toast.info('Trash coming soon!')} />
+          <SidebarItem icon={Settings} label="Settings" isOpen={isSidebarOpen} onClick={() => toast.info('Settings coming soon!')} />
+        </nav>
+      </aside>
+
+      {/* Main Content Area */}
+      <main id="main-scroll" className="flex-1 relative z-10 flex flex-col h-full overflow-y-auto scrollbar-thin">
+        <div className="flex-1 flex flex-col items-center pt-24 pb-12 px-6 max-w-5xl mx-auto w-full">
+          
+          {/* Hero Header */}
+          <div className="text-center mb-10 w-full animate-fade-down">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
+              Create beautiful presentations<br />with <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF8A2A] to-[#FF6A00]">AI.</span>
+            </h1>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              Describe your idea and we'll transform it into a professional PowerPoint.
+            </p>
           </div>
 
-          {/* Options grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Slide count */}
-            <div className="space-y-2.5">
-              <Label className="text-sm font-medium">
-                Slides: {form.slideCount}
-              </Label>
-              <Slider
-                value={[form.slideCount]}
-                onValueChange={([v]) =>
+          {/* ChatGPT-style Input Box */}
+          <div className="w-full max-w-3xl mb-16 animate-fade-up">
+            <div className="dashboard-input-bg rounded-2xl p-4 input-focus-glow relative shadow-lg">
+              <Textarea
+                placeholder="Describe your presentation..."
+                value={form.content}
+                onChange={(e) =>
                   setForm((s) => ({
                     ...s,
-                    slideCount: v,
+                    content: e.target.value,
                   }))
                 }
-                min={3}
-                max={20}
-                step={1}
-                className="py-2"
-              />
-            </div>
-
-            {/* Style */}
-            <div className="space-y-2.5">
-              <Label className="text-sm font-medium">Style</Label>
-              <Select
-                value={form.style}
-                onValueChange={(value) =>
-                  setForm((s) => ({
-                    ...s,
-                    style: value as HomeFormState['style'],
-                  }))
-                }
-              >
-                <SelectTrigger className="bg-background/50 border-border/50 rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="glass">
-                  {SLIDE_STYLES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Tone */}
-            <div className="space-y-2.5">
-              <Label className="text-sm font-medium">Tone</Label>
-              <Select
-                value={form.tone}
-                onValueChange={(value) =>
-                  setForm((s) => ({
-                    ...s,
-                    tone: value as HomeFormState['tone'],
-                  }))
-                }
-              >
-                <SelectTrigger className="bg-background/50 border-border/50 rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="glass">
-                  {TONE_OPTIONS.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Layout */}
-            <div className="space-y-2.5">
-              <Label className="text-sm font-medium">Layout</Label>
-              <Select
-                value={form.layout}
-                onValueChange={(value) =>
-                  setForm((s) => ({
-                    ...s,
-                    layout: value as HomeFormState['layout'],
-                  }))
-                }
-              >
-                <SelectTrigger className="bg-background/50 border-border/50 rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="glass">
-                  {LAYOUT_OPTIONS.map((l) => (
-                    <SelectItem key={l.value} value={l.value}>
-                      {l.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Generate button */}
-          <div className="flex justify-end pt-2">
-            <Button
-              size="lg"
-              onClick={handleGenerate}
-              disabled={createMut.isPending || !form.content.trim()}
-              className="rounded-xl px-8 gap-2 font-semibold"
-            >
-              {createMut.isPending ? (
-                <>
-                  <Sparkles className="size-5 animate-pulse" />
-                  Creating…
-                </>
-              ) : (
-                <>
-                  <Wand2 className="size-5" />
-                  Generate PPT
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Templates */}
-        <div className="mt-8">
-          <p className="text-center text-sm text-muted-foreground mb-3">
-            Try a template
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {PRESENTATION_TEMPLATES.map((template) => (
-              <button
-                key={template.id}
-                type="button"
-                onClick={() => {
-                  setForm({
-                    content: template.content,
-                    slideCount: template.slides,
-                    style: template.style,
-                    tone: template.tone,
-                    layout: template.layout,
-                  })
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleGenerate()
+                  }
                 }}
-                className="px-4 py-2 text-sm rounded-full border border-border/50 bg-card/50 text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-primary/5 transition-all"
-              >
-                {template.label}
-              </button>
-            ))}
+                className="h-[120px] min-h-[120px] bg-transparent border-none resize-none focus-visible:ring-0 text-white placeholder:text-gray-600 text-lg p-2 mb-12 shadow-none"
+              />
+              
+              {/* Bottom Actions Row in Input */}
+              <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <button className="p-2 rounded-lg hover:bg-white/5 text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1.5 text-sm font-medium">
+                    <Paperclip className="size-4" /> Attach
+                  </button>
+                  <button className="p-2 rounded-lg hover:bg-white/5 text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1.5 text-sm font-medium">
+                    <Sparkles className="size-4" /> Improve
+                  </button>
+                  <button className="p-2 rounded-lg hover:bg-white/5 text-gray-500 hover:text-gray-300 transition-colors">
+                    <Mic className="size-4" />
+                  </button>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 bg-white/5 rounded-lg p-1 px-3 border border-white/5">
+                     {/* Simplified Controls for clean UI */}
+                     <span className="text-xs text-gray-400">{form.slideCount} Slides</span>
+                     <div className="w-px h-3 bg-white/10" />
+                     <span className="text-xs text-gray-400 capitalize">{form.style}</span>
+                  </div>
+
+                  <Button
+                    onClick={handleGenerate}
+                    disabled={createMut.isPending || !form.content.trim()}
+                    className="generate-btn-glow rounded-xl px-5 py-2 h-auto text-sm font-semibold flex items-center gap-2"
+                  >
+                    {createMut.isPending ? (
+                      <RefreshCw className="size-4 animate-spin" />
+                    ) : (
+                      <>
+                        Generate <ChevronRight className="size-4" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Template Suggestions below input */}
+            <div id="templates" className="flex flex-wrap justify-center gap-2 mt-6 opacity-60 hover:opacity-100 transition-opacity">
+              {PRESENTATION_TEMPLATES.map((template) => (
+                <button
+                  key={template.id}
+                  type="button"
+                  onClick={() => {
+                    setForm({
+                      content: template.content,
+                      slideCount: template.slides,
+                      style: template.style,
+                      tone: template.tone,
+                      layout: template.layout,
+                    })
+                  }}
+                  className="px-4 py-1.5 text-xs font-medium rounded-full border border-white/10 bg-white/5 text-gray-400 hover:text-white hover:border-[#FF8A2A]/50 hover:bg-[#FF8A2A]/10 transition-all"
+                >
+                  {template.label}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {/* Recent Presentations List (Moved Below) */}
+          <div id="recent-presentations" className="w-full">
+            <PresentationListSection
+              presentations={presentations}
+              isPending={listPending}
+            />
+          </div>
+
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
+  )
+}
+
+function SidebarItem({ icon: Icon, label, isOpen, active, onClick }: { icon: any, label: string, isOpen: boolean, active?: boolean, onClick?: () => void }) {
+  return (
+    <button onClick={onClick} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${active ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
+      <Icon className="size-5 shrink-0" />
+      {isOpen && <span className="text-sm font-medium whitespace-nowrap">{label}</span>}
+    </button>
   )
 }

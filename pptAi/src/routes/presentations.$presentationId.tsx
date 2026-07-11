@@ -57,6 +57,7 @@ import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { SlideshowModal } from '#/features/presentations/components/slideshow-modal'
 import { exportToPptx } from '#/features/presentations/lib/export-pptx'
+import { Logo } from '#/components/Logo'
 
 export const Route = createFileRoute('/presentations/$presentationId')({
   beforeLoad: async ({ location }) => {
@@ -154,11 +155,9 @@ function PresentationDetailPage() {
       {/* ── TOP BAR ─────────────────────────────────────────────────── */}
       <header className="flex items-center gap-3 px-4 py-2.5 border-b border-white/5 bg-[#0B1121] flex-shrink-0">
         <Link to="/" className="flex items-center gap-2 group mr-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F8A87D] text-black group-hover:scale-105 transition-transform">
-            <Presentation className="h-4 w-4" />
-          </div>
+          <Logo className="w-6 h-6 text-white group-hover:scale-105 transition-transform" />
           <span className="text-lg font-bold text-white tracking-tight">
-            PPT<span className="text-[#F8A87D]">.ai</span>
+            PPT<span className="text-[#FF8A2A]">.ai</span>
           </span>
         </Link>
         <div className="w-px h-4 bg-white/10" />
