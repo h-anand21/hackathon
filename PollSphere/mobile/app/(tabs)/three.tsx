@@ -6,21 +6,28 @@ import {
   KeyboardAvoidingView, 
   Platform, 
   ScrollView,
-  Alert
+  Alert,
+  Pressable,
+  TextInput,
+  Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { BrutalCard, BrutalButton, BrutalInput } from '../../components/Brutal';
-import { Colors } from '../../constants/Theme';
-import { CheckSquare } from 'lucide-react-native';
-import { useTheme } from '../../contexts/ThemeContext';
+import { ArrowLeft, CheckSquare, QrCode, ArrowRight, Sparkles, Check, Vote, Megaphone } from 'lucide-react-native';
+import Svg, { Path } from 'react-native-svg';
 
+const ArrowLeftIcon = ArrowLeft as any;
 const CheckSquareIcon = CheckSquare as any;
+const QrCodeIcon = QrCode as any;
+const ArrowRightIcon = ArrowRight as any;
+const SparklesIcon = Sparkles as any;
+const CheckIcon = Check as any;
+const VoteIcon = Vote as any;
+const MegaphoneIcon = Megaphone as any;
 
 export default function VoteScreen() {
   const [pollId, setPollId] = useState('');
   const router = useRouter();
-  const { colors } = useTheme();
 
   const extractPollId = (input: string): string => {
     const trimmed = input.trim();
@@ -40,40 +47,148 @@ export default function VoteScreen() {
     router.push(`/poll/${cleanId}`);
   };
 
+  const handleScanQR = () => {
+    Alert.alert('QR Scanner', 'Point your camera at a Poll QR Code to join automatically.');
+  };
+
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardContainer}
       >
-        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Direct Voting</Text>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContainer} 
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header Section */}
+          <View style={styles.topHeaderRow}>
+            <Pressable onPress={() => router.back()} style={styles.backBoxBtn}>
+              <ArrowLeftIcon size={20} color="#FFFFFF" />
+            </Pressable>
 
-          <BrutalCard variant="default" style={styles.card}>
-            <View style={[styles.iconWrapper, { backgroundColor: colors.primary + '22', borderColor: colors.border }]}>
-              <CheckSquareIcon size={48} color={colors.primary} />
+            {/* Top Right Ballot Box Illustration */}
+            <View style={styles.headerIllustrationWrapper}>
+              <View style={styles.ballotBoxGraphic}>
+                {/* Ballot Paper inserting */}
+                <View style={styles.ballotPaper}>
+                  <View style={styles.paperCheckCircle}>
+                    <CheckIcon size={12} color="#09090b" strokeWidth={3} />
+                  </View>
+                </View>
+                {/* Box body */}
+                <View style={styles.boxBody}>
+                  <View style={styles.boxSlot} />
+                </View>
+              </View>
             </View>
-            
-            <Text style={[styles.cardHeading, { color: colors.foreground }]}>Join A Campaign</Text>
-            <Text style={[styles.cardDesc, { color: colors.mutedForeground }]}>
-              Enter a live Poll ID or Code shared by the creator to enter the voting room and cast your feedback instantly.
+          </View>
+
+          {/* Title Header */}
+          <View style={styles.titleSection}>
+            <View style={styles.titleRow}>
+              <Text style={styles.titleWhite}>DIRECT </Text>
+              <Text style={styles.titleYellow}>VOTING</Text>
+            </View>
+            {/* Curved Yellow Underline */}
+            <View style={styles.underlineCurveContainer}>
+              <Svg height="12" width="120" viewBox="0 0 120 12">
+                <Path
+                  d="M 5 6 Q 60 12 115 4"
+                  stroke="#FFCC00"
+                  strokeWidth="3.5"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+              </Svg>
+            </View>
+            <Text style={styles.subtitleText}>
+              Join a live poll campaign and cast your feedback instantly.
             </Text>
+          </View>
 
-            <BrutalInput
-              label="Poll ID / Code"
-              placeholder="e.g., 609c12345e..."
-              value={pollId}
-              onChangeText={setPollId}
-              style={{ width: '100%' }}
-            />
+          {/* Main Dark Card "JOIN A CAMPAIGN" */}
+          <View style={styles.darkCard}>
+            <View style={styles.darkCardTopContent}>
+              {/* PollSphere Brand Logo Badge */}
+              <View style={styles.badgeWrapper}>
+                <View style={styles.badgeDottedCircle}>
+                  <View style={styles.badgeInnerLogoCircle}>
+                    <Image 
+                      source={require('../../assets/images/icon.png')} 
+                      style={styles.pollSphereLogoImg} 
+                      resizeMode="cover"
+                    />
+                  </View>
+                </View>
+              </View>
 
-            <BrutalButton
-              title="Connect & Enter Room"
-              variant="primary"
-              onPress={handleJoinRoom}
-              style={styles.joinBtn}
-            />
-          </BrutalCard>
+              {/* Card Title */}
+              <View style={styles.cardTitleRow}>
+                <Text style={styles.cardTitleWhite}>JOIN A </Text>
+                <Text style={styles.cardTitleYellow}>CAMPAIGN</Text>
+              </View>
+
+              <Text style={styles.cardDescText}>
+                Enter a live Poll ID or Code shared by the creator to enter the voting room and cast your feedback instantly.
+              </Text>
+            </View>
+
+            {/* Wavy Yellow Bottom Section */}
+            <View style={styles.yellowSectionWrapper}>
+              {/* Wavy Divider SVG */}
+              <View style={styles.wavySvgWrapper}>
+                <Svg height="24" width="100%" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                  <Path 
+                    fill="#FFCC00" 
+                    d="M0,128L48,149.3C96,171,192,213,288,213.3C384,213,480,171,576,149.3C672,128,768,128,864,149.3C960,171,1056,213,1152,202.7C1248,192,1344,128,1392,96L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+                  />
+                </Svg>
+              </View>
+
+              <View style={styles.yellowBodyContent}>
+                {/* Input Label with curved arrow */}
+                <View style={styles.inputLabelRow}>
+                  <Text style={styles.inputLabelText}>POLL ID / CODE</Text>
+                  <Svg height="14" width="24" viewBox="0 0 24 14" style={{ marginLeft: 6 }}>
+                    <Path
+                      d="M 2 2 Q 12 12 22 4 M 18 2 L 22 4 L 20 8"
+                      stroke="#09090b"
+                      strokeWidth="2"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                </View>
+
+                {/* Input Box Row */}
+                <View style={styles.inputBoxRow}>
+                  <TextInput
+                    placeholder="e.g., 609c12345e..."
+                    placeholderTextColor="#9CA3AF"
+                    value={pollId}
+                    onChangeText={setPollId}
+                    style={styles.pollInput}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+
+                  <Pressable onPress={handleScanQR} style={styles.qrScanBtn}>
+                    <QrCodeIcon size={20} color="#09090b" />
+                  </Pressable>
+                </View>
+
+                {/* Main Action Button CONNECT & ENTER ROOM */}
+                <Pressable onPress={handleJoinRoom} style={styles.connectPillBtn}>
+                  <Text style={styles.connectBtnText}>CONNECT & ENTER ROOM</Text>
+                  <View style={styles.cyanArrowCircle}>
+                    <ArrowRightIcon size={20} color="#09090b" strokeWidth={3} />
+                  </View>
+                </Pressable>
+              </View>
+            </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -83,7 +198,7 @@ export default function VoteScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#09090b',
+    backgroundColor: '#000000',
     paddingTop: Platform.OS === 'android' ? 30 : 0,
   },
   keyboardContainer: {
@@ -91,49 +206,267 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     padding: 20,
-    flexGrow: 1,
+    paddingBottom: 110,
+  },
+  topHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  backBoxBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#18181B',
+    borderWidth: 2,
+    borderColor: '#27272A',
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  headerTitle: {
-    fontFamily: 'SpaceMono',
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#ffffff',
-    textTransform: 'uppercase',
-    marginBottom: 20,
-    textAlign: 'center',
+  headerIllustrationWrapper: {
+    width: 100,
+    height: 90,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
   },
-  card: {
-    padding: 24,
+  ballotBoxGraphic: {
     alignItems: 'center',
+    position: 'relative',
   },
-  iconWrapper: {
+  ballotPaper: {
+    width: 46,
+    height: 40,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 6,
     borderWidth: 2,
     borderColor: '#09090b',
-    borderRadius: 24,
-    padding: 12,
-    backgroundColor: Colors.accent,
-    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: -10,
+    zIndex: 2,
+    transform: [{ rotate: '-8deg' }],
+  },
+  paperCheckCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#E4E4E7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#09090b',
+  },
+  boxBody: {
+    width: 80,
+    height: 60,
+    backgroundColor: '#FFCC00',
+    borderRadius: 12,
+    borderWidth: 2.5,
+    borderColor: '#09090b',
+    alignItems: 'center',
+    paddingTop: 6,
     shadowColor: '#000000',
     shadowOffset: { width: 3, height: 3 },
     shadowOpacity: 1,
     shadowRadius: 0,
+    elevation: 4,
   },
-  cardHeading: {
-    fontFamily: 'SpaceMono',
-    fontSize: 20,
-    fontWeight: '900',
-    textTransform: 'uppercase',
-    marginBottom: 10,
+  boxSlot: {
+    width: 34,
+    height: 5,
+    backgroundColor: '#09090b',
+    borderRadius: 3,
   },
-  cardDesc: {
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: 'center',
+  titleSection: {
     marginBottom: 20,
   },
-  joinBtn: {
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  titleWhite: {
+    fontFamily: 'SpaceMono',
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
+  },
+  titleYellow: {
+    fontFamily: 'SpaceMono',
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#FFCC00',
+    textTransform: 'uppercase',
+  },
+  underlineCurveContainer: {
+    marginTop: -4,
+    marginBottom: 8,
+  },
+  subtitleText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 13,
+    color: '#A1A1AA',
+    lineHeight: 18,
+  },
+  darkCard: {
+    backgroundColor: '#18181B',
+    borderRadius: 28,
+    borderWidth: 2,
+    borderColor: '#27272A',
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  darkCardTopContent: {
+    padding: 24,
+    paddingBottom: 16,
+    alignItems: 'center',
+  },
+  badgeWrapper: {
+    marginBottom: 16,
+  },
+  badgeDottedCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 2,
+    borderColor: '#3F3F46',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 4,
+  },
+  badgeInnerLogoCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FFCC00',
+    borderWidth: 2,
+    borderColor: '#09090b',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  pollSphereLogoImg: {
     width: '100%',
-    marginTop: 10,
+    height: '100%',
+    borderRadius: 30,
+  },
+  cardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  cardTitleWhite: {
+    fontFamily: 'SpaceMono',
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
+  },
+  cardTitleYellow: {
+    fontFamily: 'SpaceMono',
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#FFCC00',
+    textTransform: 'uppercase',
+  },
+  cardDescText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    color: '#A1A1AA',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  yellowSectionWrapper: {
+    marginTop: 0,
+  },
+  wavySvgWrapper: {
+    marginBottom: -1,
+  },
+  yellowBodyContent: {
+    backgroundColor: '#FFCC00',
+    padding: 20,
+    paddingTop: 4,
+    borderBottomLeftRadius: 26,
+    borderBottomRightRadius: 26,
+  },
+  inputLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  inputLabelText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#09090b',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  inputBoxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  pollInput: {
+    flex: 1,
+    height: 52,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 2.5,
+    borderColor: '#09090b',
+    paddingHorizontal: 16,
+    fontFamily: 'SpaceMono',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#09090b',
+  },
+  qrScanBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 2.5,
+    borderColor: '#09090b',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  connectPillBtn: {
+    height: 56,
+    backgroundColor: '#09090b',
+    borderRadius: 28,
+    borderWidth: 2.5,
+    borderColor: '#09090b',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft: 22,
+    paddingRight: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 2, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 0,
+    elevation: 5,
+  },
+  connectBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  cyanArrowCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#06B6D4',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

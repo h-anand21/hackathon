@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import { Tabs } from 'expo-router';
-import { Home, CheckSquare, Plus, Settings } from 'lucide-react-native';
+import { Home, CheckSquare, Plus, BarChart3, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const HomeIcon = Home as any;
 const CheckSquareIcon = CheckSquare as any;
 const PlusIcon = Plus as any;
+const BarChart3Icon = BarChart3 as any;
 const SettingsIcon = Settings as any;
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
@@ -48,6 +49,9 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         if (route.name === 'three') {
           IconComponent = CheckSquareIcon;
           label = 'Vote';
+        } else if (route.name === 'five') {
+          IconComponent = BarChart3Icon;
+          label = 'Analytics';
         } else if (route.name === 'four') {
           IconComponent = SettingsIcon;
           label = 'Settings';
@@ -55,8 +59,8 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
         return (
           <Pressable key={route.key} onPress={onPress} style={tabStyles.tabItem}>
-            <IconComponent size={22} color="#09090b" strokeWidth={isFocused ? 2.5 : 2} />
-            <Text style={[tabStyles.tabLabel, isFocused && tabStyles.tabLabelActive]}>
+            <IconComponent size={20} color="#09090b" strokeWidth={isFocused ? 2.5 : 2} />
+            <Text style={[tabStyles.tabLabel, isFocused && tabStyles.tabLabelActive]} numberOfLines={1}>
               {label}
             </Text>
             {isFocused && <View style={tabStyles.activeDot} />}
@@ -78,6 +82,7 @@ export default function TabLayout() {
       <Tabs.Screen name="index" options={{ title: 'Dashboard' }} />
       <Tabs.Screen name="three" options={{ title: 'Vote' }} />
       <Tabs.Screen name="two" options={{ title: 'Create' }} />
+      <Tabs.Screen name="five" options={{ title: 'Analytics' }} />
       <Tabs.Screen name="four" options={{ title: 'Settings' }} />
     </Tabs>
   );
