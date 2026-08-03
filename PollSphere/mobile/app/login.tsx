@@ -12,7 +12,7 @@ import {
   Easing,
   Image
 } from 'react-native';
-import { useSignIn, useSignUp, useOAuth } from '@clerk/clerk-expo';
+import { useSignIn, useSignUp, useOAuth, useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { BrutalCard, BrutalButton, BrutalInput } from '../components/Brutal';
 import { Colors } from '../constants/Theme';
@@ -706,11 +706,19 @@ const animStyles = StyleSheet.create({
 });
 
 export default function LoginScreen() {
+  const { isLoaded: isAuthLoaded, isSignedIn } = useAuth();
   const { signIn, setActive, isLoaded } = useSignIn() as any;
   const { signUp } = useSignUp() as any;
   const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
   const router = useRouter();
   const { colors } = useTheme();
+
+  // If user is already signed in, automatically redirect to Dashboard directly!
+  useEffect(() => {
+    if (isAuthLoaded && isSignedIn) {
+      router.replace('/(tabs)');
+    }
+  }, [isAuthLoaded, isSignedIn]);
 
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null); // null = loading
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -804,6 +812,12 @@ export default function LoginScreen() {
 
   const handleGoogleSignIn = async () => {
     if (!isLoaded) return;
+
+    if (isSignedIn) {
+      router.replace('/(tabs)');
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -813,7 +827,11 @@ export default function LoginScreen() {
         router.replace('/(tabs)');
       }
     } catch (err: any) {
-      console.error('Google Sign In Error:', err);
+      const errMessage = (err?.message || parseClerkError(err, '')).toLowerCase();
+      if (errMessage.includes('already signed in') || err?.errors?.[0]?.code === 'session_exists') {
+        router.replace('/(tabs)');
+        return;
+      }
       setError(parseClerkError(err, 'Failed to sign in with Google'));
     } finally {
       setLoading(false);

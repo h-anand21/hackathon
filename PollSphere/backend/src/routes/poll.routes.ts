@@ -19,6 +19,7 @@ router.get('/:id', requireAuth, getPollById);
 import { updatePollSchema } from '../validators/poll.validator';
 import { updatePoll, deletePoll } from '../controllers/poll.controller';
 router.patch('/:id', requireAuth, validate(updatePollSchema), updatePoll);
+router.put('/:id', requireAuth, validate(updatePollSchema), updatePoll);
 
 // Route: DELETE /api/polls/:id
 router.delete('/:id', requireAuth, deletePoll);

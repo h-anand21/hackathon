@@ -6,7 +6,9 @@ import {
   ScrollView, 
   ActivityIndicator, 
   Platform,
-  Alert
+  Alert,
+  Pressable,
+  Share
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -15,14 +17,18 @@ import { BrutalCard, BrutalButton } from '../../components/Brutal';
 import { Colors } from '../../constants/Theme';
 import { api } from '../../utils/api';
 import { socket } from '../../utils/socket';
-import { Users, TrendingUp, Trophy, Activity, ArrowLeft } from 'lucide-react-native';
+import { Users, TrendingUp, Trophy, Activity, ArrowLeft, FileText, Share2, CheckCircle2 } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import Svg, { Circle, G } from 'react-native-svg';
+
 const UsersIcon = Users as any;
 const TrendingUpIcon = TrendingUp as any;
 const TrophyIcon = Trophy as any;
 const ActivityIcon = Activity as any;
 const ArrowLeftIcon = ArrowLeft as any;
+const FileTextIcon = FileText as any;
+const Share2Icon = Share2 as any;
+const CheckCircle2Icon = CheckCircle2 as any;
 
 export default function PollAnalyticsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -117,6 +123,54 @@ export default function PollAnalyticsScreen() {
   const poll = data.poll;
   const analytics = data.analytics;
 
+  const handlePublishPoll = async () => {
+    Alert.alert(
+      'Publish Poll Results',
+      'Are you sure you want to publish the results now? This will complete active voting and publish final results publicly to all users.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Publish Now',
+          style: 'default',
+          onPress: async () => {
+            try {
+              // Call backend API to update poll status to 'published' in MongoDB
+              let res;
+              try {
+                res = await api.patch(`/polls/${id}`, { status: 'published' });
+              } catch {
+                res = await api.put(`/polls/${id}`, { status: 'published' });
+              }
+
+              if (res.data.success) {
+                setData((prev: any) => prev ? { ...prev, poll: { ...prev.poll, status: 'published' } } : null);
+                // Emit real-time socket event so connected voters update instantly!
+                socket.emit('poll_updated', id);
+                Alert.alert('Success', 'Poll results published successfully! Voting is now completed.');
+              } else {
+                Alert.alert('Error', 'Failed to publish poll results.');
+              }
+            } catch (err: any) {
+              console.error('Publish Error:', err);
+              Alert.alert('Error', err?.response?.data?.error || 'An error occurred while publishing.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleShare = async () => {
+    try {
+      const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://pollsphere.vercel.app';
+      await Share.share({
+        message: `Vote on this Poll: "${poll?.title || 'Live Poll'}"\nLink: ${webUrl}/poll/slug/${id}`,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* Header */}
@@ -134,6 +188,66 @@ export default function PollAnalyticsScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Title */}
         <Text style={[styles.pollTitle, { color: colors.foreground }]}>{poll.title}</Text>
+
+        {/* Creator Control & Action Buttons (Publish Results, Vote Now, Share) */}
+        <BrutalCard variant="default" style={styles.actionCard}>
+          <View style={styles.actionHeaderRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.actionSectionTitle, { color: colors.foreground }]}>
+                CAMPAIGN CONTROLS
+              </Text>
+              <Text style={[styles.statusSubtitle, { color: colors.mutedForeground }]}>
+                {poll.status === 'published' 
+                  ? 'Final results are live & published' 
+                  : 'Voting in Progress • Direct Creator Actions'}
+              </Text>
+            </View>
+
+            <View style={[
+              styles.statusTag, 
+              { backgroundColor: poll.status === 'published' ? '#10B981' : poll.status === 'active' ? '#FFCC00' : '#E4E4E7' }
+            ]}>
+              <Text style={[
+                styles.statusTagText, 
+                { color: poll.status === 'published' ? '#FFFFFF' : '#09090b' }
+              ]}>
+                {poll.status.toUpperCase()}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.analyticsActionButtonsRow}>
+            {poll.status !== 'published' ? (
+              <>
+                {/* 1. PUBLISH RESULTS BUTTON */}
+                <Pressable onPress={handlePublishPoll} style={styles.publishBtn}>
+                  <FileTextIcon size={18} color="#FFFFFF" strokeWidth={2.5} />
+                  <Text style={styles.publishBtnText}>PUBLISH RESULTS</Text>
+                </Pressable>
+
+                {/* 2. VOTE NOW BUTTON */}
+                <Pressable onPress={() => router.push(`/poll/${id}`)} style={styles.voteBtn}>
+                  <UsersIcon size={18} color="#FFFFFF" strokeWidth={2.5} />
+                  <Text style={styles.voteBtnText}>VOTE NOW</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                {/* VIEW FINAL RESULTS PAGE BUTTON */}
+                <Pressable onPress={() => router.push(`/published/${id}`)} style={styles.publishedViewBtn}>
+                  <CheckCircle2Icon size={18} color="#FFFFFF" strokeWidth={2.5} />
+                  <Text style={styles.publishedViewBtnText}>VIEW FINAL RESULTS</Text>
+                </Pressable>
+
+                {/* SHARE BUTTON */}
+                <Pressable onPress={handleShare} style={styles.shareBtn}>
+                  <Share2Icon size={18} color="#09090b" strokeWidth={2.5} />
+                  <Text style={styles.shareBtnText}>SHARE</Text>
+                </Pressable>
+              </>
+            )}
+          </View>
+        </BrutalCard>
 
         {/* Global Reach Stats Grid */}
         <View style={styles.statsGrid}>
@@ -515,5 +629,135 @@ const styles = StyleSheet.create({
     fontFamily: 'SpaceMono',
     fontSize: 14,
     fontWeight: '900',
+  },
+  actionCard: {
+    marginBottom: 16,
+    padding: 16,
+  },
+  actionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  actionSectionTitle: {
+    fontFamily: 'SpaceMono',
+    fontSize: 14,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  statusSubtitle: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  statusTag: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#09090b',
+  },
+  statusTagText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  analyticsActionButtonsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  },
+  publishBtn: {
+    flex: 1.4,
+    height: 46,
+    backgroundColor: '#8B5CF6',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#09090b',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
+  },
+  publishBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  voteBtn: {
+    flex: 1,
+    height: 46,
+    backgroundColor: '#10B981',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#09090b',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
+  },
+  voteBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  publishedViewBtn: {
+    flex: 1.4,
+    height: 46,
+    backgroundColor: '#10B981',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#09090b',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
+  },
+  publishedViewBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  shareBtn: {
+    flex: 1,
+    height: 46,
+    backgroundColor: '#FFCC00',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#09090b',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
+  },
+  shareBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#09090b',
   },
 });
