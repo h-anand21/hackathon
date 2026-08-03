@@ -10,14 +10,30 @@ import {
   Pressable,
   Animated,
   Easing,
-  Image
+  Image,
+  TextInput
 } from 'react-native';
 import { useSignIn, useSignUp, useOAuth, useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { BrutalCard, BrutalButton, BrutalInput } from '../components/Brutal';
 import { Colors } from '../constants/Theme';
 import { setAuthToken } from '../utils/api';
-import { Zap, Shield, BarChart3, Users, Trophy, ArrowRight, Plus } from 'lucide-react-native';
+import { 
+  Zap, 
+  Shield, 
+  BarChart3, 
+  Users, 
+  Trophy, 
+  ArrowRight, 
+  Plus, 
+  Mail, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  User, 
+  ShieldCheck, 
+  ChevronRight 
+} from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import { useTheme } from '../contexts/ThemeContext';
@@ -34,6 +50,13 @@ const UsersIcon = Users as any;
 const TrophyIcon = Trophy as any;
 const ArrowRightIcon = ArrowRight as any;
 const PlusIcon = Plus as any;
+const MailIcon = Mail as any;
+const LockIcon = Lock as any;
+const EyeIcon = Eye as any;
+const EyeOffIcon = EyeOff as any;
+const UserIcon = User as any;
+const ShieldCheckIcon = ShieldCheck as any;
+const ChevronRightIcon = ChevronRight as any;
 
 // --- Animation Components for 6 Onboarding Screens ---
 const FloatingPlusOne = ({ delay, left }: { delay: number; left: number }) => {
@@ -788,6 +811,7 @@ export default function LoginScreen() {
   const [forgotPasswordStep, setForgotPasswordStep] = useState(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [resetCode, setResetCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -1080,205 +1104,283 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={styles.loginPageContainer}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Logo Header */}
-        <View style={styles.header}>
-          <Image 
-            source={require('../assets/images/image.png')} 
-            style={styles.mainLogoImage} 
-            resizeMode="contain"
-          />
-          <Text style={[styles.logoText, { color: colors.foreground }]}>PollSphere</Text>
-          <Text style={styles.subtitle}>Real-time feedback & polling platform</Text>
+      <ScrollView contentContainerStyle={styles.loginScrollContent} showsVerticalScrollIndicator={false}>
+        {/* Top Logo Header */}
+        <View style={styles.topLogoHeaderContainer}>
+          <View style={styles.appIconBadgeCircle}>
+            <BarChartIcon size={26} color="#00E5CC" strokeWidth={2.5} />
+          </View>
+          <Text style={styles.appTitleText}>PollSphere</Text>
+          <Text style={styles.appSubtitleText}>Real-time feedback & polling platform</Text>
         </View>
 
-        {/* Interactive Login/Signup Card */}
-        <BrutalCard variant="primary" style={styles.card}>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-            {isForgotPasswordMode 
-              ? 'Reset Password' 
-              : pendingVerification 
-                ? 'Verify Email' 
-                : isSignUpMode ? 'Create Account' : 'Welcome Back'}
-          </Text>
+        {/* Main Glowing Card Container */}
+        <View style={styles.mainGlowingCard}>
+          {/* Card Header Row */}
+          <View style={styles.cardHeaderRowCustom}>
+            <View style={styles.userCircleBadge}>
+              <UserIcon size={20} color="#00E5CC" strokeWidth={2} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.welcomeBackTitle}>
+                {isForgotPasswordMode 
+                  ? 'RESET PASSWORD' 
+                  : pendingVerification 
+                    ? 'VERIFY EMAIL' 
+                    : isSignUpMode ? 'CREATE ACCOUNT' : 'WELCOME BACK'}
+              </Text>
+              <Text style={styles.welcomeBackSub}>
+                {isSignUpMode ? 'Sign up for a new account' : 'Sign in to continue to your account'}
+              </Text>
+            </View>
+          </View>
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          {error ? <Text style={styles.errorTextCustom}>{error}</Text> : null}
 
           {isForgotPasswordMode ? (
             forgotPasswordStep === 1 ? (
-              <View>
-                <Text style={[styles.infoText, { color: colors.foreground }]}>
+              <View style={styles.formFieldsGap}>
+                <Text style={styles.infoTextCustom}>
                   Enter your email address to receive a password reset verification code.
                 </Text>
-                <BrutalInput
-                  label="Email Address"
-                  placeholder="yourname@example.com"
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                />
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabelText}>EMAIL ADDRESS</Text>
+                  <View style={styles.inputContainerRow}>
+                    <MailIcon size={18} color="#00E5CC" style={styles.inputLeftIcon} />
+                    <TextInput
+                      placeholder="yourname@example.com"
+                      placeholderTextColor="#6B7280"
+                      value={email}
+                      onChangeText={setEmail}
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                      style={styles.textInputStyle}
+                    />
+                  </View>
+                </View>
                 {loading ? (
-                  <ActivityIndicator size="large" color={Colors.primary} style={{ marginVertical: 15 }} />
+                  <ActivityIndicator size="small" color="#00E5CC" style={{ marginVertical: 15 }} />
                 ) : (
-                  <BrutalButton
-                    title="Send Reset Code"
-                    variant="accent"
-                    onPress={handleForgotPasswordRequest}
-                  />
+                  <Pressable onPress={handleForgotPasswordRequest} style={styles.signInSolidCyanBtn}>
+                    <Text style={styles.signInBtnText}>SEND RESET CODE</Text>
+                  </Pressable>
                 )}
                 <Pressable 
                   onPress={() => {
                     setIsForgotPasswordMode(false);
                     setError('');
                   }}
-                  style={styles.toggleMode}
+                  style={styles.toggleModeCenter}
                 >
-                  <Text style={styles.toggleText}>Back to Sign In</Text>
+                  <Text style={styles.signUpYellowText}>Back to Sign In</Text>
                 </Pressable>
               </View>
             ) : (
-              <View>
-                <Text style={[styles.infoText, { color: colors.foreground }]}>
+              <View style={styles.formFieldsGap}>
+                <Text style={styles.infoTextCustom}>
                   Enter the code sent to your email and select your new password.
                 </Text>
-                <BrutalInput
-                  label="Reset Code"
-                  placeholder="123456"
-                  value={resetCode}
-                  onChangeText={setResetCode}
-                  keyboardType="number-pad"
-                />
-                <BrutalInput
-                  label="New Password"
-                  placeholder="••••••••"
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  secureTextEntry
-                />
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabelText}>RESET CODE</Text>
+                  <View style={styles.inputContainerRow}>
+                    <TextInput
+                      placeholder="123456"
+                      placeholderTextColor="#6B7280"
+                      value={resetCode}
+                      onChangeText={setResetCode}
+                      keyboardType="number-pad"
+                      style={styles.textInputStyle}
+                    />
+                  </View>
+                </View>
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabelText}>NEW PASSWORD</Text>
+                  <View style={styles.inputContainerRow}>
+                    <LockIcon size={18} color="#00E5CC" style={styles.inputLeftIcon} />
+                    <TextInput
+                      placeholder="••••••••"
+                      placeholderTextColor="#6B7280"
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      secureTextEntry={!showPassword}
+                      style={styles.textInputStyle}
+                    />
+                    <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeToggleBtn}>
+                      {showPassword ? <EyeOffIcon size={18} color="#A1A1AA" /> : <EyeIcon size={18} color="#A1A1AA" />}
+                    </Pressable>
+                  </View>
+                </View>
                 {loading ? (
-                  <ActivityIndicator size="large" color={Colors.primary} style={{ marginVertical: 15 }} />
+                  <ActivityIndicator size="small" color="#00E5CC" style={{ marginVertical: 15 }} />
                 ) : (
-                  <BrutalButton
-                    title="Reset Password"
-                    variant="accent"
-                    onPress={handleForgotPasswordReset}
-                  />
+                  <Pressable onPress={handleForgotPasswordReset} style={styles.signInSolidCyanBtn}>
+                    <Text style={styles.signInBtnText}>RESET PASSWORD</Text>
+                  </Pressable>
                 )}
                 <Pressable 
                   onPress={() => {
                     setForgotPasswordStep(1);
                     setError('');
                   }}
-                  style={styles.toggleMode}
+                  style={styles.toggleModeCenter}
                 >
-                  <Text style={styles.toggleText}>Back to Email Entry</Text>
+                  <Text style={styles.signUpYellowText}>Back to Email Entry</Text>
                 </Pressable>
               </View>
             )
           ) : pendingVerification ? (
-            <View>
-              <Text style={[styles.infoText, { color: colors.foreground }]}>
+            <View style={styles.formFieldsGap}>
+              <Text style={styles.infoTextCustom}>
                 We sent a verification code to your email. Enter it below.
               </Text>
-              <BrutalInput
-                label="Verification Code"
-                placeholder="123456"
-                value={verificationCode}
-                onChangeText={setVerificationCode}
-                keyboardType="number-pad"
-              />
-              <BrutalButton
-                title={loading ? 'Verifying...' : 'Verify Code'}
-                variant="accent"
-                onPress={handleVerify}
-                disabled={loading}
-              />
-              <BrutalButton
-                title="Back to Sign Up"
-                variant="default"
-                onPress={() => setPendingVerification(false)}
-                style={styles.backButton}
-              />
+              <View style={styles.fieldGroup}>
+                <Text style={styles.fieldLabelText}>VERIFICATION CODE</Text>
+                <View style={styles.inputContainerRow}>
+                  <TextInput
+                    placeholder="123456"
+                    placeholderTextColor="#6B7280"
+                    value={verificationCode}
+                    onChangeText={setVerificationCode}
+                    keyboardType="number-pad"
+                    style={styles.textInputStyle}
+                  />
+                </View>
+              </View>
+              <Pressable onPress={handleVerify} disabled={loading} style={styles.signInSolidCyanBtn}>
+                {loading ? <ActivityIndicator size="small" color="#000000" /> : <Text style={styles.signInBtnText}>VERIFY CODE</Text>}
+              </Pressable>
+              <Pressable onPress={() => setPendingVerification(false)} style={styles.guestOutlineBtn}>
+                <Text style={styles.guestBtnText}>BACK TO SIGN UP</Text>
+              </Pressable>
             </View>
           ) : (
-            <View>
-              <BrutalInput
-                label="Email Address"
-                placeholder="yourname@example.com"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-              <BrutalInput
-                label="Password"
-                placeholder="••••••••"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
+            <View style={styles.formFieldsGap}>
+              {/* EMAIL ADDRESS */}
+              <View style={styles.fieldGroup}>
+                <Text style={styles.fieldLabelText}>EMAIL ADDRESS</Text>
+                <View style={styles.inputContainerRow}>
+                  <MailIcon size={18} color="#00E5CC" style={styles.inputLeftIcon} />
+                  <TextInput
+                    placeholder="yourname@example.com"
+                    placeholderTextColor="#6B7280"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    style={styles.textInputStyle}
+                  />
+                </View>
+              </View>
 
+              {/* PASSWORD */}
+              <View style={styles.fieldGroup}>
+                <Text style={styles.fieldLabelText}>PASSWORD</Text>
+                <View style={styles.inputContainerRow}>
+                  <LockIcon size={18} color="#00E5CC" style={styles.inputLeftIcon} />
+                  <TextInput
+                    placeholder="••••••••"
+                    placeholderTextColor="#6B7280"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    style={styles.textInputStyle}
+                  />
+                  <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeToggleBtn}>
+                    {showPassword ? (
+                      <EyeOffIcon size={18} color="#A1A1AA" />
+                    ) : (
+                      <EyeIcon size={18} color="#A1A1AA" />
+                    )}
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* FORGOT PASSWORD LINK */}
               {!isSignUpMode && (
-                <Pressable 
+                <Pressable
                   onPress={() => {
                     setIsForgotPasswordMode(true);
                     setForgotPasswordStep(1);
                     setError('');
                   }}
-                  style={styles.forgotPasswordLink}
+                  style={styles.forgotPasswordAlignRight}
                 >
-                  <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                  <Text style={styles.forgotPasswordCyanText}>Forgot Password?</Text>
                 </Pressable>
               )}
 
-              {loading ? (
-                <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: 15 }} />
-              ) : (
-                <View style={{ gap: 10 }}>
-                  <BrutalButton
-                    title={isSignUpMode ? 'Sign Up' : 'Sign In'}
-                    variant="primary"
-                    onPress={isSignUpMode ? handleSignUp : handleSignIn}
-                  />
-                  <BrutalButton
-                    title="Continue with Google"
-                    variant="accent"
-                    onPress={handleGoogleSignIn}
-                  />
-                </View>
-              )}
-
-              <Pressable 
-                onPress={() => {
-                  setIsSignUpMode(!isSignUpMode);
-                  setError('');
-                }}
-                style={styles.toggleMode}
+              {/* SIGN IN BUTTON (Solid Cyan) */}
+              <Pressable
+                onPress={isSignUpMode ? handleSignUp : handleSignIn}
+                disabled={loading}
+                style={styles.signInSolidCyanBtn}
               >
-                <Text style={styles.toggleText}>
-                  {isSignUpMode 
-                    ? 'Already have an account? Sign In' 
-                    : "Don't have an account? Sign Up"}
-                </Text>
+                {loading ? (
+                  <ActivityIndicator color="#000000" size="small" />
+                ) : (
+                  <Text style={styles.signInBtnText}>{isSignUpMode ? 'SIGN UP' : 'SIGN IN'}</Text>
+                )}
+              </Pressable>
+
+              {/* CONTINUE WITH GOOGLE BUTTON (Solid Golden Yellow) */}
+              <Pressable
+                onPress={handleGoogleSignIn}
+                disabled={loading}
+                style={styles.googleYellowBtn}
+              >
+                <View style={styles.googleGLogoCircle}>
+                  <Text style={styles.googleGLogoText}>G</Text>
+                </View>
+                <Text style={styles.googleBtnText}>CONTINUE WITH GOOGLE</Text>
+              </Pressable>
+
+              {/* DIVIDER */}
+              <View style={styles.orDividerRow}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.orDividerText}>— OR —</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              {/* CONTINUE AS GUEST BUTTON (Golden Yellow Outline) */}
+              <Pressable
+                onPress={handleGuestMode}
+                style={styles.guestOutlineBtn}
+              >
+                <UserIcon size={18} color="#FFCC00" />
+                <Text style={styles.guestBtnText}>CONTINUE AS GUEST</Text>
               </Pressable>
             </View>
           )}
-        </BrutalCard>
+        </View>
 
-        {/* Guest Mode action */}
-        <View style={styles.guestWrapper}>
-          <Text style={styles.orText}>— OR —</Text>
-          <BrutalButton
-            title="Continue as Guest"
-            variant="accent"
-            onPress={handleGuestMode}
-          />
-          <Text style={styles.guestInfo}>
-            You can vote anonymously, but won't be able to create new polls.
-          </Text>
+        {/* Footer Links & Anonymous Notice */}
+        <View style={styles.footerContainerCustom}>
+          <Pressable
+            onPress={() => {
+              setIsSignUpMode(!isSignUpMode);
+              setError('');
+            }}
+            style={styles.signUpToggleRowCustom}
+          >
+            <Text style={styles.dontHaveAccountText}>
+              {isSignUpMode ? 'Already have an account?' : "Don't have an account?"}{' '}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.signUpYellowText}>
+                {isSignUpMode ? 'Sign In' : 'Sign Up'}
+              </Text>
+              <ChevronRightIcon size={16} color="#FFCC00" style={{ marginLeft: 2 }} />
+            </View>
+          </Pressable>
+
+          <View style={styles.anonymousShieldNoticeRow}>
+            <ShieldCheckIcon size={18} color="#00E5CC" />
+            <Text style={styles.shieldNoticeText}>
+              You can vote anonymously, but won't be able to create new polls.
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -1682,4 +1784,290 @@ const styles = StyleSheet.create({
   backLinkPlaceholder: {
     height: 32,
   },
+
+  // --- Screenshot Matching Custom Login Styles ---
+  loginPageContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  loginScrollContent: {
+    flexGrow: 1,
+    padding: 20,
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    paddingBottom: 40,
+    alignItems: 'center',
+  },
+  topLogoHeaderContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  appIconBadgeCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: '#09090b',
+    borderWidth: 2,
+    borderColor: '#00E5CC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    shadowColor: '#00E5CC',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  appTitleText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
+  },
+  appSubtitleText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#A1A1AA',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  mainGlowingCard: {
+    width: '100%',
+    backgroundColor: '#09090b',
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: '#00E5CC',
+    padding: 20,
+    shadowColor: '#00E5CC',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  cardHeaderRowCustom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 20,
+  },
+  userCircleBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: '#00E5CC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#121214',
+  },
+  welcomeBackTitle: {
+    fontFamily: 'SpaceMono',
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  welcomeBackSub: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#A1A1AA',
+    marginTop: 2,
+  },
+  errorTextCustom: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    color: '#EF4444',
+    marginBottom: 12,
+    textAlign: 'center',
+    fontWeight: '900',
+  },
+  formFieldsGap: {
+    gap: 14,
+  },
+  fieldGroup: {
+    width: '100%',
+  },
+  fieldLabelText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  inputContainerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#121214',
+    borderWidth: 1.5,
+    borderColor: '#27272A',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    height: 48,
+  },
+  inputLeftIcon: {
+    marginRight: 10,
+  },
+  textInputStyle: {
+    flex: 1,
+    fontFamily: 'SpaceMono',
+    fontSize: 13,
+    color: '#FFFFFF',
+    height: '100%',
+  },
+  eyeToggleBtn: {
+    padding: 6,
+  },
+  forgotPasswordAlignRight: {
+    alignSelf: 'flex-end',
+    marginTop: -4,
+    marginBottom: 4,
+  },
+  forgotPasswordCyanText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#00E5CC',
+  },
+  signInSolidCyanBtn: {
+    width: '100%',
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#00E5CC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#00E5CC',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  signInBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#09090b',
+    letterSpacing: 1,
+  },
+  googleYellowBtn: {
+    width: '100%',
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#FFCC00',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    shadowColor: '#FFCC00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  googleGLogoCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#EA4335',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleGLogoText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 13,
+  },
+  googleBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#09090b',
+    letterSpacing: 0.5,
+  },
+  orDividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 4,
+    gap: 10,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#27272A',
+  },
+  orDividerText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#71717A',
+  },
+  guestOutlineBtn: {
+    width: '100%',
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#FFCC00',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  guestBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  footerContainerCustom: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 24,
+    gap: 16,
+  },
+  signUpToggleRowCustom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dontHaveAccountText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  signUpYellowText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#FFCC00',
+  },
+  anonymousShieldNoticeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+  },
+  shieldNoticeText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    color: '#A1A1AA',
+    flex: 1,
+    fontWeight: '500',
+  },
+  toggleModeCenter: {
+    alignSelf: 'center',
+    paddingVertical: 6,
+  },
+  infoTextCustom: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    color: '#A1A1AA',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+
 });

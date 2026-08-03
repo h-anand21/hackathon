@@ -41,6 +41,7 @@ import {
   Filter
 } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { PollQRCodeModal } from '../../components/PollQRCodeModal';
 
 const TrashIcon = Trash2 as any;
 const LogOutIcon = LogOut as any;
@@ -85,6 +86,7 @@ export default function DashboardScreen() {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'published' | 'expired'>('all');
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [qrModal, setQrModal] = useState<{ pollId: string; title: string } | null>(null);
 
   useEffect(() => {
     if (isLoaded && getToken) {
@@ -166,15 +168,8 @@ export default function DashboardScreen() {
     router.push(`/poll/${cleanId}`);
   };
 
-  const handleShare = async (pollId: string, title: string) => {
-    try {
-      const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://pollsphere.vercel.app';
-      await Share.share({
-        message: `Vote on this Poll: "${title}"\nLink: ${webUrl}/poll/slug/${pollId}`,
-      });
-    } catch (error) {
-      console.error(error);
-    }
+  const handleShare = (pollId: string, title: string) => {
+    setQrModal({ pollId, title });
   };
 
   const handleLogout = async () => {
@@ -750,6 +745,16 @@ export default function DashboardScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* QR Code Share Modal */}
+      {qrModal && (
+        <PollQRCodeModal
+          visible={!!qrModal}
+          onClose={() => setQrModal(null)}
+          pollId={qrModal.pollId}
+          pollTitle={qrModal.title}
+        />
+      )}
     </SafeAreaView>
   );
 }

@@ -9,13 +9,15 @@ import {
   Alert,
   Pressable,
   TextInput,
-  Image
+  Image,
+  Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, CheckSquare, QrCode, ArrowRight, Sparkles, Check, Vote, Megaphone } from 'lucide-react-native';
+import { ArrowLeft, CheckSquare, QrCode, ArrowRight, Sparkles, Check, Vote, Megaphone, X } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 import { useTheme } from '../../contexts/ThemeContext';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 const ArrowLeftIcon = ArrowLeft as any;
 const CheckSquareIcon = CheckSquare as any;
@@ -23,6 +25,7 @@ const QrCodeIcon = QrCode as any;
 const ArrowRightIcon = ArrowRight as any;
 const SparklesIcon = Sparkles as any;
 const CheckIcon = Check as any;
+const XIcon = X as any;
 const VoteIcon = Vote as any;
 const MegaphoneIcon = Megaphone as any;
 
@@ -38,6 +41,10 @@ export default function VoteScreen() {
   const cardBorder = isDark ? '#27272A' : '#09090b';
   const backBtnBg = isDark ? '#18181B' : '#FFFFFF';
   const backBtnIcon = isDark ? '#FFFFFF' : '#09090b';
+
+  const [showScannerModal, setShowScannerModal] = useState(false);
+  const [scanned, setScanned] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
 
   const extractPollId = (input: string): string => {
     const trimmed = input.trim();
@@ -57,8 +64,29 @@ export default function VoteScreen() {
     router.push(`/poll/${cleanId}`);
   };
 
-  const handleScanQR = () => {
-    Alert.alert('QR Scanner', 'Point your camera at a Poll QR Code to join automatically.');
+  const handleScanQR = async () => {
+    if (!permission?.granted) {
+      const res = await requestPermission();
+      if (!res.granted) {
+        Alert.alert('Camera Permission Required', 'Please allow camera access to scan QR codes for live polling rooms.');
+        return;
+      }
+    }
+    setScanned(false);
+    setShowScannerModal(true);
+  };
+
+  const handleBarcodeScanned = ({ data }: { data: string }) => {
+    if (scanned) return;
+    setScanned(true);
+    setShowScannerModal(false);
+    const cleanId = extractPollId(data);
+    if (cleanId) {
+      setPollId(cleanId);
+      router.push(`/poll/${cleanId}`);
+    } else {
+      Alert.alert('Invalid QR Code', 'The scanned QR code is not a valid PollSphere poll link.');
+    }
   };
 
   return (
@@ -201,6 +229,60 @@ export default function VoteScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* QR Code Scanner Modal */}
+      <Modal
+        visible={showScannerModal}
+        transparent={false}
+        animationType="slide"
+        statusBarTranslucent
+        onRequestClose={() => setShowScannerModal(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: '#000000' }}>
+          {/* Scanner Header */}
+          <View style={styles.scannerHeader}>
+            <Pressable onPress={() => setShowScannerModal(false)} style={styles.scannerCloseBtn}>
+              <XIcon size={22} color="#FFFFFF" />
+            </Pressable>
+            <Text style={styles.scannerHeaderTitle}>SCAN POLL QR</Text>
+            <View style={{ width: 40 }} />
+          </View>
+
+          {/* Camera View */}
+          <CameraView
+            style={{ flex: 1 }}
+            facing="back"
+            barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+            onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+          >
+            {/* Scan Frame Overlay */}
+            <View style={styles.scanOverlay}>
+              <View style={styles.scanFrameTop} />
+              <View style={styles.scanFrameMiddleRow}>
+                <View style={styles.scanFrameSide} />
+                <View style={styles.scanFrame}>
+                  {/* Corner marks */}
+                  <View style={[styles.corner, styles.cornerTL]} />
+                  <View style={[styles.corner, styles.cornerTR]} />
+                  <View style={[styles.corner, styles.cornerBL]} />
+                  <View style={[styles.corner, styles.cornerBR]} />
+                  {/* Scan line */}
+                  <View style={styles.scanLine} />
+                </View>
+                <View style={styles.scanFrameSide} />
+              </View>
+              <View style={styles.scanFrameBottom}>
+                <Text style={styles.scanHintText}>Point camera at PollSphere QR Code</Text>
+                {scanned && (
+                  <Pressable onPress={() => setScanned(false)} style={styles.scanAgainBtn}>
+                    <Text style={styles.scanAgainBtnText}>TAP TO SCAN AGAIN</Text>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+          </CameraView>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -479,4 +561,103 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // QR Scanner Modal Styles
+  scannerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 50 : 60,
+    paddingBottom: 16,
+    backgroundColor: '#000000',
+  },
+  scannerCloseBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#18181B',
+    borderWidth: 1.5,
+    borderColor: '#3F3F46',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scannerHeaderTitle: {
+    fontFamily: 'SpaceMono',
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#FFCC00',
+    letterSpacing: 1,
+  },
+  scanOverlay: {
+    flex: 1,
+  },
+  scanFrameTop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
+  scanFrameMiddleRow: {
+    flexDirection: 'row',
+    height: 260,
+  },
+  scanFrameSide: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
+  scanFrame: {
+    width: 260,
+    height: 260,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  corner: {
+    position: 'absolute',
+    width: 34,
+    height: 34,
+    borderColor: '#FFCC00',
+    borderWidth: 4,
+  },
+  cornerTL: { top: 0, left: 0, borderRightWidth: 0, borderBottomWidth: 0, borderRadius: 4 },
+  cornerTR: { top: 0, right: 0, borderLeftWidth: 0, borderBottomWidth: 0, borderRadius: 4 },
+  cornerBL: { bottom: 0, left: 0, borderRightWidth: 0, borderTopWidth: 0, borderRadius: 4 },
+  cornerBR: { bottom: 0, right: 0, borderLeftWidth: 0, borderTopWidth: 0, borderRadius: 4 },
+  scanLine: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    right: 0,
+    height: 2.5,
+    backgroundColor: '#FFCC00',
+    opacity: 0.85,
+  },
+  scanFrameBottom: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    paddingTop: 24,
+  },
+  scanHintText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    opacity: 0.85,
+  },
+  scanAgainBtn: {
+    backgroundColor: '#FFCC00',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#09090b',
+  },
+  scanAgainBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#09090b',
+  },
 });
+
