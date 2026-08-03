@@ -67,13 +67,10 @@ function NavigationWrapper() {
   useEffect(() => {
     if (!isLoaded) return;
 
-    const inTabsGroup = segments[0] === '(tabs)';
     const inLoginScreen = segments[0] === 'login';
 
     if (isSignedIn && inLoginScreen) {
       router.replace('/(tabs)');
-    } else if (!isSignedIn && inTabsGroup) {
-      router.replace('/login');
     }
   }, [isLoaded, isSignedIn]);
 

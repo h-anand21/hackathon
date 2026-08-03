@@ -38,7 +38,8 @@ import {
   SlidersHorizontal,
   X,
   Check,
-  Filter
+  Filter,
+  QrCode
 } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PollQRCodeModal } from '../../components/PollQRCodeModal';
@@ -62,6 +63,7 @@ const SlidersHorizontalIcon = SlidersHorizontal as any;
 const XIcon = X as any;
 const CheckIcon = Check as any;
 const FilterIcon = Filter as any;
+const QrCodeIcon = QrCode as any;
 
 export default function DashboardScreen() {
   const { isLoaded, userId, getToken, signOut } = useAuth();
@@ -304,31 +306,34 @@ export default function DashboardScreen() {
 
         {/* Mega Banner Card "JOIN A POLL ROOM" */}
         <View style={[styles.megaYellowCard, { backgroundColor: brandAccent }]}>
-          <View style={styles.megaYellowContent}>
-            <Text style={[styles.megaYellowTitle, !isDark && { color: '#FFFFFF' }]}>JOIN A POLL ROOM</Text>
-            <Text style={[styles.megaYellowSubtitle, !isDark && { color: '#E4E4E7' }]}>Enter Poll ID to join and vote</Text>
-
-            <View style={styles.megaSearchRow}>
-              <TextInput
-                placeholder="Paste Poll ID here..."
-                placeholderTextColor="#6B7280"
-                value={searchPollId}
-                onChangeText={setSearchPollId}
-                style={styles.nativeSearchInput}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <Pressable onPress={handleSearchPoll} style={styles.megaGoBtn}>
-                <Text style={styles.megaGoBtnText}>GO</Text>
-              </Pressable>
+          {/* Top Header Row: Title & Subtitle on Left, Mic Badge on Right */}
+          <View style={styles.megaCardTopHeaderRow}>
+            <View style={{ flex: 1, paddingRight: 10 }}>
+              <Text style={[styles.megaYellowTitle, !isDark && { color: '#FFFFFF' }]}>JOIN A POLL ROOM</Text>
+              <Text style={[styles.megaYellowSubtitle, !isDark && { color: '#E4E4E7' }]}>Enter Poll ID to join and vote</Text>
+            </View>
+            <View style={styles.megaMicBadgeCircle}>
+              <MegaphoneIcon size={24} color="#09090b" strokeWidth={2.5} />
             </View>
           </View>
 
-          {/* Megaphone / Mic Badge Illustration */}
-          <View style={styles.megaIllustrationWrapper}>
-            <View style={styles.megaMicBadge}>
-              <MegaphoneIcon size={34} color="#09090b" strokeWidth={2.5} />
-            </View>
+          {/* Search Row: Input -> QR -> GO */}
+          <View style={styles.megaSearchRow}>
+            <TextInput
+              placeholder="Paste Poll ID here..."
+              placeholderTextColor="#6B7280"
+              value={searchPollId}
+              onChangeText={setSearchPollId}
+              style={styles.nativeSearchInput}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <Pressable onPress={() => router.push('/(tabs)/three')} style={styles.megaQrIconBtn}>
+              <QrCodeIcon size={22} color="#FFFFFF" strokeWidth={2.5} />
+            </Pressable>
+            <Pressable onPress={handleSearchPoll} style={styles.megaGoBtn}>
+              <Text style={styles.megaGoBtnText}>GO</Text>
+            </Pressable>
           </View>
         </View>
 
@@ -830,28 +835,45 @@ const styles = StyleSheet.create({
     shadowRadius: 0,
     elevation: 5,
   },
-  megaYellowContent: {
-    width: '74%',
-    zIndex: 2,
+  megaCardTopHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  megaMicBadgeCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#09090b',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
   },
   megaYellowTitle: {
     fontFamily: 'SpaceMono',
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900',
     color: '#09090b',
     textTransform: 'uppercase',
   },
   megaYellowSubtitle: {
     fontFamily: 'SpaceMono',
-    fontSize: 11,
+    fontSize: 10,
     color: '#09090b',
-    marginTop: 4,
-    marginBottom: 14,
+    marginTop: 2,
   },
   megaSearchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginTop: 4,
   },
   nativeSearchInput: {
     flex: 1,
@@ -892,10 +914,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '900',
   },
+  megaQrIconBtn: {
+    backgroundColor: '#09090b',
+    height: 48,
+    width: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2.5,
+    borderColor: '#09090b',
+    shadowColor: '#000000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
+  },
   megaIllustrationWrapper: {
     position: 'absolute',
     right: 14,
-    top: 18,
+    top: 14,
     zIndex: 3,
   },
   megaMicBadge: {
@@ -912,6 +949,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 0,
     elevation: 4,
+  },
+  megaQrBadge: {
+    width: 68,
+    height: 68,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#09090b',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4,
+    gap: 2,
+  },
+  megaQrBadgeText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 8,
+    fontWeight: '900',
+    color: '#09090b',
+    letterSpacing: 0.5,
   },
 
   // 4 Mini Stat Cards Grid (Pure White Neo-Brutalist Cards)
