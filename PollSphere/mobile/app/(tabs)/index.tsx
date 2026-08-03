@@ -119,6 +119,15 @@ export default function DashboardScreen() {
     }
   }, [isLoaded, userId]);
 
+  // Auto refresh live metrics whenever returning to the Dashboard tab
+  useFocusEffect(
+    React.useCallback(() => {
+      if (isLoaded && userId) {
+        fetchPolls(true);
+      }
+    }, [isLoaded, userId])
+  );
+
   const extractPollId = (input: string): string => {
     const trimmed = input.trim();
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
@@ -184,10 +193,36 @@ export default function DashboardScreen() {
     );
   };
 
+  // Helper to format real expiry time
+  const formatExpiryTime = (expiresAtStr: string, status: string) => {
+    if (status === 'published' || status === 'expired') {
+      return { val: 'Completed', label: 'Expired' };
+    }
+    if (!expiresAtStr) {
+      return { val: '2d left', label: 'Expires' };
+    }
+    const now = new Date();
+    const exp = new Date(expiresAtStr);
+    const diffMs = exp.getTime() - now.getTime();
+    if (diffMs <= 0) {
+      return { val: 'Completed', label: 'Expired' };
+    }
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays > 0) {
+      return { val: `${diffDays}d left`, label: 'Expires' };
+    } else if (diffHours > 0) {
+      return { val: `${diffHours}h left`, label: 'Expires' };
+    } else {
+      const diffMins = Math.max(1, Math.floor(diffMs / (1000 * 60)));
+      return { val: `${diffMins}m left`, label: 'Expires' };
+    }
+  };
+
   // Calculated Stats
   const activePollsCount = polls.filter(p => p.status === 'active').length;
   const publishedPollsCount = polls.filter(p => p.status === 'published').length;
-  const totalVotesCount = polls.reduce((sum, p) => sum + (p.responseCount || p.totalVotes || (p.responses ? p.responses.length : 0)), 0);
+  const totalVotesCount = polls.reduce((sum, p) => sum + (p.totalVotes || p.responseCount || 0), 0);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -364,11 +399,22 @@ export default function DashboardScreen() {
             const badgeBg = isActive ? '#FFCC00' : isPublished ? '#10B981' : '#27272A';
             const badgeText = isActive ? '#09090b' : '#FFFFFF';
 
-            // Stats calculation for card pills
-            const votesCount = item.responseCount || item.totalVotes || (item.responses ? item.responses.length : 0);
-            const questionCount = item.questions?.length || item.questionCount || 1;
-            const responseRate = votesCount > 0 ? '68%' : '0%';
-            const formattedDate = item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '7/7/2026';
+            // Real Stats calculation for card pills
+            const votesCount = typeof item.totalVotes === 'number' 
+              ? item.totalVotes 
+              : (typeof item.responseCount === 'number' ? item.responseCount : (item.responses ? item.responses.length : 0));
+            
+            const questionCount = item.questionCount || (item.questions ? item.questions.length : 1);
+            
+            let responseRate = '0%';
+            if (votesCount > 0) {
+              const rateNum = Math.min(100, Math.round((votesCount / Math.max(1, questionCount)) * 100));
+              responseRate = `${rateNum > 0 ? rateNum : 100}%`;
+            }
+
+            const expiryObj = formatExpiryTime(item.expiresAt, item.status);
+            const dateObj = item.createdAt ? new Date(item.createdAt) : (item.updatedAt ? new Date(item.updatedAt) : new Date());
+            const formattedDate = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' });
 
             return (
               <View key={item._id} style={styles.pollCampaignCard}>
@@ -416,7 +462,9 @@ export default function DashboardScreen() {
                       <UsersIcon size={16} color="#10B981" />
                       <View style={styles.statPillTextWrapper}>
                         <Text style={styles.statPillValue}>{votesCount}</Text>
-                        <Text style={styles.statPillLabel}>Votes</Text>
+                        <Text style={styles.statPillLabel}>
+                          {votesCount === 1 ? 'Vote' : 'Votes'}
+                        </Text>
                       </View>
                     </View>
 
@@ -424,19 +472,17 @@ export default function DashboardScreen() {
                       <HelpCircleIcon size={16} color="#8B5CF6" />
                       <View style={styles.statPillTextWrapper}>
                         <Text style={styles.statPillValue}>{questionCount}</Text>
-                        <Text style={styles.statPillLabel}>Questions</Text>
+                        <Text style={styles.statPillLabel}>
+                          {questionCount === 1 ? 'Question' : 'Questions'}
+                        </Text>
                       </View>
                     </View>
 
                     <View style={styles.statPillBox}>
                       <ClockIcon size={16} color="#F59E0B" />
                       <View style={styles.statPillTextWrapper}>
-                        <Text style={styles.statPillValue}>
-                          {isPublished ? 'Completed' : '2d left'}
-                        </Text>
-                        <Text style={styles.statPillLabel}>
-                          {isPublished ? 'Expired' : 'Expires'}
-                        </Text>
+                        <Text style={styles.statPillValue}>{expiryObj.val}</Text>
+                        <Text style={styles.statPillLabel}>{expiryObj.label}</Text>
                       </View>
                     </View>
 

@@ -15,7 +15,7 @@ import { BrutalCard, BrutalButton } from '../../components/Brutal';
 import { Colors } from '../../constants/Theme';
 import { api } from '../../utils/api';
 import { socket } from '../../utils/socket';
-import { Users, TrendingUp, Trophy, ArrowLeft, Heart } from 'lucide-react-native';
+import { Users, TrendingUp, Trophy, ArrowLeft, Heart, HelpCircle, Calendar } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import Svg, { Circle, G } from 'react-native-svg';
 
@@ -23,6 +23,8 @@ const UsersIcon = Users as any;
 const TrendingUpIcon = TrendingUp as any;
 const TrophyIcon = Trophy as any;
 const ArrowLeftIcon = ArrowLeft as any;
+const HelpCircleIcon = HelpCircle as any;
+const CalendarIcon = Calendar as any;
 
 export default function PublishedResultScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -132,18 +134,36 @@ export default function PublishedResultScreen() {
           <Text style={[styles.pollDesc, { color: colors.mutedForeground }]}>{poll.description}</Text>
         ) : null}
 
-        {/* Reach Stats */}
+        {/* Reach & Overview Stats Grid */}
         <View style={styles.statsGrid}>
           <BrutalCard variant="default" style={styles.gridCard}>
-            <UsersIcon size={24} color={colors.foreground} />
-            <Text style={[styles.gridCardTitle, { color: colors.foreground }]}>Total Votes</Text>
+            <UsersIcon size={20} color={colors.foreground} />
+            <Text style={[styles.gridCardTitle, { color: colors.foreground }]}>Total Voters</Text>
             <Text style={[styles.gridCardValue, { color: colors.foreground }]}>{analytics.totalResponses}</Text>
           </BrutalCard>
 
           <BrutalCard variant="default" style={styles.gridCard}>
-            <TrophyIcon size={24} color={colors.foreground} />
-            <Text style={[styles.gridCardTitle, { color: colors.foreground }]}>Active Voters</Text>
-            <Text style={[styles.gridCardValue, { color: colors.primary }]}>{activeUsers}</Text>
+            <HelpCircleIcon size={20} color={colors.foreground} />
+            <Text style={[styles.gridCardTitle, { color: colors.foreground }]}>Questions</Text>
+            <Text style={[styles.gridCardValue, { color: colors.primary }]}>{analytics.questions.length}</Text>
+          </BrutalCard>
+        </View>
+
+        <View style={styles.statsGrid}>
+          <BrutalCard variant="default" style={styles.gridCard}>
+            <TrendingUpIcon size={20} color={colors.foreground} />
+            <Text style={[styles.gridCardTitle, { color: colors.foreground }]}>Response Rate</Text>
+            <Text style={[styles.gridCardValue, { color: colors.accent }]}>
+              {analytics.totalResponses > 0 ? '100%' : '0%'}
+            </Text>
+          </BrutalCard>
+
+          <BrutalCard variant="default" style={styles.gridCard}>
+            <CalendarIcon size={20} color={colors.foreground} />
+            <Text style={[styles.gridCardTitle, { color: colors.foreground }]}>Published On</Text>
+            <Text style={[styles.gridCardValue, { color: colors.foreground, fontSize: 14 }]} numberOfLines={1}>
+              {poll.updatedAt ? new Date(poll.updatedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' }) : new Date().toLocaleDateString('en-US')}
+            </Text>
           </BrutalCard>
         </View>
 

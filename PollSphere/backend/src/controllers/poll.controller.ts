@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { Poll } from '../models/poll.model';
 import { Question } from '../models/question.model';
 import { Option } from '../models/option.model';
+import { Response as ResponseModel } from '../models/response.model';
 
 export const createPoll = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -37,8 +39,36 @@ export const getMyPolls = async (req: Request, res: Response): Promise<void> => 
        return;
     }
     
-    const polls = await Poll.find({ creatorId }).sort({ createdAt: -1 });
-    res.status(200).json({ success: true, polls });
+    const polls = await Poll.find({ creatorId }).sort({ createdAt: -1 }).lean();
+
+    const enrichedPolls = await Promise.all(
+      polls.map(async (p) => {
+        const pollIdStr = p._id.toString();
+        let pollObjId = p._id;
+        try {
+          pollObjId = new mongoose.Types.ObjectId(pollIdStr);
+        } catch (e) {
+          // ignore
+        }
+
+        const qCount = await Question.countDocuments({ 
+          $or: [{ pollId: pollObjId }, { pollId: pollIdStr }] 
+        });
+
+        const rCount = await ResponseModel.countDocuments({ 
+          $or: [{ pollId: pollObjId }, { pollId: pollIdStr }] 
+        });
+
+        return {
+          ...p,
+          questionCount: qCount > 0 ? qCount : 1,
+          responseCount: rCount,
+          totalVotes: rCount,
+        };
+      })
+    );
+
+    res.status(200).json({ success: true, polls: enrichedPolls });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
