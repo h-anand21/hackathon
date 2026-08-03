@@ -177,26 +177,24 @@ export default function DashboardScreen() {
           )}
         </View>
 
-        {/* Guest Search bar - ONLY show for guest users */}
-        {!userId && (
-          <BrutalCard variant="accent" style={styles.searchCard}>
-            <Text style={styles.searchTitle}>Join A Poll Room</Text>
-            <View style={styles.searchRow}>
-              <BrutalInput
-                placeholder="Paste Poll ID here..."
-                value={searchPollId}
-                onChangeText={setSearchPollId}
-                style={styles.searchInput}
-              />
-              <BrutalButton
-                title="Go"
-                variant="primary"
-                onPress={handleSearchPoll}
-                style={styles.searchBtn}
-              />
-            </View>
-          </BrutalCard>
-        )}
+        {/* Direct Poll Room Join / Vote Search bar */}
+        <BrutalCard variant="accent" style={styles.searchCard}>
+          <Text style={styles.searchTitle}>Join A Poll Room</Text>
+          <View style={styles.searchRow}>
+            <BrutalInput
+              placeholder="Paste Poll ID here..."
+              value={searchPollId}
+              onChangeText={setSearchPollId}
+              style={styles.searchInput}
+            />
+            <BrutalButton
+              title="Go"
+              variant="primary"
+              onPress={handleSearchPoll}
+              style={styles.searchBtn}
+            />
+          </View>
+        </BrutalCard>
 
         {/* User's Polls Title */}
         {userId && (

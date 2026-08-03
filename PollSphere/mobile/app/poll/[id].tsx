@@ -221,10 +221,10 @@ export default function PollVotingScreen() {
             return (
               <BrutalCard key={q._id} variant="default" style={styles.questionCard}>
                 <View style={styles.questionHeadingRow}>
-                  <Text style={styles.questionIndex}>Question {qIdx + 1}</Text>
+                  <Text style={[styles.questionIndex, { color: colors.primary }]}>Question {qIdx + 1}</Text>
                   {q.isMandatory && <Text style={styles.requiredBadge}>Required</Text>}
                 </View>
-                <Text style={styles.questionText}>{q.text}</Text>
+                <Text style={[styles.questionText, { color: colors.foreground }]}>{q.text}</Text>
 
                 {/* Options List */}
                 <View style={styles.optionsList}>
@@ -240,19 +240,25 @@ export default function PollVotingScreen() {
                         onPress={() => handleOptionSelect(q._id, opt._id, isMulti)}
                         style={[
                           styles.optionButton,
-                          isSelected && styles.optionButtonSelected
+                          {
+                            backgroundColor: isSelected ? colors.primary + '1F' : colors.card,
+                            borderColor: isSelected ? colors.primary : colors.border,
+                          }
                         ]}
                       >
                         <View style={[
                           styles.checkbox,
                           isMulti && styles.checkboxSquare,
-                          isSelected && styles.checkboxSelected
+                          {
+                            borderColor: isSelected ? colors.primary : colors.border,
+                            backgroundColor: isSelected ? colors.primary : 'transparent',
+                          }
                         ]}>
-                          {isSelected && <CheckCircleIcon size={12} color="#09090b" />}
+                          {isSelected && <CheckCircleIcon size={12} color="#ffffff" />}
                         </View>
                         <Text style={[
                           styles.optionText,
-                          isSelected && styles.optionTextSelected
+                          { color: isSelected ? colors.primary : colors.foreground }
                         ]}>
                           {opt.text}
                         </Text>
@@ -311,7 +317,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   headerTitle: {
-    color: '#ffffff',
     fontFamily: 'SpaceMono',
     fontSize: 18,
     fontWeight: '900',
@@ -330,13 +335,11 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   loadingText: {
-    color: '#ffffff',
     fontFamily: 'SpaceMono',
     fontSize: 16,
     fontWeight: '900',
   },
   errorText: {
-    color: '#ffffff',
     fontFamily: 'SpaceMono',
     fontSize: 22,
     fontWeight: '900',
@@ -407,7 +410,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   questionText: {
-    color: '#ffffff',
     fontFamily: 'SpaceMono',
     fontSize: 18,
     fontWeight: '900',
@@ -419,23 +421,16 @@ const styles = StyleSheet.create({
   optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#18181b',
     borderWidth: 2,
-    borderColor: '#3f3f46',
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
-  },
-  optionButtonSelected: {
-    borderColor: Colors.primary,
-    backgroundColor: '#115e59',
   },
   checkbox: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#ffffff',
     marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -443,18 +438,11 @@ const styles = StyleSheet.create({
   checkboxSquare: {
     borderRadius: 4,
   },
-  checkboxSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
   optionText: {
-    color: '#ffffff',
     fontFamily: 'SpaceMono',
     fontSize: 14,
     fontWeight: '700',
-  },
-  optionTextSelected: {
-    color: '#ffffff',
+    flex: 1,
   },
   submitBtn: {
     marginTop: 10,

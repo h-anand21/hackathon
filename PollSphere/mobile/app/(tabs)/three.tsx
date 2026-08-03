@@ -49,13 +49,13 @@ export default function VoteScreen() {
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>Direct Voting</Text>
 
-          <BrutalCard variant="accent" style={styles.card}>
-            <View style={styles.iconWrapper}>
-              <CheckSquareIcon size={48} color="#09090b" />
+          <BrutalCard variant="default" style={styles.card}>
+            <View style={[styles.iconWrapper, { backgroundColor: colors.primary + '22', borderColor: colors.border }]}>
+              <CheckSquareIcon size={48} color={colors.primary} />
             </View>
             
-            <Text style={styles.cardHeading}>Join A Campaign</Text>
-            <Text style={styles.cardDesc}>
+            <Text style={[styles.cardHeading, { color: colors.foreground }]}>Join A Campaign</Text>
+            <Text style={[styles.cardDesc, { color: colors.mutedForeground }]}>
               Enter a live Poll ID or Code shared by the creator to enter the voting room and cast your feedback instantly.
             </Text>
 
@@ -64,7 +64,7 @@ export default function VoteScreen() {
               placeholder="e.g., 609c12345e..."
               value={pollId}
               onChangeText={setPollId}
-              style={styles.inputField}
+              style={{ width: '100%' }}
             />
 
             <BrutalButton
@@ -120,7 +120,6 @@ const styles = StyleSheet.create({
     shadowRadius: 0,
   },
   cardHeading: {
-    color: '#09090b',
     fontFamily: 'SpaceMono',
     fontSize: 20,
     fontWeight: '900',
@@ -128,17 +127,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   cardDesc: {
-    color: '#18181b',
     fontSize: 14,
     lineHeight: 20,
     textAlign: 'center',
     marginBottom: 20,
-  },
-  inputField: {
-    backgroundColor: '#ffffff',
-    color: '#09090b',
-    borderColor: '#09090b',
-    width: '100%',
   },
   joinBtn: {
     width: '100%',
