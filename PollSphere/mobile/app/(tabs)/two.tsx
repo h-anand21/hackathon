@@ -8,24 +8,50 @@ import {
   Platform, 
   ActivityIndicator, 
   Alert,
-  Pressable
+  Pressable,
+  TextInput
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
-import { BrutalCard, BrutalButton, BrutalInput } from '../../components/Brutal';
+import { BrutalButton } from '../../components/Brutal';
 import { Colors } from '../../constants/Theme';
 import { api, initTokenGetter } from '../../utils/api';
-import { Lock, Plus, Trash } from 'lucide-react-native';
+import { 
+  ArrowLeft, 
+  FileText, 
+  Pencil, 
+  EyeOff, 
+  User, 
+  Calendar, 
+  Plus, 
+  Trash, 
+  Check, 
+  Zap, 
+  Lock,
+  HelpCircle
+} from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
+
+const ArrowLeftIcon = ArrowLeft as any;
+const FileTextIcon = FileText as any;
+const PencilIcon = Pencil as any;
+const EyeOffIcon = EyeOff as any;
+const UserIcon = User as any;
+const CalendarIcon = Calendar as any;
+const PlusIcon = Plus as any;
+const TrashIcon = Trash as any;
+const CheckIcon = Check as any;
+const ZapIcon = Zap as any;
+const LockIcon = Lock as any;
+const HelpCircleIcon = HelpCircle as any;
 
 export default function CreatePollScreen() {
   const { isLoaded, userId, getToken } = useAuth();
   const router = useRouter();
   const { colors } = useTheme();
 
-  // Register Clerk's token getter with the axios interceptor
   useEffect(() => {
     if (isLoaded && getToken) {
       initTokenGetter(getToken);
@@ -36,7 +62,6 @@ export default function CreatePollScreen() {
   const [description, setDescription] = useState('');
   const [responseMode, setResponseMode] = useState<'anonymous' | 'authenticated'>('anonymous');
 
-  // Expiry states using native Date object
   const [expiryDate, setExpiryDate] = useState<Date>(() => {
     const d = new Date();
     d.setHours(d.getHours() + 24);
@@ -50,15 +75,9 @@ export default function CreatePollScreen() {
       setShowPicker(false);
       return;
     }
-
     const currentDate = selectedDate || expiryDate;
-
-    if (Platform.OS === 'android') {
-      setShowPicker(false);
-    }
-
+    if (Platform.OS === 'android') setShowPicker(false);
     setExpiryDate(currentDate);
-
     if (pickerMode === 'date') {
       setPickerMode('time');
       if (Platform.OS === 'android') {
@@ -87,7 +106,14 @@ export default function CreatePollScreen() {
     return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
   };
 
-  // Questions List for Multi-Question Polls
+  const formatMonthAbbr = (d: Date) => {
+    return d.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+  };
+
+  const formatDateDay = (d: Date) => {
+    return String(d.getDate()).padStart(2, '0');
+  };
+
   interface QuestionDraft {
     id: string;
     text: string;
@@ -96,8 +122,6 @@ export default function CreatePollScreen() {
     options: string[];
   }
   const [questionsList, setQuestionsList] = useState<QuestionDraft[]>([]);
-
-  // Current Question form setup
   const [questionText, setQuestionText] = useState('');
   const [isMandatory, setIsMandatory] = useState(true);
   const [allowMultiple, setAllowMultiple] = useState(false);
@@ -105,7 +129,6 @@ export default function CreatePollScreen() {
     { id: '1', text: '' },
     { id: '2', text: '' }
   ]);
-
   const [loading, setLoading] = useState(false);
 
   const handleOptionChange = (text: string, id: string) => {
@@ -134,7 +157,6 @@ export default function CreatePollScreen() {
       Alert.alert('Validation Error', 'Please fill in at least 2 options for the question');
       return;
     }
-
     const newQ: QuestionDraft = {
       id: Math.random().toString(),
       text: questionText.trim(),
@@ -142,45 +164,48 @@ export default function CreatePollScreen() {
       allowMultiple,
       options: validOptions.map(opt => opt.trim())
     };
-
     setQuestionsList(prev => [...prev, newQ]);
-
-    // Reset current question inputs
     setQuestionText('');
     setIsMandatory(true);
     setAllowMultiple(false);
-    setOptions([
-      { id: '1', text: '' },
-      { id: '2', text: '' }
-    ]);
-
-    Alert.alert('Question Saved', `Question #${questionsList.length + 1} added! Fill below to add another question, or tap "Publish Live Poll Now" when finished.`);
+    setOptions([{ id: '1', text: '' }, { id: '2', text: '' }]);
   };
 
   const handleRemoveQuestionFromList = (id: string) => {
     setQuestionsList(prev => prev.filter(q => q.id !== id));
   };
 
+  const handleEditQuestionInList = (id: string) => {
+    const qToEdit = questionsList.find(q => q.id === id);
+    if (!qToEdit) return;
+
+    setQuestionText(qToEdit.text);
+    setIsMandatory(qToEdit.isMandatory);
+    setAllowMultiple(qToEdit.allowMultiple);
+    setOptions(
+      qToEdit.options.map((optText, index) => ({
+        id: (index + 1).toString(),
+        text: optText,
+      }))
+    );
+
+    setQuestionsList(prev => prev.filter(q => q.id !== id));
+    Alert.alert('Editing Question', 'Question loaded in form below! Make your changes and tap Save.');
+  };
+
   const handleCreatePoll = async () => {
     if (!userId) return;
-
-    // Validations
     if (!title.trim() || title.length < 3) {
       Alert.alert('Validation Error', 'Poll Title must be at least 3 characters');
       return;
     }
-
     if (expiryDate <= new Date()) {
       Alert.alert('Validation Error', 'Expiry date and time must be in the future');
       return;
     }
-
-    // Prepare all questions to be created
     let finalQuestions = [...questionsList];
     const validOptions = options.map(o => o.text).filter(opt => opt.trim().length > 0);
-
     if (questionText.trim().length >= 5 && validOptions.length >= 2) {
-      // Include current question form if valid
       finalQuestions.push({
         id: Math.random().toString(),
         text: questionText.trim(),
@@ -189,68 +214,32 @@ export default function CreatePollScreen() {
         options: validOptions.map(opt => opt.trim())
       });
     }
-
     if (finalQuestions.length === 0) {
-      Alert.alert('Validation Error', 'Please add at least 1 valid question with 2 options to your poll');
+      Alert.alert('Validation Error', 'Please add at least 1 valid question with 2 options');
       return;
     }
-
     setLoading(true);
-
     try {
-      // 1. Create Poll Container
       const pollRes = await api.post('/polls', {
         title: title.trim(),
         description: description.trim() || undefined,
         responseMode,
         expiresAt: expiryDate.toISOString()
       });
-
-      if (!pollRes.data.success) {
-        throw new Error(pollRes.data.error || 'Failed to create poll');
-      }
-
+      if (!pollRes.data.success) throw new Error(pollRes.data.error || 'Failed to create poll');
       const createdPoll = pollRes.data.poll;
-
-      // 2. Add all questions sequentially
       for (const q of finalQuestions) {
-        const questRes = await api.post(`/polls/${createdPoll._id}/questions`, {
+        await api.post(`/polls/${createdPoll._id}/questions`, {
           text: q.text,
           isMandatory: q.isMandatory,
           allowMultiple: q.allowMultiple,
           options: q.options
         });
-
-        if (!questRes.data.success) {
-          throw new Error(questRes.data.error || 'Failed to add question');
-        }
       }
-
-      // 3. Activate the poll to make it live
-      await api.patch(`/polls/${createdPoll._id}`, {
-        status: 'active'
-      });
-
-      Alert.alert('Success', `Poll created with ${finalQuestions.length} question(s) and published successfully!`);
-      
-      // Reset form
-      setTitle('');
-      setDescription('');
-      setQuestionText('');
-      setQuestionsList([]);
-      setExpiryDate(() => {
-        const d = new Date();
-        d.setHours(d.getHours() + 24);
-        return d;
-      });
-      setOptions([
-        { id: '1', text: '' },
-        { id: '2', text: '' }
-      ]);
-      
+      await api.patch(`/polls/${createdPoll._id}`, { status: 'active' });
+      Alert.alert('Success', 'Poll published successfully!');
       router.push('/(tabs)');
     } catch (err: any) {
-      console.error(err);
       Alert.alert('Error', err.response?.data?.error || err.message || 'Something went wrong');
     } finally {
       setLoading(false);
@@ -259,16 +248,16 @@ export default function CreatePollScreen() {
 
   if (!userId) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.guestContainer}>
-          <Lock size={64} color={colors.destructive} />
-          <Text style={[styles.guestTextHeader, { color: colors.foreground }]}>Login Required</Text>
-          <Text style={[styles.guestTextSub, { color: colors.mutedForeground }]}>
+          <LockIcon size={64} color="#EF4444" />
+          <Text style={styles.guestTitle}>Login Required</Text>
+          <Text style={styles.guestSub}>
             Only authenticated creators can design and publish custom polls.
           </Text>
           <BrutalButton
             title="Go to Login"
-            variant="accent"
+            variant="primary"
             onPress={() => router.replace('/login')}
           />
         </View>
@@ -277,216 +266,231 @@ export default function CreatePollScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardContainer}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Create New Poll</Text>
-
-          {/* Section 1: Poll General Metadata */}
-          <BrutalCard variant="default">
-            <Text style={[styles.cardHeader, { color: colors.foreground, borderBottomColor: colors.border }]}>1. General Info</Text>
-            <BrutalInput
-              label="Poll Campaign Title"
-              placeholder="e.g., Team Feedback Session"
-              value={title}
-              onChangeText={setTitle}
-            />
-            <BrutalInput
-              label="Description (Optional)"
-              placeholder="Provide context for voters..."
-              value={description}
-              onChangeText={setDescription}
-              multiline
-              numberOfLines={3}
-            />
-
-            {/* Mode selection buttons */}
-            <Text style={[styles.inputLabel, { color: colors.foreground }]}>Response Mode</Text>
-            <View style={styles.toggleRow}>
-              <BrutalButton
-                title="Anonymous"
-                variant={responseMode === 'anonymous' ? 'primary' : 'default'}
-                onPress={() => setResponseMode('anonymous')}
-                style={styles.toggleBtn}
-                textStyle={styles.toggleBtnText}
-              />
-              <BrutalButton
-                title="Authenticated"
-                variant={responseMode === 'authenticated' ? 'primary' : 'default'}
-                onPress={() => setResponseMode('authenticated')}
-                style={styles.toggleBtn}
-                textStyle={styles.toggleBtnText}
-              />
-            </View>
-
-            <Text style={[styles.inputLabel, { color: colors.foreground }]}>Expiry Date & Time</Text>
-            
-            {/* Native Date Picker Trigger Button */}
-            <Pressable 
-              onPress={showDatePicker}
-              style={[
-                styles.pickerTrigger, 
-                { 
-                  backgroundColor: colors.card,
-                  borderColor: colors.border,
-                }
-              ]}
-            >
-              <Text style={[styles.pickerTriggerText, { color: colors.foreground }]}>
-                📅 {formatDateTime(expiryDate)}
-              </Text>
+          <View style={styles.topHeaderRow}>
+            <Pressable onPress={() => router.back()} style={styles.backBoxBtn}>
+              <ArrowLeftIcon size={20} color="#FFFFFF" />
             </Pressable>
+            <View style={styles.headerIllustrationWrapper}>
+              <View style={styles.ballotBoxGraphic}>
+                <View style={styles.ballotPaper}>
+                  <View style={styles.paperCheckCircle}>
+                    <CheckIcon size={12} color="#09090b" strokeWidth={3} />
+                  </View>
+                </View>
+                <View style={styles.boxBody}>
+                  <View style={styles.boxSlot} />
+                </View>
+              </View>
+            </View>
+          </View>
 
-            {showPicker && (
-              <DateTimePicker
-                value={expiryDate}
-                mode={pickerMode}
-                display="default"
-                minimumDate={new Date()}
-                onChange={onPickerChange}
-              />
-            )}
+          <View style={styles.titleSection}>
+            <View style={styles.titleRow}>
+              <Text style={styles.titleWhite}>CREATE NEW </Text>
+              <Text style={styles.titleYellow}>POLL</Text>
+            </View>
+            <Text style={styles.subtitleText}>Build engaging polls in just a few simple steps.</Text>
+          </View>
 
-            {/* Quick offset buttons */}
-            <View style={styles.quickOffsetRow}>
-              <BrutalButton
-                title="+1 Hr"
-                variant="default"
-                onPress={() => setExpiryFromOffset(1)}
-                style={styles.quickOffsetBtn}
-                textStyle={styles.quickOffsetBtnText}
-              />
-              <BrutalButton
-                title="+1 Day"
-                variant="default"
-                onPress={() => setExpiryFromOffset(24)}
-                style={styles.quickOffsetBtn}
-                textStyle={styles.quickOffsetBtnText}
-              />
-              <BrutalButton
-                title="+3 Days"
-                variant="default"
-                onPress={() => setExpiryFromOffset(72)}
-                style={styles.quickOffsetBtn}
-                textStyle={styles.quickOffsetBtnText}
-              />
-              <BrutalButton
-                title="+7 Days"
-                variant="default"
-                onPress={() => setExpiryFromOffset(168)}
-                style={styles.quickOffsetBtn}
-                textStyle={styles.quickOffsetBtnText}
+          <View style={styles.darkCard}>
+            <View style={styles.cardHeaderRow}>
+              <View style={styles.headerYellowBadge}>
+                <FileTextIcon size={18} color="#09090b" strokeWidth={2.5} />
+              </View>
+              <Text style={styles.cardHeaderText}>1. GENERAL INFO</Text>
+            </View>
+            <View style={styles.yellowHeaderUnderline} />
+
+            <View style={styles.fieldGroup}>
+              <View style={styles.fieldLabelRow}>
+                <Text style={styles.fieldLabelText}>POLL CAMPAIGN TITLE</Text>
+                <View style={styles.yellowDot} />
+              </View>
+              <View style={styles.inputWithIconRow}>
+                <TextInput
+                  placeholder="e.g., Team Feedback Session"
+                  placeholderTextColor="#6B7280"
+                  value={title}
+                  onChangeText={setTitle}
+                  style={styles.textInputMain}
+                  autoCorrect={false}
+                />
+                <View style={styles.rightInputIcon}>
+                  <PencilIcon size={18} color="#FFCC00" />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <View style={styles.fieldLabelRow}>
+                <Text style={styles.fieldLabelText}>DESCRIPTION (OPTIONAL)</Text>
+                <View style={styles.yellowDot} />
+              </View>
+              <TextInput
+                placeholder="Provide context for voters..."
+                placeholderTextColor="#6B7280"
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                numberOfLines={3}
+                style={styles.textInputMultiline}
               />
             </View>
-          </BrutalCard>
 
-          {/* Added Questions List Card */}
-          {questionsList.length > 0 && (
-            <BrutalCard variant="default">
-              <Text style={[styles.cardHeader, { color: colors.foreground, borderBottomColor: colors.border }]}>
-                Added Questions ({questionsList.length})
-              </Text>
-              {questionsList.map((q, qIdx) => (
-                <View key={q.id} style={[styles.addedQuestionItem, { borderBottomColor: colors.border }]}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.addedQuestionText, { color: colors.foreground }]}>
-                      Q{qIdx + 1}: {q.text}
-                    </Text>
-                    <Text style={[styles.addedQuestionMeta, { color: colors.mutedForeground }]}>
-                      {q.options.length} options • {q.isMandatory ? 'Mandatory' : 'Optional'} • {q.allowMultiple ? 'Multi Choice' : 'Single Choice'}
-                    </Text>
+            <View style={styles.fieldGroup}>
+              <View style={styles.fieldLabelRow}>
+                <Text style={styles.fieldLabelText}>RESPONSE MODE</Text>
+                <View style={styles.yellowDot} />
+              </View>
+              <View style={styles.toggleRow}>
+                <Pressable
+                  onPress={() => setResponseMode('anonymous')}
+                  style={[styles.togglePillBtn, responseMode === 'anonymous' ? styles.togglePillActive : styles.togglePillInactive]}
+                >
+                  <EyeOffIcon size={18} color={responseMode === 'anonymous' ? '#FFFFFF' : '#09090b'} />
+                  <Text style={[styles.togglePillText, responseMode === 'anonymous' ? styles.toggleTextActive : styles.toggleTextInactive]}>ANONYMOUS</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setResponseMode('authenticated')}
+                  style={[styles.togglePillBtn, responseMode === 'authenticated' ? styles.togglePillActive : styles.togglePillInactive]}
+                >
+                  <UserIcon size={18} color={responseMode === 'authenticated' ? '#FFFFFF' : '#09090b'} />
+                  <Text style={[styles.togglePillText, responseMode === 'authenticated' ? styles.toggleTextActive : styles.toggleTextInactive]}>AUTHENTICATED</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <View style={styles.fieldLabelRow}>
+                <Text style={styles.fieldLabelText}>EXPIRY DATE & TIME</Text>
+                <View style={styles.yellowDot} />
+              </View>
+              <Pressable onPress={showDatePicker} style={styles.datePickerTriggerBox}>
+                <View style={styles.calendarBadgeLeft}>
+                  <Text style={styles.calendarMonthText}>{formatMonthAbbr(expiryDate)}</Text>
+                  <Text style={styles.calendarDayText}>{formatDateDay(expiryDate)}</Text>
+                </View>
+                <Text style={styles.datePickerValueText}>{formatDateTime(expiryDate)}</Text>
+                <CalendarIcon size={20} color="#FFCC00" />
+              </Pressable>
+              {showPicker && (
+                <DateTimePicker
+                  value={expiryDate}
+                  mode={pickerMode}
+                  display="default"
+                  minimumDate={new Date()}
+                  onChange={onPickerChange}
+                />
+              )}
+              <View style={styles.quickOffsetRow}>
+                <Pressable onPress={() => setExpiryFromOffset(1)} style={styles.offsetPill}><Text style={styles.offsetPillText}>+1 HR</Text></Pressable>
+                <Pressable onPress={() => setExpiryFromOffset(24)} style={styles.offsetPill}><Text style={styles.offsetPillText}>+1 DAY</Text></Pressable>
+                <Pressable onPress={() => setExpiryFromOffset(72)} style={styles.offsetPill}><Text style={styles.offsetPillText}>+3 DAYS</Text></Pressable>
+                <Pressable onPress={() => setExpiryFromOffset(168)} style={styles.offsetPill}><Text style={styles.offsetPillText}>+7 DAYS</Text></Pressable>
+              </View>
+            </View>
+          </View>
+
+          <View style={[styles.darkCard, { marginTop: 16 }]}>
+            <View style={styles.cardHeaderRow}>
+              <View style={styles.headerYellowBadge}>
+                <HelpCircleIcon size={18} color="#09090b" strokeWidth={2.5} />
+              </View>
+              <Text style={styles.cardHeaderText}>2. ADD QUESTIONS & OPTIONS</Text>
+            </View>
+            <View style={styles.yellowHeaderUnderline} />
+            {questionsList.length > 0 ? (
+              <View style={styles.addedQuestionsListWrapper}>
+                <Text style={styles.addedCountText}>Saved Questions: {questionsList.length}</Text>
+                {questionsList.map((q, idx) => (
+                  <View key={q.id} style={styles.savedQRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.savedQTitle}>Q{idx + 1}: {q.text}</Text>
+                      <Text style={styles.savedQSub}>{q.options.length} options • {q.isMandatory ? 'Mandatory' : 'Optional'}</Text>
+                    </View>
+                    <View style={styles.qActionBtnsRow}>
+                      <Pressable onPress={() => handleEditQuestionInList(q.id)} style={styles.editQBtn}>
+                        <PencilIcon size={14} color="#FFCC00" />
+                        <Text style={styles.editQBtnText}>EDIT</Text>
+                      </Pressable>
+                      <Pressable onPress={() => handleRemoveQuestionFromList(q.id)} style={styles.deleteQBtn}>
+                        <TrashIcon size={16} color="#EF4444" />
+                      </Pressable>
+                    </View>
                   </View>
-                  <BrutalButton
-                    title="Remove"
-                    variant="destructive"
-                    onPress={() => handleRemoveQuestionFromList(q.id)}
-                    style={styles.removeQuestionBtn}
-                    textStyle={styles.removeQuestionBtnText}
+                ))}
+              </View>
+            ) : null}
+            <View style={styles.fieldGroup}>
+              <View style={styles.fieldLabelRow}>
+                <Text style={styles.fieldLabelText}>QUESTION #{questionsList.length + 1}</Text>
+                <View style={styles.yellowDot} />
+              </View>
+              <TextInput
+                placeholder="e.g., What feature should we build next?"
+                placeholderTextColor="#6B7280"
+                value={questionText}
+                onChangeText={setQuestionText}
+                style={styles.textInputMain}
+                autoCorrect={false}
+              />
+            </View>
+            <View style={styles.fieldGroup}>
+              <View style={styles.fieldLabelRow}>
+                <Text style={styles.fieldLabelText}>ANSWER OPTIONS</Text>
+                <View style={styles.yellowDot} />
+              </View>
+              {options.map((opt, index) => (
+                <View key={opt.id} style={styles.optionInputRow}>
+                  <TextInput
+                    placeholder={`Option ${index + 1}`}
+                    placeholderTextColor="#6B7280"
+                    value={opt.text}
+                    onChangeText={(txt) => handleOptionChange(txt, opt.id)}
+                    style={styles.textInputMain}
                   />
+                  {options.length > 2 ? (
+                    <Pressable onPress={() => removeOptionField(opt.id)} style={styles.removeOptBtn}>
+                      <TrashIcon size={16} color="#EF4444" />
+                    </Pressable>
+                  ) : null}
                 </View>
               ))}
-            </BrutalCard>
-          )}
-
-          {/* Section 2: Poll Question & Options */}
-          <BrutalCard variant="primary">
-            <Text style={[styles.cardHeader, { color: colors.foreground, borderBottomColor: colors.border }]}>
-              {questionsList.length > 0 ? `Add Question #${questionsList.length + 1}` : '2. Add Question'}
-            </Text>
-            <BrutalInput
-              label="Question Text"
-              placeholder="What would you like to ask?"
-              value={questionText}
-              onChangeText={setQuestionText}
-            />
-
-            {/* Option settings checkboxes */}
-            <View style={styles.settingRow}>
-              <BrutalButton
-                title={isMandatory ? 'Mandatory ✓' : 'Optional'}
-                variant={isMandatory ? 'accent' : 'default'}
-                onPress={() => setIsMandatory(!isMandatory)}
-                style={styles.settingBtn}
-                textStyle={styles.settingBtnText}
-              />
-              <BrutalButton
-                title={allowMultiple ? 'Multi-Select ✓' : 'Single Choice'}
-                variant={allowMultiple ? 'accent' : 'default'}
-                onPress={() => setAllowMultiple(!allowMultiple)}
-                style={styles.settingBtn}
-                textStyle={styles.settingBtnText}
-              />
+              <Pressable onPress={addOptionField} style={styles.addOptBtn}>
+                <PlusIcon size={16} color="#FFCC00" />
+                <Text style={styles.addOptBtnText}>+ ADD OPTION</Text>
+              </Pressable>
             </View>
+            <View style={styles.settingTogglesRow}>
+              <Pressable onPress={() => setIsMandatory(!isMandatory)} style={[styles.settingPill, isMandatory && styles.settingPillActive]}>
+                <Text style={[styles.settingPillText, isMandatory && styles.settingPillTextActive]}>{isMandatory ? '✓ MANDATORY' : 'OPTIONAL'}</Text>
+              </Pressable>
+              <Pressable onPress={() => setAllowMultiple(!allowMultiple)} style={[styles.settingPill, allowMultiple && styles.settingPillActive]}>
+                <Text style={[styles.settingPillText, allowMultiple && styles.settingPillTextActive]}>{allowMultiple ? '✓ MULTI CHOICE' : 'SINGLE CHOICE'}</Text>
+              </Pressable>
+            </View>
+            <Pressable onPress={handleAddNextQuestion} style={styles.saveNextQBtn}>
+              <PlusIcon size={18} color="#FFCC00" />
+              <Text style={styles.saveNextQBtnText}>SAVE & ADD ANOTHER QUESTION</Text>
+            </Pressable>
+          </View>
 
-            <Text style={[styles.inputLabel, { color: colors.foreground }]}>Choices</Text>
-            {options.map((opt, idx) => (
-              <View key={opt.id} style={styles.optionInputRow}>
-                <BrutalInput
-                  placeholder={`Option ${idx + 1}`}
-                  value={opt.text}
-                  onChangeText={(text) => handleOptionChange(text, opt.id)}
-                  style={styles.optionInput}
-                />
-                <BrutalButton
-                  title="X"
-                  variant="destructive"
-                  onPress={() => removeOptionField(opt.id)}
-                  style={styles.optionDeleteBtn}
-                  textStyle={styles.optionDeleteBtnText}
-                />
-              </View>
-            ))}
-
-            <BrutalButton
-              title="Add Option choice"
-              variant="default"
-              onPress={addOptionField}
-              style={styles.addOptionBtn}
-              textStyle={styles.addOptionBtnText}
-            />
-
-            <BrutalButton
-              title="+ Save & Add Next Question"
-              variant="primary"
-              onPress={handleAddNextQuestion}
-              style={styles.addNextQuestionBtn}
-            />
-          </BrutalCard>
-
-          {/* Creation Trigger */}
-          {loading ? (
-            <ActivityIndicator size="large" color={Colors.primary} style={{ marginVertical: 20 }} />
-          ) : (
-            <BrutalButton
-              title="Publish Live Poll Now"
-              variant="accent"
-              onPress={handleCreatePoll}
-              style={styles.submitBtn}
-            />
-          )}
+          <Pressable onPress={handleCreatePoll} disabled={loading} style={styles.publishPollBtn}>
+            {loading ? (
+              <ActivityIndicator color="#09090b" size="small" />
+            ) : (
+              <>
+                <ZapIcon size={20} color="#09090b" fill="#09090b" />
+                <Text style={styles.publishPollBtnText}>PUBLISH POLL CAMPAIGN</Text>
+              </>
+            )}
+          </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -496,7 +500,7 @@ export default function CreatePollScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#09090b',
+    backgroundColor: '#000000',
     paddingTop: Platform.OS === 'android' ? 30 : 0,
   },
   keyboardContainer: {
@@ -504,172 +508,467 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     padding: 20,
-    paddingBottom: 40,
-  },
-  headerTitle: {
-    fontFamily: 'SpaceMono',
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#ffffff',
-    textTransform: 'uppercase',
-    marginBottom: 20,
-  },
-  cardHeader: {
-    fontFamily: 'SpaceMono',
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#ffffff',
-    textTransform: 'uppercase',
-    marginBottom: 16,
-    borderBottomWidth: 1.5,
-    borderBottomColor: '#ffffff',
-    paddingBottom: 8,
-  },
-  inputLabel: {
-    color: '#ffffff',
-    fontFamily: 'SpaceMono',
-    fontSize: 12,
-    fontWeight: '900',
-    textTransform: 'uppercase',
-    marginTop: 12,
-    marginBottom: 6,
-    letterSpacing: 1.2,
-  },
-  toggleRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 10,
-  },
-  toggleBtn: {
-    flex: 1,
-    marginVertical: 4,
-  },
-  toggleBtnText: {
-    fontSize: 12,
-  },
-  settingRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  settingBtn: {
-    flex: 1,
-    marginVertical: 4,
-  },
-  settingBtnText: {
-    fontSize: 10,
-  },
-  optionInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  optionInput: {
-    flex: 1,
-    marginVertical: 4,
-  },
-  optionDeleteBtn: {
-    marginVertical: 0,
-    width: 44,
-    height: 48,
-    justifyContent: 'center',
-    paddingHorizontal: 0,
-  },
-  optionDeleteBtnText: {
-    fontSize: 14,
-  },
-  addOptionBtn: {
-    marginTop: 12,
-  },
-  addOptionBtnText: {
-    fontSize: 12,
-  },
-  submitBtn: {
-    marginTop: 20,
-    height: 56,
-    justifyContent: 'center',
+    paddingBottom: 120,
   },
   guestContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 30,
-    gap: 20,
+    padding: 24,
+    gap: 16,
   },
-  guestTextHeader: {
-    color: '#ffffff',
+  guestTitle: {
     fontFamily: 'SpaceMono',
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
-    textTransform: 'uppercase',
+    color: '#FFFFFF',
   },
-  guestTextSub: {
-    color: Colors.mutedForeground,
+  guestSub: {
+    fontFamily: 'SpaceMono',
+    fontSize: 14,
+    color: '#A1A1AA',
     textAlign: 'center',
-    fontFamily: 'SpaceMono',
-    fontSize: 14,
-    lineHeight: 22,
-    marginBottom: 10,
   },
-  quickOffsetRow: {
-    flexDirection: 'row',
-    gap: 6,
-    marginBottom: 10,
-  },
-  quickOffsetBtn: {
-    flex: 1,
-    marginVertical: 4,
-    paddingVertical: 4,
-  },
-  quickOffsetBtnText: {
-    fontSize: 9,
-    fontFamily: 'SpaceMono',
-    fontWeight: '900',
-  },
-  pickerTrigger: {
-    borderWidth: 2,
-    borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 10,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
-  },
-  pickerTriggerText: {
-    fontFamily: 'SpaceMono',
-    fontSize: 14,
-    fontWeight: '900',
-  },
-  addedQuestionItem: {
+  topHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
+    marginBottom: 8,
+  },
+  backBoxBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#18181B',
+    borderWidth: 2,
+    borderColor: '#27272A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerIllustrationWrapper: {
+    width: 100,
+    height: 90,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  ballotBoxGraphic: {
+    alignItems: 'center',
+    position: 'relative',
+  },
+  ballotPaper: {
+    width: 46,
+    height: 40,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#09090b',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: -10,
+    zIndex: 2,
+    transform: [{ rotate: '-8deg' }],
+  },
+  paperCheckCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#FFCC00',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#09090b',
+  },
+  boxBody: {
+    width: 80,
+    height: 60,
+    backgroundColor: '#FFCC00',
+    borderRadius: 12,
+    borderWidth: 2.5,
+    borderColor: '#09090b',
+    alignItems: 'center',
+    paddingTop: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4,
+  },
+  boxSlot: {
+    width: 34,
+    height: 5,
+    backgroundColor: '#09090b',
+    borderRadius: 3,
+  },
+  titleSection: {
+    marginBottom: 20,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  titleWhite: {
+    fontFamily: 'SpaceMono',
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
+  },
+  titleYellow: {
+    fontFamily: 'SpaceMono',
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#FFCC00',
+    textTransform: 'uppercase',
+  },
+  subtitleText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 13,
+    color: '#A1A1AA',
+    lineHeight: 18,
+    marginTop: 4,
+  },
+  darkCard: {
+    backgroundColor: '#18181B',
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: '#27272A',
+    padding: 20,
+    shadowColor: '#000000',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  },
+  headerYellowBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#FFCC00',
+    borderWidth: 2,
+    borderColor: '#09090b',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardHeaderText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  yellowHeaderUnderline: {
+    height: 2,
+    backgroundColor: '#FFCC00',
+    marginBottom: 20,
+  },
+  fieldGroup: {
+    marginBottom: 20,
+  },
+  fieldLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  fieldLabelText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  yellowDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFCC00',
+  },
+  inputWithIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  textInputMain: {
+    flex: 1,
+    height: 52,
+    backgroundColor: '#09090b',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#27272A',
+    paddingHorizontal: 16,
+    fontFamily: 'SpaceMono',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  rightInputIcon: {
+    position: 'absolute',
+    right: 14,
+  },
+  textInputMultiline: {
+    minHeight: 90,
+    backgroundColor: '#09090b',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#27272A',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 12,
+    fontFamily: 'SpaceMono',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textAlignVertical: 'top',
+  },
+  toggleRow: {
+    flexDirection: 'row',
     gap: 10,
   },
-  addedQuestionText: {
+  togglePillBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 2,
+  },
+  togglePillActive: {
+    backgroundColor: '#009689',
+    borderColor: '#09090b',
+  },
+  togglePillInactive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#09090b',
+  },
+  togglePillText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  toggleTextActive: {
+    color: '#FFFFFF',
+  },
+  toggleTextInactive: {
+    color: '#09090b',
+  },
+  datePickerTriggerBox: {
+    height: 56,
+    backgroundColor: '#09090b',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#27272A',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  calendarBadgeLeft: {
+    width: 40,
+    height: 38,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#09090b',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calendarMonthText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 8,
+    fontWeight: '900',
+    color: '#EF4444',
+  },
+  calendarDayText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#09090b',
+    marginTop: -2,
+  },
+  datePickerValueText: {
     fontFamily: 'SpaceMono',
     fontSize: 13,
     fontWeight: '900',
+    color: '#FFFFFF',
   },
-  addedQuestionMeta: {
+  quickOffsetRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  offsetPill: {
+    flex: 1,
+    height: 36,
+    backgroundColor: '#18181B',
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: '#27272A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  offsetPillText: {
     fontFamily: 'SpaceMono',
     fontSize: 10,
-    marginTop: 2,
+    fontWeight: '900',
+    color: '#FFFFFF',
   },
-  removeQuestionBtn: {
-    marginVertical: 0,
+  addedQuestionsListWrapper: {
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: '#09090b',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#27272A',
+  },
+  addedCountText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFCC00',
+    marginBottom: 8,
+  },
+  savedQRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#27272A',
+  },
+  savedQTitle: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  savedQSub: {
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    color: '#A1A1AA',
+  },
+  qActionBtnsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  editQBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#18181B',
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#FFCC00',
   },
-  removeQuestionBtnText: {
+  editQBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#FFCC00',
+  },
+  deleteQBtn: {
+    padding: 6,
+  },
+  optionInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  removeOptBtn: {
+    padding: 10,
+  },
+  addOptBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+  },
+  addOptBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFCC00',
+  },
+  settingTogglesRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginVertical: 14,
+  },
+  settingPill: {
+    flex: 1,
+    height: 40,
+    backgroundColor: '#09090b',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#27272A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingPillActive: {
+    borderColor: '#FFCC00',
+    backgroundColor: '#18181B',
+  },
+  settingPillText: {
+    fontFamily: 'SpaceMono',
     fontSize: 10,
+    fontWeight: '900',
+    color: '#A1A1AA',
   },
-  addNextQuestionBtn: {
-    marginTop: 16,
+  settingPillTextActive: {
+    color: '#FFCC00',
+  },
+  saveNextQBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 46,
+    backgroundColor: '#09090b',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#FFCC00',
+    gap: 8,
+  },
+  saveNextQBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFCC00',
+  },
+  publishPollBtn: {
+    height: 56,
+    backgroundColor: '#FFCC00',
+    borderRadius: 28,
+    borderWidth: 2.5,
+    borderColor: '#09090b',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 20,
+    shadowColor: '#000000',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 0,
+    elevation: 6,
+  },
+  publishPollBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#09090b',
+    letterSpacing: 0.5,
   },
 });

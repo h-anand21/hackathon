@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
   publishBtn: {
     flex: 1.4,
     height: 46,
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#009689',
     borderRadius: 12,
     borderWidth: 2,
     borderColor: '#09090b',
