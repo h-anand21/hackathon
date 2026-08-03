@@ -87,7 +87,17 @@ export default function CreatePollScreen() {
     return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
   };
 
-  // Single Question setup for wizard ease
+  // Questions List for Multi-Question Polls
+  interface QuestionDraft {
+    id: string;
+    text: string;
+    isMandatory: boolean;
+    allowMultiple: boolean;
+    options: string[];
+  }
+  const [questionsList, setQuestionsList] = useState<QuestionDraft[]>([]);
+
+  // Current Question form setup
   const [questionText, setQuestionText] = useState('');
   const [isMandatory, setIsMandatory] = useState(true);
   const [allowMultiple, setAllowMultiple] = useState(false);
@@ -114,6 +124,43 @@ export default function CreatePollScreen() {
     setOptions(options.filter(opt => opt.id !== id));
   };
 
+  const handleAddNextQuestion = () => {
+    if (!questionText.trim() || questionText.length < 5) {
+      Alert.alert('Validation Error', 'Question text must be at least 5 characters');
+      return;
+    }
+    const validOptions = options.map(o => o.text).filter(opt => opt.trim().length > 0);
+    if (validOptions.length < 2) {
+      Alert.alert('Validation Error', 'Please fill in at least 2 options for the question');
+      return;
+    }
+
+    const newQ: QuestionDraft = {
+      id: Math.random().toString(),
+      text: questionText.trim(),
+      isMandatory,
+      allowMultiple,
+      options: validOptions.map(opt => opt.trim())
+    };
+
+    setQuestionsList(prev => [...prev, newQ]);
+
+    // Reset current question inputs
+    setQuestionText('');
+    setIsMandatory(true);
+    setAllowMultiple(false);
+    setOptions([
+      { id: '1', text: '' },
+      { id: '2', text: '' }
+    ]);
+
+    Alert.alert('Question Saved', `Question #${questionsList.length + 1} added! Fill below to add another question, or tap "Publish Live Poll Now" when finished.`);
+  };
+
+  const handleRemoveQuestionFromList = (id: string) => {
+    setQuestionsList(prev => prev.filter(q => q.id !== id));
+  };
+
   const handleCreatePoll = async () => {
     if (!userId) return;
 
@@ -122,27 +169,36 @@ export default function CreatePollScreen() {
       Alert.alert('Validation Error', 'Poll Title must be at least 3 characters');
       return;
     }
-    if (!questionText.trim() || questionText.length < 5) {
-      Alert.alert('Validation Error', 'Question text must be at least 5 characters');
-      return;
-    }
-    
-    const validOptions = options.map(o => o.text).filter(opt => opt.trim().length > 0);
-    if (validOptions.length < 2) {
-      Alert.alert('Validation Error', 'Please fill in at least 2 options for the question');
-      return;
-    }
 
     if (expiryDate <= new Date()) {
       Alert.alert('Validation Error', 'Expiry date and time must be in the future');
       return;
     }
 
+    // Prepare all questions to be created
+    let finalQuestions = [...questionsList];
+    const validOptions = options.map(o => o.text).filter(opt => opt.trim().length > 0);
+
+    if (questionText.trim().length >= 5 && validOptions.length >= 2) {
+      // Include current question form if valid
+      finalQuestions.push({
+        id: Math.random().toString(),
+        text: questionText.trim(),
+        isMandatory,
+        allowMultiple,
+        options: validOptions.map(opt => opt.trim())
+      });
+    }
+
+    if (finalQuestions.length === 0) {
+      Alert.alert('Validation Error', 'Please add at least 1 valid question with 2 options to your poll');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Token injected automatically by axios interceptor — no manual call needed
-
+      // 1. Create Poll Container
       const pollRes = await api.post('/polls', {
         title: title.trim(),
         description: description.trim() || undefined,
@@ -156,17 +212,18 @@ export default function CreatePollScreen() {
 
       const createdPoll = pollRes.data.poll;
 
-      // 2. Add the question to the poll
-      const questRes = await api.post(`/polls/${createdPoll._id}/questions`, {
-        text: questionText.trim(),
-        isMandatory,
-        allowMultiple,
-        options: validOptions.map(opt => opt.trim())
-      });
+      // 2. Add all questions sequentially
+      for (const q of finalQuestions) {
+        const questRes = await api.post(`/polls/${createdPoll._id}/questions`, {
+          text: q.text,
+          isMandatory: q.isMandatory,
+          allowMultiple: q.allowMultiple,
+          options: q.options
+        });
 
-      if (!questRes.data.success) {
-        // Cleanup if possible or notify
-        throw new Error(questRes.data.error || 'Failed to add question');
+        if (!questRes.data.success) {
+          throw new Error(questRes.data.error || 'Failed to add question');
+        }
       }
 
       // 3. Activate the poll to make it live
@@ -174,12 +231,13 @@ export default function CreatePollScreen() {
         status: 'active'
       });
 
-      Alert.alert('Success', 'Poll created and published successfully!');
+      Alert.alert('Success', `Poll created with ${finalQuestions.length} question(s) and published successfully!`);
       
       // Reset form
       setTitle('');
       setDescription('');
       setQuestionText('');
+      setQuestionsList([]);
       setExpiryDate(() => {
         const d = new Date();
         d.setHours(d.getHours() + 24);
@@ -325,9 +383,39 @@ export default function CreatePollScreen() {
             </View>
           </BrutalCard>
 
+          {/* Added Questions List Card */}
+          {questionsList.length > 0 && (
+            <BrutalCard variant="default">
+              <Text style={[styles.cardHeader, { color: colors.foreground, borderBottomColor: colors.border }]}>
+                Added Questions ({questionsList.length})
+              </Text>
+              {questionsList.map((q, qIdx) => (
+                <View key={q.id} style={[styles.addedQuestionItem, { borderBottomColor: colors.border }]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.addedQuestionText, { color: colors.foreground }]}>
+                      Q{qIdx + 1}: {q.text}
+                    </Text>
+                    <Text style={[styles.addedQuestionMeta, { color: colors.mutedForeground }]}>
+                      {q.options.length} options • {q.isMandatory ? 'Mandatory' : 'Optional'} • {q.allowMultiple ? 'Multi Choice' : 'Single Choice'}
+                    </Text>
+                  </View>
+                  <BrutalButton
+                    title="Remove"
+                    variant="destructive"
+                    onPress={() => handleRemoveQuestionFromList(q.id)}
+                    style={styles.removeQuestionBtn}
+                    textStyle={styles.removeQuestionBtnText}
+                  />
+                </View>
+              ))}
+            </BrutalCard>
+          )}
+
           {/* Section 2: Poll Question & Options */}
           <BrutalCard variant="primary">
-            <Text style={[styles.cardHeader, { color: colors.foreground, borderBottomColor: colors.border }]}>2. Add Question</Text>
+            <Text style={[styles.cardHeader, { color: colors.foreground, borderBottomColor: colors.border }]}>
+              {questionsList.length > 0 ? `Add Question #${questionsList.length + 1}` : '2. Add Question'}
+            </Text>
             <BrutalInput
               label="Question Text"
               placeholder="What would you like to ask?"
@@ -378,6 +466,13 @@ export default function CreatePollScreen() {
               onPress={addOptionField}
               style={styles.addOptionBtn}
               textStyle={styles.addOptionBtnText}
+            />
+
+            <BrutalButton
+              title="+ Save & Add Next Question"
+              variant="primary"
+              onPress={handleAddNextQuestion}
+              style={styles.addNextQuestionBtn}
             />
           </BrutalCard>
 
@@ -547,5 +642,34 @@ const styles = StyleSheet.create({
     fontFamily: 'SpaceMono',
     fontSize: 14,
     fontWeight: '900',
+  },
+  addedQuestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    gap: 10,
+  },
+  addedQuestionText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  addedQuestionMeta: {
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    marginTop: 2,
+  },
+  removeQuestionBtn: {
+    marginVertical: 0,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  removeQuestionBtnText: {
+    fontSize: 10,
+  },
+  addNextQuestionBtn: {
+    marginTop: 16,
   },
 });
