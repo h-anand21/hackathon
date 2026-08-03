@@ -63,7 +63,6 @@ export default function PollVotingScreen() {
         }
       })
       .catch(err => {
-        console.error(err);
         const msg = err.response?.data?.error || "Failed to load poll room.";
         setError(msg);
       })
@@ -128,7 +127,6 @@ export default function PollVotingScreen() {
         ]);
       }
     } catch (err: any) {
-      console.error(err);
       const errMsg = err.response?.data?.error || 'Failed to submit vote. Try again.';
       Alert.alert('Vote Failed', errMsg);
       setError(errMsg);
@@ -204,13 +202,13 @@ export default function PollVotingScreen() {
 
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           {/* Poll Card Header */}
-          <BrutalCard variant="accent" style={styles.pollInfoCard}>
-            <Text style={styles.pollTitle}>{poll.title}</Text>
-            {poll.description ? <Text style={styles.pollDesc}>{poll.description}</Text> : null}
+          <BrutalCard variant="default" style={styles.pollInfoCard}>
+            <Text style={[styles.pollTitle, { color: colors.foreground }]}>{poll.title}</Text>
+            {poll.description ? <Text style={[styles.pollDesc, { color: colors.mutedForeground }]}>{poll.description}</Text> : null}
             
             <View style={styles.expiryRow}>
-              <ClockIcon size={14} color="#09090b" />
-              <Text style={styles.expiryText}>
+              <ClockIcon size={14} color={colors.foreground} />
+              <Text style={[styles.expiryText, { color: colors.foreground }]}>
                 Expires: {new Date(poll.expiresAt).toLocaleTimeString()}
               </Text>
             </View>
@@ -357,7 +355,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   pollTitle: {
-    color: '#09090b',
     fontFamily: 'SpaceMono',
     fontSize: 22,
     fontWeight: '900',
@@ -365,7 +362,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   pollDesc: {
-    color: '#1f2937',
     fontSize: 14,
     fontWeight: '600',
     lineHeight: 20,
@@ -377,7 +373,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   expiryText: {
-    color: '#09090b',
     fontFamily: 'SpaceMono',
     fontSize: 11,
     fontWeight: '900',

@@ -178,8 +178,8 @@ export default function DashboardScreen() {
         </View>
 
         {/* Direct Poll Room Join / Vote Search bar */}
-        <BrutalCard variant="accent" style={styles.searchCard}>
-          <Text style={styles.searchTitle}>Join A Poll Room</Text>
+        <BrutalCard variant="default" style={styles.searchCard}>
+          <Text style={[styles.searchTitle, { color: colors.foreground }]}>Join A Poll Room</Text>
           <View style={styles.searchRow}>
             <BrutalInput
               placeholder="Paste Poll ID here..."
@@ -391,7 +391,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   searchTitle: {
-    color: '#09090b',
     fontFamily: 'SpaceMono',
     fontSize: 16,
     fontWeight: '900',
@@ -405,9 +404,6 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    backgroundColor: '#ffffff',
-    color: '#09090b',
-    borderColor: '#09090b',
     height: 48,
     marginVertical: 0,
   },

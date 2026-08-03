@@ -45,7 +45,6 @@ export default function PublishedResultScreen() {
         }
       })
       .catch(err => {
-        console.error(err);
         setError(err.response?.data?.error || "Results are not public or not found");
       })
       .finally(() => setLoading(false));
@@ -135,16 +134,16 @@ export default function PublishedResultScreen() {
 
         {/* Reach Stats */}
         <View style={styles.statsGrid}>
-          <BrutalCard variant="primary" style={styles.gridCard}>
-            <UsersIcon size={24} color="#09090b" />
-            <Text style={styles.gridCardTitle}>Total Votes</Text>
-            <Text style={styles.gridCardValue}>{analytics.totalResponses}</Text>
+          <BrutalCard variant="default" style={styles.gridCard}>
+            <UsersIcon size={24} color={colors.foreground} />
+            <Text style={[styles.gridCardTitle, { color: colors.foreground }]}>Total Votes</Text>
+            <Text style={[styles.gridCardValue, { color: colors.foreground }]}>{analytics.totalResponses}</Text>
           </BrutalCard>
 
-          <BrutalCard variant="accent" style={styles.gridCard}>
-            <TrophyIcon size={24} color="#09090b" />
-            <Text style={styles.gridCardTitle}>Active Voters</Text>
-            <Text style={styles.gridCardValue}>{activeUsers}</Text>
+          <BrutalCard variant="default" style={styles.gridCard}>
+            <TrophyIcon size={24} color={colors.foreground} />
+            <Text style={[styles.gridCardTitle, { color: colors.foreground }]}>Active Voters</Text>
+            <Text style={[styles.gridCardValue, { color: colors.primary }]}>{activeUsers}</Text>
           </BrutalCard>
         </View>
 
@@ -375,7 +374,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   gridCardTitle: {
-    color: '#09090b',
     fontFamily: 'SpaceMono',
     fontSize: 10,
     fontWeight: '900',
@@ -384,7 +382,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   gridCardValue: {
-    color: '#09090b',
     fontFamily: 'SpaceMono',
     fontSize: 24,
     fontWeight: '900',

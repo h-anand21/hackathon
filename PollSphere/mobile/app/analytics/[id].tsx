@@ -38,19 +38,18 @@ export default function PollAnalyticsScreen() {
   const fetchAnalytics = () => {
     if (!id) return;
     setLoading(true);
+    setError('');
     
-    // For results page, we use the public results endpoint
-    api.get(`/public/poll/${id}/results`)
+    // Try creator analytics endpoint first, fallback to public results endpoint
+    api.get(`/analytics/${id}`)
       .then(res => {
         if (res.data.success) {
           setData(res.data);
         }
       })
-      .catch(err => {
-        console.error(err);
-        // Fallback: If not published, maybe they are the creator?
-        // Let's try to fetch creator analytics endpoint
-        api.get(`/analytics/${id}`)
+      .catch(() => {
+        // Fallback: If not creator, try public results endpoint
+        api.get(`/public/poll/${id}/results`)
           .then(res => {
             if (res.data.success) {
               setData(res.data);
@@ -138,16 +137,16 @@ export default function PollAnalyticsScreen() {
 
         {/* Global Reach Stats Grid */}
         <View style={styles.statsGrid}>
-          <BrutalCard variant="primary" style={styles.gridCard}>
-            <UsersIcon size={24} color="#09090b" />
-            <Text style={styles.gridCardTitle}>Global Reach</Text>
-            <Text style={styles.gridCardValue}>{analytics.totalResponses}</Text>
+          <BrutalCard variant="default" style={styles.gridCard}>
+            <UsersIcon size={24} color={colors.foreground} />
+            <Text style={[styles.gridCardTitle, { color: colors.foreground }]}>Global Reach</Text>
+            <Text style={[styles.gridCardValue, { color: colors.foreground }]}>{analytics.totalResponses}</Text>
           </BrutalCard>
 
-          <BrutalCard variant="accent" style={styles.gridCard}>
-            <ActivityIcon size={24} color="#09090b" />
-            <Text style={styles.gridCardTitle}>Live Status</Text>
-            <Text style={styles.gridCardValue}>Active</Text>
+          <BrutalCard variant="default" style={styles.gridCard}>
+            <ActivityIcon size={24} color={colors.foreground} />
+            <Text style={[styles.gridCardTitle, { color: colors.foreground }]}>Live Status</Text>
+            <Text style={[styles.gridCardValue, { color: colors.primary }]}>Active</Text>
           </BrutalCard>
         </View>
 
@@ -377,7 +376,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   gridCardTitle: {
-    color: '#09090b',
     fontFamily: 'SpaceMono',
     fontSize: 10,
     fontWeight: '900',
@@ -386,7 +384,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   gridCardValue: {
-    color: '#09090b',
     fontFamily: 'SpaceMono',
     fontSize: 24,
     fontWeight: '900',
@@ -396,13 +393,11 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   sectionTitle: {
-    color: '#ffffff',
     fontFamily: 'SpaceMono',
     fontSize: 16,
     fontWeight: '900',
     textTransform: 'uppercase',
     borderBottomWidth: 1.5,
-    borderBottomColor: '#ffffff',
     paddingBottom: 8,
     marginBottom: 16,
   },
@@ -410,7 +405,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   summaryQuestionText: {
-    color: '#ffffff',
     fontFamily: 'SpaceMono',
     fontSize: 14,
     fontWeight: '900',
@@ -419,9 +413,7 @@ const styles = StyleSheet.create({
   barContainer: {
     height: 16,
     width: '100%',
-    backgroundColor: '#18181b',
     borderWidth: 1.5,
-    borderColor: '#ffffff',
     borderRadius: 8,
     flexDirection: 'row',
     overflow: 'hidden',
@@ -446,7 +438,6 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   legendText: {
-    color: Colors.mutedForeground,
     fontFamily: 'SpaceMono',
     fontSize: 10,
     fontWeight: '700',
@@ -455,7 +446,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   chartCardTitle: {
-    color: '#ffffff',
     fontFamily: 'SpaceMono',
     fontSize: 14,
     fontWeight: '900',
@@ -475,14 +465,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   donutTextSub: {
-    color: Colors.mutedForeground,
     fontFamily: 'SpaceMono',
     fontSize: 8,
     fontWeight: '900',
     textTransform: 'uppercase',
   },
   donutTextMain: {
-    color: '#ffffff',
     fontFamily: 'SpaceMono',
     fontSize: 20,
     fontWeight: '900',
@@ -498,7 +486,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   noVotesText: {
-    color: Colors.mutedForeground,
     fontFamily: 'SpaceMono',
     fontSize: 10,
     fontWeight: '900',
@@ -514,20 +501,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#18181b',
   },
   detailsLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   detailsName: {
-    color: '#ffffff',
     fontFamily: 'SpaceMono',
     fontSize: 14,
     fontWeight: '700',
   },
   detailsCount: {
-    color: '#ffffff',
     fontFamily: 'SpaceMono',
     fontSize: 14,
     fontWeight: '900',
