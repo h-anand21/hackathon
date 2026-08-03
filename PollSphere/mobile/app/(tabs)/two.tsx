@@ -50,7 +50,16 @@ const HelpCircleIcon = HelpCircle as any;
 export default function CreatePollScreen() {
   const { isLoaded, userId, getToken } = useAuth();
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+
+  const brandAccent = isDark ? '#FFCC00' : '#009689';
+  const textColor = isDark ? '#FFFFFF' : '#09090b';
+  const subTextColor = isDark ? '#A1A1AA' : '#52525B';
+  const cardBg = isDark ? '#18181B' : '#FFFFFF';
+  const cardBorder = isDark ? '#27272A' : '#09090b';
+  const inputBg = isDark ? '#09090b' : '#F4F4F5';
+  const backBtnBg = isDark ? '#18181B' : '#FFFFFF';
+  const backBtnIcon = isDark ? '#FFFFFF' : '#09090b';
 
   useEffect(() => {
     if (isLoaded && getToken) {
@@ -248,11 +257,11 @@ export default function CreatePollScreen() {
 
   if (!userId) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <View style={styles.guestContainer}>
           <LockIcon size={64} color="#EF4444" />
-          <Text style={styles.guestTitle}>Login Required</Text>
-          <Text style={styles.guestSub}>
+          <Text style={[styles.guestTitle, { color: textColor }]}>Login Required</Text>
+          <Text style={[styles.guestSub, { color: subTextColor }]}>
             Only authenticated creators can design and publish custom polls.
           </Text>
           <BrutalButton
@@ -266,15 +275,15 @@ export default function CreatePollScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardContainer}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           <View style={styles.topHeaderRow}>
-            <Pressable onPress={() => router.back()} style={styles.backBoxBtn}>
-              <ArrowLeftIcon size={20} color="#FFFFFF" />
+            <Pressable onPress={() => router.back()} style={[styles.backBoxBtn, { backgroundColor: backBtnBg, borderColor: cardBorder }]}>
+              <ArrowLeftIcon size={20} color={backBtnIcon} />
             </Pressable>
             <View style={styles.headerIllustrationWrapper}>
               <View style={styles.ballotBoxGraphic}>
@@ -283,7 +292,7 @@ export default function CreatePollScreen() {
                     <CheckIcon size={12} color="#09090b" strokeWidth={3} />
                   </View>
                 </View>
-                <View style={styles.boxBody}>
+                <View style={[styles.boxBody, { backgroundColor: brandAccent }]}>
                   <View style={styles.boxSlot} />
                 </View>
               </View>
@@ -292,92 +301,100 @@ export default function CreatePollScreen() {
 
           <View style={styles.titleSection}>
             <View style={styles.titleRow}>
-              <Text style={styles.titleWhite}>CREATE NEW </Text>
-              <Text style={styles.titleYellow}>POLL</Text>
+              <Text style={[styles.titleWhite, { color: textColor }]}>CREATE NEW </Text>
+              <Text style={[styles.titleYellow, { color: brandAccent }]}>POLL</Text>
             </View>
-            <Text style={styles.subtitleText}>Build engaging polls in just a few simple steps.</Text>
+            <Text style={[styles.subtitleText, { color: subTextColor }]}>Build engaging polls in just a few simple steps.</Text>
           </View>
 
-          <View style={styles.darkCard}>
+          <View style={[styles.darkCard, { backgroundColor: cardBg, borderColor: cardBorder }]}>
             <View style={styles.cardHeaderRow}>
-              <View style={styles.headerYellowBadge}>
-                <FileTextIcon size={18} color="#09090b" strokeWidth={2.5} />
+              <View style={[styles.headerYellowBadge, { backgroundColor: brandAccent }]}>
+                <FileTextIcon size={18} color={isDark ? '#09090b' : '#FFFFFF'} strokeWidth={2.5} />
               </View>
-              <Text style={styles.cardHeaderText}>1. GENERAL INFO</Text>
+              <Text style={[styles.cardHeaderText, { color: textColor }]}>1. GENERAL INFO</Text>
             </View>
-            <View style={styles.yellowHeaderUnderline} />
+            <View style={[styles.yellowHeaderUnderline, { backgroundColor: brandAccent }]} />
 
             <View style={styles.fieldGroup}>
               <View style={styles.fieldLabelRow}>
-                <Text style={styles.fieldLabelText}>POLL CAMPAIGN TITLE</Text>
-                <View style={styles.yellowDot} />
+                <Text style={[styles.fieldLabelText, { color: textColor }]}>POLL CAMPAIGN TITLE</Text>
+                <View style={[styles.yellowDot, { backgroundColor: brandAccent }]} />
               </View>
               <View style={styles.inputWithIconRow}>
                 <TextInput
                   placeholder="e.g., Team Feedback Session"
-                  placeholderTextColor="#6B7280"
+                  placeholderTextColor={subTextColor}
                   value={title}
                   onChangeText={setTitle}
-                  style={styles.textInputMain}
+                  style={[styles.textInputMain, { backgroundColor: inputBg, color: textColor, borderColor: cardBorder }]}
                   autoCorrect={false}
                 />
                 <View style={styles.rightInputIcon}>
-                  <PencilIcon size={18} color="#FFCC00" />
+                  <PencilIcon size={18} color={brandAccent} />
                 </View>
               </View>
             </View>
 
             <View style={styles.fieldGroup}>
               <View style={styles.fieldLabelRow}>
-                <Text style={styles.fieldLabelText}>DESCRIPTION (OPTIONAL)</Text>
-                <View style={styles.yellowDot} />
+                <Text style={[styles.fieldLabelText, { color: textColor }]}>DESCRIPTION (OPTIONAL)</Text>
+                <View style={[styles.yellowDot, { backgroundColor: brandAccent }]} />
               </View>
               <TextInput
                 placeholder="Provide context for voters..."
-                placeholderTextColor="#6B7280"
+                placeholderTextColor={subTextColor}
                 value={description}
                 onChangeText={setDescription}
                 multiline
                 numberOfLines={3}
-                style={styles.textInputMultiline}
+                style={[styles.textInputMultiline, { backgroundColor: inputBg, color: textColor, borderColor: cardBorder }]}
               />
             </View>
 
             <View style={styles.fieldGroup}>
               <View style={styles.fieldLabelRow}>
-                <Text style={styles.fieldLabelText}>RESPONSE MODE</Text>
-                <View style={styles.yellowDot} />
+                <Text style={[styles.fieldLabelText, { color: textColor }]}>RESPONSE MODE</Text>
+                <View style={[styles.yellowDot, { backgroundColor: brandAccent }]} />
               </View>
               <View style={styles.toggleRow}>
                 <Pressable
                   onPress={() => setResponseMode('anonymous')}
-                  style={[styles.togglePillBtn, responseMode === 'anonymous' ? styles.togglePillActive : styles.togglePillInactive]}
+                  style={[
+                    styles.togglePillBtn, 
+                    { backgroundColor: inputBg, borderColor: cardBorder },
+                    responseMode === 'anonymous' && { backgroundColor: '#009689', borderColor: '#09090b' }
+                  ]}
                 >
-                  <EyeOffIcon size={18} color={responseMode === 'anonymous' ? '#FFFFFF' : '#09090b'} />
-                  <Text style={[styles.togglePillText, responseMode === 'anonymous' ? styles.toggleTextActive : styles.toggleTextInactive]}>ANONYMOUS</Text>
+                  <EyeOffIcon size={18} color={responseMode === 'anonymous' ? '#FFFFFF' : textColor} />
+                  <Text style={[styles.togglePillText, { color: textColor }, responseMode === 'anonymous' && { color: '#FFFFFF' }]}>ANONYMOUS</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setResponseMode('authenticated')}
-                  style={[styles.togglePillBtn, responseMode === 'authenticated' ? styles.togglePillActive : styles.togglePillInactive]}
+                  style={[
+                    styles.togglePillBtn, 
+                    { backgroundColor: inputBg, borderColor: cardBorder },
+                    responseMode === 'authenticated' && { backgroundColor: '#009689', borderColor: '#09090b' }
+                  ]}
                 >
-                  <UserIcon size={18} color={responseMode === 'authenticated' ? '#FFFFFF' : '#09090b'} />
-                  <Text style={[styles.togglePillText, responseMode === 'authenticated' ? styles.toggleTextActive : styles.toggleTextInactive]}>AUTHENTICATED</Text>
+                  <UserIcon size={18} color={responseMode === 'authenticated' ? '#FFFFFF' : textColor} />
+                  <Text style={[styles.togglePillText, { color: textColor }, responseMode === 'authenticated' && { color: '#FFFFFF' }]}>AUTHENTICATED</Text>
                 </Pressable>
               </View>
             </View>
 
             <View style={styles.fieldGroup}>
               <View style={styles.fieldLabelRow}>
-                <Text style={styles.fieldLabelText}>EXPIRY DATE & TIME</Text>
-                <View style={styles.yellowDot} />
+                <Text style={[styles.fieldLabelText, { color: textColor }]}>EXPIRY DATE & TIME</Text>
+                <View style={[styles.yellowDot, { backgroundColor: brandAccent }]} />
               </View>
-              <Pressable onPress={showDatePicker} style={styles.datePickerTriggerBox}>
-                <View style={styles.calendarBadgeLeft}>
-                  <Text style={styles.calendarMonthText}>{formatMonthAbbr(expiryDate)}</Text>
-                  <Text style={styles.calendarDayText}>{formatDateDay(expiryDate)}</Text>
+              <Pressable onPress={showDatePicker} style={[styles.datePickerTriggerBox, { backgroundColor: inputBg, borderColor: cardBorder }]}>
+                <View style={[styles.calendarBadgeLeft, { backgroundColor: brandAccent }]}>
+                  <Text style={[styles.calendarMonthText, !isDark && { color: '#FFFFFF' }]}>{formatMonthAbbr(expiryDate)}</Text>
+                  <Text style={[styles.calendarDayText, !isDark && { color: '#FFFFFF' }]}>{formatDateDay(expiryDate)}</Text>
                 </View>
-                <Text style={styles.datePickerValueText}>{formatDateTime(expiryDate)}</Text>
-                <CalendarIcon size={20} color="#FFCC00" />
+                <Text style={[styles.datePickerValueText, { color: textColor }]}>{formatDateTime(expiryDate)}</Text>
+                <CalendarIcon size={20} color={brandAccent} />
               </Pressable>
               {showPicker && (
                 <DateTimePicker
@@ -389,35 +406,35 @@ export default function CreatePollScreen() {
                 />
               )}
               <View style={styles.quickOffsetRow}>
-                <Pressable onPress={() => setExpiryFromOffset(1)} style={styles.offsetPill}><Text style={styles.offsetPillText}>+1 HR</Text></Pressable>
-                <Pressable onPress={() => setExpiryFromOffset(24)} style={styles.offsetPill}><Text style={styles.offsetPillText}>+1 DAY</Text></Pressable>
-                <Pressable onPress={() => setExpiryFromOffset(72)} style={styles.offsetPill}><Text style={styles.offsetPillText}>+3 DAYS</Text></Pressable>
-                <Pressable onPress={() => setExpiryFromOffset(168)} style={styles.offsetPill}><Text style={styles.offsetPillText}>+7 DAYS</Text></Pressable>
+                <Pressable onPress={() => setExpiryFromOffset(1)} style={[styles.offsetPill, { backgroundColor: inputBg, borderColor: cardBorder }]}><Text style={[styles.offsetPillText, { color: textColor }]}>+1 HR</Text></Pressable>
+                <Pressable onPress={() => setExpiryFromOffset(24)} style={[styles.offsetPill, { backgroundColor: inputBg, borderColor: cardBorder }]}><Text style={[styles.offsetPillText, { color: textColor }]}>+1 DAY</Text></Pressable>
+                <Pressable onPress={() => setExpiryFromOffset(72)} style={[styles.offsetPill, { backgroundColor: inputBg, borderColor: cardBorder }]}><Text style={[styles.offsetPillText, { color: textColor }]}>+3 DAYS</Text></Pressable>
+                <Pressable onPress={() => setExpiryFromOffset(168)} style={[styles.offsetPill, { backgroundColor: inputBg, borderColor: cardBorder }]}><Text style={[styles.offsetPillText, { color: textColor }]}>+7 DAYS</Text></Pressable>
               </View>
             </View>
           </View>
 
-          <View style={[styles.darkCard, { marginTop: 16 }]}>
+          <View style={[styles.darkCard, { backgroundColor: cardBg, borderColor: cardBorder, marginTop: 16 }]}>
             <View style={styles.cardHeaderRow}>
-              <View style={styles.headerYellowBadge}>
-                <HelpCircleIcon size={18} color="#09090b" strokeWidth={2.5} />
+              <View style={[styles.headerYellowBadge, { backgroundColor: brandAccent }]}>
+                <HelpCircleIcon size={18} color={isDark ? '#09090b' : '#FFFFFF'} strokeWidth={2.5} />
               </View>
-              <Text style={styles.cardHeaderText}>2. ADD QUESTIONS & OPTIONS</Text>
+              <Text style={[styles.cardHeaderText, { color: textColor }]}>2. ADD QUESTIONS & OPTIONS</Text>
             </View>
-            <View style={styles.yellowHeaderUnderline} />
+            <View style={[styles.yellowHeaderUnderline, { backgroundColor: brandAccent }]} />
             {questionsList.length > 0 ? (
               <View style={styles.addedQuestionsListWrapper}>
-                <Text style={styles.addedCountText}>Saved Questions: {questionsList.length}</Text>
+                <Text style={[styles.addedCountText, { color: textColor }]}>Saved Questions: {questionsList.length}</Text>
                 {questionsList.map((q, idx) => (
-                  <View key={q.id} style={styles.savedQRow}>
+                  <View key={q.id} style={[styles.savedQRow, { backgroundColor: inputBg, borderColor: cardBorder }]}>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.savedQTitle}>Q{idx + 1}: {q.text}</Text>
-                      <Text style={styles.savedQSub}>{q.options.length} options • {q.isMandatory ? 'Mandatory' : 'Optional'}</Text>
+                      <Text style={[styles.savedQTitle, { color: textColor }]}>Q{idx + 1}: {q.text}</Text>
+                      <Text style={[styles.savedQSub, { color: subTextColor }]}>{q.options.length} options • {q.isMandatory ? 'Mandatory' : 'Optional'}</Text>
                     </View>
                     <View style={styles.qActionBtnsRow}>
-                      <Pressable onPress={() => handleEditQuestionInList(q.id)} style={styles.editQBtn}>
-                        <PencilIcon size={14} color="#FFCC00" />
-                        <Text style={styles.editQBtnText}>EDIT</Text>
+                      <Pressable onPress={() => handleEditQuestionInList(q.id)} style={[styles.editQBtn, { backgroundColor: brandAccent }]}>
+                        <PencilIcon size={14} color={isDark ? '#09090b' : '#FFFFFF'} />
+                        <Text style={[styles.editQBtnText, { color: isDark ? '#09090b' : '#FFFFFF' }]}>EDIT</Text>
                       </Pressable>
                       <Pressable onPress={() => handleRemoveQuestionFromList(q.id)} style={styles.deleteQBtn}>
                         <TrashIcon size={16} color="#EF4444" />
@@ -429,31 +446,31 @@ export default function CreatePollScreen() {
             ) : null}
             <View style={styles.fieldGroup}>
               <View style={styles.fieldLabelRow}>
-                <Text style={styles.fieldLabelText}>QUESTION #{questionsList.length + 1}</Text>
-                <View style={styles.yellowDot} />
+                <Text style={[styles.fieldLabelText, { color: textColor }]}>QUESTION #{questionsList.length + 1}</Text>
+                <View style={[styles.yellowDot, { backgroundColor: brandAccent }]} />
               </View>
               <TextInput
                 placeholder="e.g., What feature should we build next?"
-                placeholderTextColor="#6B7280"
+                placeholderTextColor={subTextColor}
                 value={questionText}
                 onChangeText={setQuestionText}
-                style={styles.textInputMain}
+                style={[styles.textInputMain, { backgroundColor: inputBg, color: textColor, borderColor: cardBorder }]}
                 autoCorrect={false}
               />
             </View>
             <View style={styles.fieldGroup}>
               <View style={styles.fieldLabelRow}>
-                <Text style={styles.fieldLabelText}>ANSWER OPTIONS</Text>
-                <View style={styles.yellowDot} />
+                <Text style={[styles.fieldLabelText, { color: textColor }]}>ANSWER OPTIONS</Text>
+                <View style={[styles.yellowDot, { backgroundColor: brandAccent }]} />
               </View>
               {options.map((opt, index) => (
                 <View key={opt.id} style={styles.optionInputRow}>
                   <TextInput
                     placeholder={`Option ${index + 1}`}
-                    placeholderTextColor="#6B7280"
+                    placeholderTextColor={subTextColor}
                     value={opt.text}
                     onChangeText={(txt) => handleOptionChange(txt, opt.id)}
-                    style={styles.textInputMain}
+                    style={[styles.textInputMain, { backgroundColor: inputBg, color: textColor, borderColor: cardBorder }]}
                   />
                   {options.length > 2 ? (
                     <Pressable onPress={() => removeOptionField(opt.id)} style={styles.removeOptBtn}>
@@ -462,32 +479,58 @@ export default function CreatePollScreen() {
                   ) : null}
                 </View>
               ))}
-              <Pressable onPress={addOptionField} style={styles.addOptBtn}>
-                <PlusIcon size={16} color="#FFCC00" />
-                <Text style={styles.addOptBtnText}>+ ADD OPTION</Text>
+              <Pressable onPress={addOptionField} style={[styles.addOptBtn, { backgroundColor: inputBg, borderColor: brandAccent }]}>
+                <PlusIcon size={16} color={brandAccent} />
+                <Text style={[styles.addOptBtnText, { color: brandAccent }]}>+ ADD OPTION</Text>
               </Pressable>
             </View>
             <View style={styles.settingTogglesRow}>
-              <Pressable onPress={() => setIsMandatory(!isMandatory)} style={[styles.settingPill, isMandatory && styles.settingPillActive]}>
-                <Text style={[styles.settingPillText, isMandatory && styles.settingPillTextActive]}>{isMandatory ? '✓ MANDATORY' : 'OPTIONAL'}</Text>
+              <Pressable 
+                onPress={() => setIsMandatory(!isMandatory)} 
+                style={[
+                  styles.settingPill, 
+                  { backgroundColor: inputBg, borderColor: cardBorder },
+                  isMandatory && { backgroundColor: brandAccent, borderColor: '#09090b' }
+                ]}
+              >
+                <Text style={[
+                  styles.settingPillText, 
+                  { color: textColor },
+                  isMandatory && { color: isDark ? '#09090b' : '#FFFFFF' }
+                ]}>
+                  {isMandatory ? '✓ MANDATORY' : 'OPTIONAL'}
+                </Text>
               </Pressable>
-              <Pressable onPress={() => setAllowMultiple(!allowMultiple)} style={[styles.settingPill, allowMultiple && styles.settingPillActive]}>
-                <Text style={[styles.settingPillText, allowMultiple && styles.settingPillTextActive]}>{allowMultiple ? '✓ MULTI CHOICE' : 'SINGLE CHOICE'}</Text>
+              <Pressable 
+                onPress={() => setAllowMultiple(!allowMultiple)} 
+                style={[
+                  styles.settingPill, 
+                  { backgroundColor: inputBg, borderColor: cardBorder },
+                  allowMultiple && { backgroundColor: brandAccent, borderColor: '#09090b' }
+                ]}
+              >
+                <Text style={[
+                  styles.settingPillText, 
+                  { color: textColor },
+                  allowMultiple && { color: isDark ? '#09090b' : '#FFFFFF' }
+                ]}>
+                  {allowMultiple ? '✓ MULTI CHOICE' : 'SINGLE CHOICE'}
+                </Text>
               </Pressable>
             </View>
-            <Pressable onPress={handleAddNextQuestion} style={styles.saveNextQBtn}>
-              <PlusIcon size={18} color="#FFCC00" />
-              <Text style={styles.saveNextQBtnText}>SAVE & ADD ANOTHER QUESTION</Text>
+            <Pressable onPress={handleAddNextQuestion} style={[styles.saveNextQBtn, { backgroundColor: inputBg, borderColor: brandAccent }]}>
+              <PlusIcon size={18} color={brandAccent} />
+              <Text style={[styles.saveNextQBtnText, { color: brandAccent }]}>SAVE & ADD ANOTHER QUESTION</Text>
             </Pressable>
           </View>
 
-          <Pressable onPress={handleCreatePoll} disabled={loading} style={styles.publishPollBtn}>
+          <Pressable onPress={handleCreatePoll} disabled={loading} style={[styles.publishPollBtn, { backgroundColor: brandAccent }]}>
             {loading ? (
-              <ActivityIndicator color="#09090b" size="small" />
+              <ActivityIndicator color={isDark ? '#09090b' : '#FFFFFF'} size="small" />
             ) : (
               <>
-                <ZapIcon size={20} color="#09090b" fill="#09090b" />
-                <Text style={styles.publishPollBtnText}>PUBLISH POLL CAMPAIGN</Text>
+                <ZapIcon size={20} color={isDark ? '#09090b' : '#FFFFFF'} fill={isDark ? '#09090b' : '#FFFFFF'} />
+                <Text style={[styles.publishPollBtnText, { color: isDark ? '#09090b' : '#FFFFFF' }]}>PUBLISH POLL CAMPAIGN</Text>
               </>
             )}
           </Pressable>

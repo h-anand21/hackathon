@@ -30,20 +30,20 @@ export const DarkColors = {
 };
 
 export const LightColors = {
-  background: '#ffffff',
-  card: '#ffffff',
+  background: '#F4F4F5',
+  card: '#FFFFFF',
   cardBorder: '#09090b',
   foreground: '#09090b',
-  muted: '#f4f4f5',
-  mutedForeground: '#71717a',
-  primary: '#0d9488',
-  primaryForeground: '#ffffff',
-  accent: '#f59e0b',
-  accentForeground: '#ffffff',
-  destructive: '#e11d48',
+  muted: '#E4E4E7',
+  mutedForeground: '#52525B',
+  primary: '#009689',
+  primaryForeground: '#FFFFFF',
+  accent: '#009689',
+  accentForeground: '#FFFFFF',
+  destructive: '#EF4444',
   border: '#09090b',
-  tabBar: '#ffffff',
-  tabBarBorder: '#e4e4e7',
+  tabBar: '#009689',
+  tabBarBorder: '#09090b',
   shadow: '#09090b',
 };
 
@@ -67,7 +67,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (saved === 'light' || saved === 'dark') {
           setMode(saved);
         } else {
-          setMode(system === 'light' ? 'light' : 'dark');
+          // By default always set Dark mode
+          setMode('dark');
         }
       })
       .catch(() => setMode('dark'))

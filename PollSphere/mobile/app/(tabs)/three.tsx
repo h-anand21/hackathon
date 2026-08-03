@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, CheckSquare, QrCode, ArrowRight, Sparkles, Check, Vote, Megaphone } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const ArrowLeftIcon = ArrowLeft as any;
 const CheckSquareIcon = CheckSquare as any;
@@ -28,6 +29,15 @@ const MegaphoneIcon = Megaphone as any;
 export default function VoteScreen() {
   const [pollId, setPollId] = useState('');
   const router = useRouter();
+  const { colors, isDark } = useTheme();
+
+  const brandAccent = isDark ? '#FFCC00' : '#009689';
+  const textColor = isDark ? '#FFFFFF' : '#09090b';
+  const subTextColor = isDark ? '#A1A1AA' : '#52525B';
+  const cardBg = isDark ? '#18181B' : '#FFFFFF';
+  const cardBorder = isDark ? '#27272A' : '#09090b';
+  const backBtnBg = isDark ? '#18181B' : '#FFFFFF';
+  const backBtnIcon = isDark ? '#FFFFFF' : '#09090b';
 
   const extractPollId = (input: string): string => {
     const trimmed = input.trim();
@@ -52,7 +62,7 @@ export default function VoteScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardContainer}
@@ -63,8 +73,8 @@ export default function VoteScreen() {
         >
           {/* Header Section */}
           <View style={styles.topHeaderRow}>
-            <Pressable onPress={() => router.back()} style={styles.backBoxBtn}>
-              <ArrowLeftIcon size={20} color="#FFFFFF" />
+            <Pressable onPress={() => router.back()} style={[styles.backBoxBtn, { backgroundColor: backBtnBg, borderColor: cardBorder }]}>
+              <ArrowLeftIcon size={20} color={backBtnIcon} />
             </Pressable>
 
             {/* Top Right Ballot Box Illustration */}
@@ -77,7 +87,7 @@ export default function VoteScreen() {
                   </View>
                 </View>
                 {/* Box body */}
-                <View style={styles.boxBody}>
+                <View style={[styles.boxBody, { backgroundColor: brandAccent }]}>
                   <View style={styles.boxSlot} />
                 </View>
               </View>
@@ -87,32 +97,32 @@ export default function VoteScreen() {
           {/* Title Header */}
           <View style={styles.titleSection}>
             <View style={styles.titleRow}>
-              <Text style={styles.titleWhite}>DIRECT </Text>
-              <Text style={styles.titleYellow}>VOTING</Text>
+              <Text style={[styles.titleWhite, { color: textColor }]}>DIRECT </Text>
+              <Text style={[styles.titleYellow, { color: brandAccent }]}>VOTING</Text>
             </View>
-            {/* Curved Yellow Underline */}
+            {/* Curved Underline */}
             <View style={styles.underlineCurveContainer}>
               <Svg height="12" width="120" viewBox="0 0 120 12">
                 <Path
                   d="M 5 6 Q 60 12 115 4"
-                  stroke="#FFCC00"
+                  stroke={brandAccent}
                   strokeWidth="3.5"
                   fill="none"
                   strokeLinecap="round"
                 />
               </Svg>
             </View>
-            <Text style={styles.subtitleText}>
+            <Text style={[styles.subtitleText, { color: subTextColor }]}>
               Join a live poll campaign and cast your feedback instantly.
             </Text>
           </View>
 
-          {/* Main Dark Card "JOIN A CAMPAIGN" */}
-          <View style={styles.darkCard}>
+          {/* Main Card "JOIN A CAMPAIGN" */}
+          <View style={[styles.darkCard, { backgroundColor: cardBg, borderColor: cardBorder }]}>
             <View style={styles.darkCardTopContent}>
               {/* PollSphere Brand Logo Badge */}
               <View style={styles.badgeWrapper}>
-                <View style={styles.badgeDottedCircle}>
+                <View style={[styles.badgeDottedCircle, { borderColor: brandAccent }]}>
                   <View style={styles.badgeInnerLogoCircle}>
                     <Image 
                       source={require('../../assets/images/icon.png')} 
@@ -125,35 +135,35 @@ export default function VoteScreen() {
 
               {/* Card Title */}
               <View style={styles.cardTitleRow}>
-                <Text style={styles.cardTitleWhite}>JOIN A </Text>
-                <Text style={styles.cardTitleYellow}>CAMPAIGN</Text>
+                <Text style={[styles.cardTitleWhite, { color: textColor }]}>JOIN A </Text>
+                <Text style={[styles.cardTitleYellow, { color: brandAccent }]}>CAMPAIGN</Text>
               </View>
 
-              <Text style={styles.cardDescText}>
+              <Text style={[styles.cardDescText, { color: subTextColor }]}>
                 Enter a live Poll ID or Code shared by the creator to enter the voting room and cast your feedback instantly.
               </Text>
             </View>
 
-            {/* Wavy Yellow Bottom Section */}
+            {/* Wavy Accent Bottom Section */}
             <View style={styles.yellowSectionWrapper}>
               {/* Wavy Divider SVG */}
               <View style={styles.wavySvgWrapper}>
                 <Svg height="24" width="100%" viewBox="0 0 1440 320" preserveAspectRatio="none">
                   <Path 
-                    fill="#FFCC00" 
+                    fill={brandAccent} 
                     d="M0,128L48,149.3C96,171,192,213,288,213.3C384,213,480,171,576,149.3C672,128,768,128,864,149.3C960,171,1056,213,1152,202.7C1248,192,1344,128,1392,96L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
                   />
                 </Svg>
               </View>
 
-              <View style={styles.yellowBodyContent}>
+              <View style={[styles.yellowBodyContent, { backgroundColor: brandAccent }]}>
                 {/* Input Label with curved arrow */}
                 <View style={styles.inputLabelRow}>
-                  <Text style={styles.inputLabelText}>POLL ID / CODE</Text>
+                  <Text style={[styles.inputLabelText, !isDark && { color: '#FFFFFF' }]}>POLL ID / CODE</Text>
                   <Svg height="14" width="24" viewBox="0 0 24 14" style={{ marginLeft: 6 }}>
                     <Path
                       d="M 2 2 Q 12 12 22 4 M 18 2 L 22 4 L 20 8"
-                      stroke="#09090b"
+                      stroke={isDark ? '#09090b' : '#FFFFFF'}
                       strokeWidth="2"
                       fill="none"
                       strokeLinecap="round"
@@ -182,7 +192,7 @@ export default function VoteScreen() {
                 {/* Main Action Button CONNECT & ENTER ROOM */}
                 <Pressable onPress={handleJoinRoom} style={styles.connectPillBtn}>
                   <Text style={styles.connectBtnText}>CONNECT & ENTER ROOM</Text>
-                  <View style={styles.cyanArrowCircle}>
+                  <View style={[styles.cyanArrowCircle, !isDark && { backgroundColor: '#FFCC00' }]}>
                     <ArrowRightIcon size={20} color="#09090b" strokeWidth={3} />
                   </View>
                 </Pressable>

@@ -11,9 +11,10 @@ import {
   Alert,
   Pressable,
   TextInput,
-  BackHandler
+  BackHandler,
+  Modal
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@clerk/clerk-expo';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { BrutalButton, BrutalInput } from '../../components/Brutal';
@@ -34,8 +35,12 @@ import {
   FileText,
   Megaphone,
   Share2,
-  SlidersHorizontal
+  SlidersHorizontal,
+  X,
+  Check,
+  Filter
 } from 'lucide-react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const TrashIcon = Trash2 as any;
 const LogOutIcon = LogOut as any;
@@ -53,18 +58,33 @@ const FileTextIcon = FileText as any;
 const MegaphoneIcon = Megaphone as any;
 const Share2Icon = Share2 as any;
 const SlidersHorizontalIcon = SlidersHorizontal as any;
+const XIcon = X as any;
+const CheckIcon = Check as any;
+const FilterIcon = Filter as any;
 
 export default function DashboardScreen() {
   const { isLoaded, userId, getToken, signOut } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
+
+  const brandAccent = isDark ? '#FFCC00' : '#009689';
+  const textColor = isDark ? '#FFFFFF' : '#09090b';
+  const subTextColor = isDark ? '#A1A1AA' : '#52525B';
+  const cardBg = isDark ? '#18181B' : '#FFFFFF';
+  const cardBorder = isDark ? '#27272A' : '#09090b';
 
   const [polls, setPolls] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   
-  // Search state for guest/direct voting
+  // Search state for guest/direct voting & live title search filter
   const [searchPollId, setSearchPollId] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchBar, setShowSearchBar] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'published' | 'expired'>('all');
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
   useEffect(() => {
     if (isLoaded && getToken) {
@@ -222,10 +242,37 @@ export default function DashboardScreen() {
   // Calculated Stats
   const activePollsCount = polls.filter(p => p.status === 'active').length;
   const publishedPollsCount = polls.filter(p => p.status === 'published').length;
+  const expiredPollsCount = polls.filter(p => {
+    if (p.status === 'expired') return true;
+    if (p.expiresAt && new Date(p.expiresAt) <= new Date() && p.status !== 'published') return true;
+    return false;
+  }).length;
   const totalVotesCount = polls.reduce((sum, p) => sum + (p.totalVotes || p.responseCount || 0), 0);
 
+  // Live Filtered Polls Array by status & title search query
+  const filteredPolls = polls.filter((item) => {
+    // 1. Status Filter
+    if (filterStatus === 'active' && item.status !== 'active') return false;
+    if (filterStatus === 'published' && item.status !== 'published') return false;
+    if (filterStatus === 'expired') {
+      const isExp = item.status === 'expired' || (item.expiresAt && new Date(item.expiresAt) <= new Date() && item.status !== 'published');
+      if (!isExp) return false;
+    }
+
+    // 2. Search Query Title / Description / ID Filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const titleMatch = (item.title || '').toLowerCase().includes(q);
+      const descMatch = (item.description || '').toLowerCase().includes(q);
+      const idMatch = (item._id || '').toLowerCase().includes(q);
+      if (!titleMatch && !descMatch && !idMatch) return false;
+    }
+
+    return true;
+  });
+
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView 
         contentContainerStyle={styles.scrollContainer} 
         showsVerticalScrollIndicator={false}
@@ -233,21 +280,21 @@ export default function DashboardScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => fetchPolls(true)}
-            tintColor="#FFFFFF"
+            tintColor={brandAccent}
           />
         }
       >
         {/* Top Header matching mockup image */}
         <View style={styles.headerRow}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.headerTitle}>DASHBOARD</Text>
-            <Text style={styles.headerSubtitle}>
+            <Text style={[styles.headerTitle, { color: textColor }]}>DASHBOARD</Text>
+            <Text style={[styles.headerSubtitle, { color: subTextColor }]}>
               Create, manage and analyze your polls
             </Text>
           </View>
           {userId ? (
-            <Pressable onPress={handleLogout} style={styles.logoutBtn}>
-              <LogOutIcon size={22} color="#FFFFFF" />
+            <Pressable onPress={handleLogout} style={[styles.logoutBtn, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+              <LogOutIcon size={22} color={textColor} />
             </Pressable>
           ) : (
             <BrutalButton 
@@ -260,11 +307,11 @@ export default function DashboardScreen() {
           )}
         </View>
 
-        {/* Mega Yellow Banner Card "JOIN A POLL ROOM" */}
-        <View style={styles.megaYellowCard}>
+        {/* Mega Banner Card "JOIN A POLL ROOM" */}
+        <View style={[styles.megaYellowCard, { backgroundColor: brandAccent }]}>
           <View style={styles.megaYellowContent}>
-            <Text style={styles.megaYellowTitle}>JOIN A POLL ROOM</Text>
-            <Text style={styles.megaYellowSubtitle}>Enter Poll ID to join and vote</Text>
+            <Text style={[styles.megaYellowTitle, !isDark && { color: '#FFFFFF' }]}>JOIN A POLL ROOM</Text>
+            <Text style={[styles.megaYellowSubtitle, !isDark && { color: '#E4E4E7' }]}>Enter Poll ID to join and vote</Text>
 
             <View style={styles.megaSearchRow}>
               <TextInput
@@ -345,23 +392,73 @@ export default function DashboardScreen() {
         <View style={styles.sectionHeaderRow}>
           <View style={{ flex: 1 }}>
             <View style={styles.sectionTitleRow}>
-              <Text style={styles.sectionTitleText}>MY POLL CAMPAIGNS</Text>
-              <ZapIcon size={20} color="#FFCC00" fill="#FFCC00" />
+              <Text style={[styles.sectionTitleText, { color: textColor }]}>MY POLL CAMPAIGNS</Text>
+              <ZapIcon size={20} color={brandAccent} fill={brandAccent} />
             </View>
-            <Text style={styles.sectionSubtitleText}>
+            <Text style={[styles.sectionSubtitleText, { color: subTextColor }]}>
               Manage your polls and track responses
             </Text>
           </View>
 
           <View style={styles.sectionActionIcons}>
-            <Pressable onPress={() => fetchPolls(true)} style={styles.headerIconBtn}>
-              <SearchIcon size={18} color="#FFCC00" />
+            <Pressable 
+              onPress={() => setShowSearchBar(!showSearchBar)} 
+              style={[
+                styles.headerIconBtn, 
+                { backgroundColor: cardBg, borderColor: cardBorder },
+                (showSearchBar || searchQuery.trim() !== '') && { backgroundColor: brandAccent, borderColor: '#09090b' }
+              ]}
+            >
+              <SearchIcon size={18} color={(showSearchBar || searchQuery.trim() !== '') ? (isDark ? '#09090b' : '#FFFFFF') : brandAccent} />
             </Pressable>
-            <Pressable onPress={() => fetchPolls(true)} style={styles.headerIconBtn}>
-              <SlidersHorizontalIcon size={18} color="#FFCC00" />
+            <Pressable 
+              onPress={() => setShowFilterModal(true)} 
+              style={[
+                styles.headerIconBtn, 
+                { backgroundColor: cardBg, borderColor: cardBorder },
+                filterStatus !== 'all' && { backgroundColor: brandAccent, borderColor: '#09090b' }
+              ]}
+            >
+              <SlidersHorizontalIcon size={18} color={filterStatus !== 'all' ? (isDark ? '#09090b' : '#FFFFFF') : brandAccent} />
             </Pressable>
           </View>
         </View>
+
+        {/* Live Search Input Bar */}
+        {showSearchBar ? (
+          <View style={[styles.searchBarWrapper, { backgroundColor: cardBg, borderColor: brandAccent }]}>
+            <SearchIcon size={18} color={subTextColor} style={{ marginLeft: 12 }} />
+            <TextInput
+              placeholder="Search polls by title..."
+              placeholderTextColor={subTextColor}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={[styles.searchBarInput, { color: textColor }]}
+              autoCapitalize="none"
+              autoFocus
+            />
+            {searchQuery ? (
+              <Pressable onPress={() => setSearchQuery('')} style={{ padding: 8 }}>
+                <XIcon size={16} color={subTextColor} />
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
+
+        {/* Active Filter Pill Badge */}
+        {(filterStatus !== 'all' || searchQuery.trim() !== '') ? (
+          <View style={styles.activeFilterBadgeRow}>
+            <Text style={styles.activeFilterBadgeText}>
+              {filterStatus !== 'all' ? `Filter: ${filterStatus.toUpperCase()}` : ''}
+              {filterStatus !== 'all' && searchQuery.trim() !== '' ? ' • ' : ''}
+              {searchQuery.trim() !== '' ? `Search: "${searchQuery}"` : ''}
+              {` (${filteredPolls.length})`}
+            </Text>
+            <Pressable onPress={() => { setFilterStatus('all'); setSearchQuery(''); }} style={styles.clearFilterBtn}>
+              <Text style={styles.clearFilterBtnText}>RESET ALL</Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         {/* Dynamic Poll Cards List */}
         {!userId ? (
@@ -382,17 +479,27 @@ export default function DashboardScreen() {
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
           </View>
-        ) : polls.length === 0 ? (
+        ) : filteredPolls.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No polls created yet.</Text>
-            <BrutalButton
-              title="Create First Poll"
-              variant="primary"
-              onPress={() => router.push('/(tabs)/two')}
-            />
+            <Text style={styles.emptyText}>
+              {polls.length === 0 ? "No polls created yet." : "No polls match your search/filter criteria."}
+            </Text>
+            {polls.length === 0 ? (
+              <BrutalButton
+                title="Create First Poll"
+                variant="primary"
+                onPress={() => router.push('/(tabs)/two')}
+              />
+            ) : (
+              <BrutalButton
+                title="Clear Filters"
+                variant="primary"
+                onPress={() => { setFilterStatus('all'); setSearchQuery(''); }}
+              />
+            )}
           </View>
         ) : (
-          polls.map((item) => {
+          filteredPolls.map((item) => {
             const isActive = item.status === 'active';
             const isPublished = item.status === 'published';
             const bannerBg = isActive ? '#FFCC00' : isPublished ? '#10B981' : '#E4E4E7';
@@ -518,10 +625,10 @@ export default function DashboardScreen() {
                     ) : (
                       <Pressable 
                         onPress={() => router.push(`/poll/${item._id}` as any)}
-                        style={styles.voteNowActionBtn}
+                        style={[styles.voteNowActionBtn, { backgroundColor: brandAccent }]}
                       >
-                        <UsersIcon size={16} color="#FFFFFF" />
-                        <Text style={styles.voteNowBtnText}>VOTE NOW</Text>
+                        <UsersIcon size={16} color={isDark ? '#09090b' : '#FFFFFF'} />
+                        <Text style={[styles.voteNowBtnText, { color: isDark ? '#09090b' : '#FFFFFF' }]}>VOTE NOW</Text>
                       </Pressable>
                     )}
 
@@ -540,6 +647,109 @@ export default function DashboardScreen() {
           })
         )}
       </ScrollView>
+
+      {/* Interactive Filter Modal */}
+      <Modal
+        visible={showFilterModal}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setShowFilterModal(false)} />
+          <View style={[styles.filterModalContent, { backgroundColor: cardBg, borderColor: brandAccent, paddingBottom: Math.max(insets.bottom + 28, 34) }]}>
+            {/* Sheet Handle */}
+            <View style={styles.sheetHandleWrapper}>
+              <View style={styles.sheetHandleBar} />
+            </View>
+
+            <View style={styles.filterModalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <SlidersHorizontalIcon size={20} color={brandAccent} />
+                <Text style={[styles.filterModalTitle, { color: textColor }]}>FILTER CAMPAIGNS</Text>
+              </View>
+              <Pressable onPress={() => setShowFilterModal(false)} style={styles.closeModalBtn}>
+                <XIcon size={20} color={textColor} />
+              </Pressable>
+            </View>
+
+            <View style={styles.filterOptionsList}>
+              <Pressable
+                onPress={() => { setFilterStatus('all'); setShowFilterModal(false); }}
+                style={[
+                  styles.filterOptionItem,
+                  { backgroundColor: isDark ? '#09090b' : '#F4F4F5', borderColor: cardBorder },
+                  filterStatus === 'all' && { backgroundColor: brandAccent, borderColor: '#09090b' }
+                ]}
+              >
+                <Text style={[
+                  styles.filterOptionText,
+                  { color: textColor },
+                  filterStatus === 'all' && { color: isDark ? '#09090b' : '#FFFFFF' }
+                ]}>
+                  ALL CAMPAIGNS ({polls.length})
+                </Text>
+                {filterStatus === 'all' ? <CheckIcon size={18} color={isDark ? '#09090b' : '#FFFFFF'} strokeWidth={3} /> : null}
+              </Pressable>
+
+              <Pressable
+                onPress={() => { setFilterStatus('active'); setShowFilterModal(false); }}
+                style={[
+                  styles.filterOptionItem,
+                  { backgroundColor: isDark ? '#09090b' : '#F4F4F5', borderColor: cardBorder },
+                  filterStatus === 'active' && { backgroundColor: brandAccent, borderColor: '#09090b' }
+                ]}
+              >
+                <Text style={[
+                  styles.filterOptionText,
+                  { color: textColor },
+                  filterStatus === 'active' && { color: isDark ? '#09090b' : '#FFFFFF' }
+                ]}>
+                  ⚡ ACTIVE ONLY ({activePollsCount})
+                </Text>
+                {filterStatus === 'active' ? <CheckIcon size={18} color={isDark ? '#09090b' : '#FFFFFF'} strokeWidth={3} /> : null}
+              </Pressable>
+
+              <Pressable
+                onPress={() => { setFilterStatus('published'); setShowFilterModal(false); }}
+                style={[
+                  styles.filterOptionItem,
+                  { backgroundColor: isDark ? '#09090b' : '#F4F4F5', borderColor: cardBorder },
+                  filterStatus === 'published' && { backgroundColor: brandAccent, borderColor: '#09090b' }
+                ]}
+              >
+                <Text style={[
+                  styles.filterOptionText,
+                  { color: textColor },
+                  filterStatus === 'published' && { color: isDark ? '#09090b' : '#FFFFFF' }
+                ]}>
+                  🏆 PUBLISHED ONLY ({publishedPollsCount})
+                </Text>
+                {filterStatus === 'published' ? <CheckIcon size={18} color={isDark ? '#09090b' : '#FFFFFF'} strokeWidth={3} /> : null}
+              </Pressable>
+
+              <Pressable
+                onPress={() => { setFilterStatus('expired'); setShowFilterModal(false); }}
+                style={[
+                  styles.filterOptionItem,
+                  { backgroundColor: isDark ? '#09090b' : '#F4F4F5', borderColor: cardBorder },
+                  filterStatus === 'expired' && { backgroundColor: brandAccent, borderColor: '#09090b' }
+                ]}
+              >
+                <Text style={[
+                  styles.filterOptionText,
+                  { color: textColor },
+                  filterStatus === 'expired' && { color: isDark ? '#09090b' : '#FFFFFF' }
+                ]}>
+                  ⏰ EXPIRED ONLY ({expiredPollsCount})
+                </Text>
+                {filterStatus === 'expired' ? <CheckIcon size={18} color={isDark ? '#09090b' : '#FFFFFF'} strokeWidth={3} /> : null}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -792,6 +1002,130 @@ const styles = StyleSheet.create({
     backgroundColor: '#09090b',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerIconBtnActive: {
+    backgroundColor: '#FFCC00',
+    borderColor: '#09090b',
+  },
+  searchBarWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#18181B',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#FFCC00',
+    marginBottom: 16,
+    height: 48,
+  },
+  searchBarInput: {
+    flex: 1,
+    height: '100%',
+    paddingHorizontal: 10,
+    fontFamily: 'SpaceMono',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  activeFilterBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#27272A',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginBottom: 16,
+    borderWidth: 1.5,
+    borderColor: '#3F3F46',
+  },
+  activeFilterBadgeText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFCC00',
+  },
+  clearFilterBtn: {
+    backgroundColor: '#09090b',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  clearFilterBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  filterModalContent: {
+    backgroundColor: '#18181B',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderWidth: 2.5,
+    borderColor: '#FFCC00',
+    padding: 20,
+  },
+  sheetHandleWrapper: {
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  sheetHandleBar: {
+    width: 38,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#3F3F46',
+  },
+  filterModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#27272A',
+    paddingBottom: 12,
+  },
+  filterModalTitle: {
+    fontFamily: 'SpaceMono',
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  closeModalBtn: {
+    padding: 6,
+  },
+  filterOptionsList: {
+    gap: 10,
+  },
+  filterOptionItem: {
+    height: 50,
+    backgroundColor: '#09090b',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#27272A',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+  },
+  filterOptionActive: {
+    backgroundColor: '#FFCC00',
+    borderColor: '#09090b',
+  },
+  filterOptionText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  filterOptionTextActive: {
+    color: '#09090b',
   },
 
   // Poll Campaign Cards (Solid White Card with Accent Header Banner)

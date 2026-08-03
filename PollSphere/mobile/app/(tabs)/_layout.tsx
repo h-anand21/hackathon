@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Home, CheckSquare, Plus, BarChart3, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const HomeIcon = Home as any;
 const CheckSquareIcon = CheckSquare as any;
@@ -12,11 +13,16 @@ const SettingsIcon = Settings as any;
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const insets = useSafeAreaInsets();
+  const { isDark } = useTheme();
+  
   // Lift floating bar cleanly above Android 3-button OS navigation
   const bottomPosition = Math.max(insets.bottom + 8, Platform.OS === 'android' ? 20 : 16);
 
+  const barBg = isDark ? '#FFCC00' : '#009689';
+  const itemColor = isDark ? '#09090b' : '#FFFFFF';
+
   return (
-    <View style={[tabStyles.floatingContainer, { bottom: bottomPosition }]}>
+    <View style={[tabStyles.floatingContainer, { bottom: bottomPosition, backgroundColor: barBg }]}>
       {state.routes.map((route: any, index: number) => {
         const isFocused = state.index === index;
 
@@ -36,10 +42,10 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           // Central "+ Create" floating black button
           return (
             <Pressable key={route.key} onPress={onPress} style={tabStyles.createTabItem}>
-              <View style={tabStyles.createCircle}>
+              <View style={[tabStyles.createCircle, !isDark && { backgroundColor: '#09090b', borderColor: '#FFFFFF' }]}>
                 <PlusIcon size={26} color="#FFFFFF" strokeWidth={3} />
               </View>
-              <Text style={tabStyles.createLabel}>Create</Text>
+              <Text style={[tabStyles.createLabel, { color: itemColor }]}>Create</Text>
             </Pressable>
           );
         }
@@ -59,11 +65,11 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
         return (
           <Pressable key={route.key} onPress={onPress} style={tabStyles.tabItem}>
-            <IconComponent size={20} color="#09090b" strokeWidth={isFocused ? 2.5 : 2} />
-            <Text style={[tabStyles.tabLabel, isFocused && tabStyles.tabLabelActive]} numberOfLines={1}>
+            <IconComponent size={20} color={itemColor} strokeWidth={isFocused ? 2.5 : 2} />
+            <Text style={[tabStyles.tabLabel, { color: itemColor }, isFocused && tabStyles.tabLabelActive]} numberOfLines={1}>
               {label}
             </Text>
-            {isFocused && <View style={tabStyles.activeDot} />}
+            {isFocused && <View style={[tabStyles.activeDot, { backgroundColor: itemColor }]} />}
           </Pressable>
         );
       })}

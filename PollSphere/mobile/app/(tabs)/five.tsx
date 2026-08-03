@@ -45,13 +45,21 @@ const LockIcon = Lock as any;
 export default function AnalyticsHubScreen() {
   const { isLoaded, userId, getToken } = useAuth();
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
   const [polls, setPolls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<'all' | 'active' | 'published'>('all');
+
+  const brandAccent = isDark ? '#FFCC00' : '#009689';
+  const textColor = isDark ? '#FFFFFF' : '#09090b';
+  const subTextColor = isDark ? '#A1A1AA' : '#6B7280';
+  const btnTextColor = isDark ? '#09090b' : '#FFFFFF';
+  const cardBg = isDark ? '#18181B' : '#FFFFFF';
+  const filterPillBg = isDark ? '#18181B' : '#FFFFFF';
+  const filterPillBorder = isDark ? '#27272A' : '#09090b';
 
   useEffect(() => {
     if (isLoaded && getToken) {
@@ -151,11 +159,11 @@ export default function AnalyticsHubScreen() {
 
   if (!userId) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <View style={styles.guestContainer}>
           <LockIcon size={64} color="#EF4444" />
-          <Text style={styles.guestTitle}>Login Required</Text>
-          <Text style={styles.guestSub}>
+          <Text style={[styles.guestTitle, { color: textColor }]}>Login Required</Text>
+          <Text style={[styles.guestSub, { color: subTextColor }]}>
             Please sign in with your creator account to view your global analytics & live voter feeds.
           </Text>
           <BrutalButton
@@ -169,7 +177,7 @@ export default function AnalyticsHubScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
@@ -177,7 +185,7 @@ export default function AnalyticsHubScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => fetchAnalyticsData(true)}
-            tintColor="#FFCC00"
+            tintColor={brandAccent}
           />
         }
       >
@@ -185,15 +193,15 @@ export default function AnalyticsHubScreen() {
         <View style={styles.headerRow}>
           <View style={{ flex: 1 }}>
             <View style={styles.headerTitleRow}>
-              <Text style={styles.headerTitle}>GLOBAL ANALYTICS</Text>
-              <ZapIcon size={22} color="#FFCC00" fill="#FFCC00" />
+              <Text style={[styles.headerTitle, { color: textColor }]}>GLOBAL ANALYTICS</Text>
+              <ZapIcon size={22} color={brandAccent} fill={brandAccent} />
             </View>
-            <Text style={styles.headerSubtitle}>
+            <Text style={[styles.headerSubtitle, { color: subTextColor }]}>
               Real-time campaign trends & live voter activity
             </Text>
           </View>
-          <Pressable onPress={() => fetchAnalyticsData(true)} style={styles.refreshBtn}>
-            <RefreshCwIcon size={18} color="#FFCC00" />
+          <Pressable onPress={() => fetchAnalyticsData(true)} style={[styles.refreshBtn, { backgroundColor: cardBg, borderColor: filterPillBorder }]}>
+            <RefreshCwIcon size={18} color={brandAccent} />
           </Pressable>
         </View>
 
@@ -236,34 +244,58 @@ export default function AnalyticsHubScreen() {
         <View style={styles.filterRow}>
           <Pressable
             onPress={() => setFilter('all')}
-            style={[styles.filterPill, filter === 'all' && styles.filterPillActive]}
+            style={[
+              styles.filterPill,
+              { backgroundColor: filterPillBg, borderColor: filterPillBorder },
+              filter === 'all' && { backgroundColor: brandAccent, borderColor: '#09090b' }
+            ]}
           >
-            <Text style={[styles.filterPillText, filter === 'all' && styles.filterPillTextActive]}>
+            <Text style={[
+              styles.filterPillText,
+              { color: textColor },
+              filter === 'all' && { color: btnTextColor }
+            ]}>
               ALL ({totalPolls})
             </Text>
           </Pressable>
 
           <Pressable
             onPress={() => setFilter('active')}
-            style={[styles.filterPill, filter === 'active' && styles.filterPillActive]}
+            style={[
+              styles.filterPill,
+              { backgroundColor: filterPillBg, borderColor: filterPillBorder },
+              filter === 'active' && { backgroundColor: brandAccent, borderColor: '#09090b' }
+            ]}
           >
-            <Text style={[styles.filterPillText, filter === 'active' && styles.filterPillTextActive]}>
+            <Text style={[
+              styles.filterPillText,
+              { color: textColor },
+              filter === 'active' && { color: btnTextColor }
+            ]}>
               ACTIVE ({activePolls})
             </Text>
           </Pressable>
 
           <Pressable
             onPress={() => setFilter('published')}
-            style={[styles.filterPill, filter === 'published' && styles.filterPillActive]}
+            style={[
+              styles.filterPill,
+              { backgroundColor: filterPillBg, borderColor: filterPillBorder },
+              filter === 'published' && { backgroundColor: brandAccent, borderColor: '#09090b' }
+            ]}
           >
-            <Text style={[styles.filterPillText, filter === 'published' && styles.filterPillTextActive]}>
+            <Text style={[
+              styles.filterPillText,
+              { color: textColor },
+              filter === 'published' && { color: btnTextColor }
+            ]}>
               PUBLISHED ({publishedPolls})
             </Text>
           </Pressable>
         </View>
 
         {/* Campaign Analytics List */}
-        <Text style={styles.sectionHeaderTitle}>CAMPAIGN PERFORMANCE</Text>
+        <Text style={[styles.sectionHeaderTitle, { color: textColor }]}>CAMPAIGN PERFORMANCE</Text>
 
         {loading ? (
           <ActivityIndicator size="large" color="#FFCC00" style={styles.loader} />
@@ -300,7 +332,7 @@ export default function AnalyticsHubScreen() {
             const formattedDate = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' });
 
             return (
-              <View key={item._id} style={styles.campaignCard}>
+              <View key={item._id} style={[styles.campaignCard, { backgroundColor: cardBg, borderColor: filterPillBorder }]}>
                 {/* Banner Header */}
                 <View style={[styles.cardHeaderBanner, { backgroundColor: bannerBg }]}>
                   <View style={[styles.statusPill, { backgroundColor: badgeBg }]}>
@@ -313,59 +345,59 @@ export default function AnalyticsHubScreen() {
 
                 {/* Body */}
                 <View style={styles.cardBody}>
-                  <Text style={styles.pollTitle}>{item.title}</Text>
+                  <Text style={[styles.pollTitle, { color: textColor }]}>{item.title}</Text>
                   {item.description ? (
-                    <Text style={styles.pollDesc} numberOfLines={1}>{item.description}</Text>
+                    <Text style={[styles.pollDesc, { color: subTextColor }]} numberOfLines={1}>{item.description}</Text>
                   ) : null}
 
                   {/* 4 Stat Pills */}
                   <View style={styles.statGrid}>
-                    <View style={styles.statBox}>
+                    <View style={[styles.statBox, { backgroundColor: isDark ? '#09090b' : '#F4F4F5', borderColor: filterPillBorder }]}>
                       <UsersIcon size={14} color="#10B981" />
                       <View style={styles.statTextWrapper}>
-                        <Text style={styles.statVal}>{votesCount}</Text>
-                        <Text style={styles.statLabel}>{votesCount === 1 ? 'Vote' : 'Votes'}</Text>
+                        <Text style={[styles.statVal, { color: textColor }]}>{votesCount}</Text>
+                        <Text style={[styles.statLabel, { color: subTextColor }]}>{votesCount === 1 ? 'Vote' : 'Votes'}</Text>
                       </View>
                     </View>
 
-                    <View style={styles.statBox}>
+                    <View style={[styles.statBox, { backgroundColor: isDark ? '#09090b' : '#F4F4F5', borderColor: filterPillBorder }]}>
                       <HelpCircleIcon size={14} color="#8B5CF6" />
                       <View style={styles.statTextWrapper}>
-                        <Text style={styles.statVal}>{questionCount}</Text>
-                        <Text style={styles.statLabel}>{questionCount === 1 ? 'Question' : 'Questions'}</Text>
+                        <Text style={[styles.statVal, { color: textColor }]}>{questionCount}</Text>
+                        <Text style={[styles.statLabel, { color: subTextColor }]}>{questionCount === 1 ? 'Question' : 'Questions'}</Text>
                       </View>
                     </View>
 
-                    <View style={styles.statBox}>
+                    <View style={[styles.statBox, { backgroundColor: isDark ? '#09090b' : '#F4F4F5', borderColor: filterPillBorder }]}>
                       <ClockIcon size={14} color="#F59E0B" />
                       <View style={styles.statTextWrapper}>
-                        <Text style={styles.statVal}>{expiryObj.val}</Text>
-                        <Text style={styles.statLabel}>{expiryObj.label}</Text>
+                        <Text style={[styles.statVal, { color: textColor }]}>{expiryObj.val}</Text>
+                        <Text style={[styles.statLabel, { color: subTextColor }]}>{expiryObj.label}</Text>
                       </View>
                     </View>
 
-                    <View style={styles.statBox}>
+                    <View style={[styles.statBox, { backgroundColor: isDark ? '#09090b' : '#F4F4F5', borderColor: filterPillBorder }]}>
                       <TrendingUpIcon size={14} color="#EC4899" />
                       <View style={styles.statTextWrapper}>
-                        <Text style={styles.statVal}>{responseRate}</Text>
-                        <Text style={styles.statLabel}>Response</Text>
+                        <Text style={[styles.statVal, { color: textColor }]}>{responseRate}</Text>
+                        <Text style={[styles.statLabel, { color: subTextColor }]}>Response</Text>
                       </View>
                     </View>
                   </View>
 
                   {/* Progress Bar */}
-                  <View style={styles.progressContainer}>
-                    <View style={[styles.progressBar, { width: (responseRate === '0%' ? '5%' : responseRate) as any }]} />
+                  <View style={[styles.progressContainer, { backgroundColor: isDark ? '#27272A' : '#E4E4E7' }]}>
+                    <View style={[styles.progressBar, { backgroundColor: brandAccent, width: (responseRate === '0%' ? '5%' : responseRate) as any }]} />
                   </View>
 
                   {/* Action Button to Open Analytics Room */}
                   <Pressable
                     onPress={() => router.push(`/analytics/${item._id}`)}
-                    style={styles.openAnalyticsBtn}
+                    style={[styles.openAnalyticsBtn, { backgroundColor: brandAccent }]}
                   >
-                    <BarChart3Icon size={16} color="#FFFFFF" />
-                    <Text style={styles.openAnalyticsBtnText}>OPEN ANALYTICS ROOM</Text>
-                    <ChevronRightIcon size={16} color="#FFFFFF" />
+                    <BarChart3Icon size={16} color={btnTextColor} />
+                    <Text style={[styles.openAnalyticsBtnText, { color: btnTextColor }]}>OPEN ANALYTICS ROOM</Text>
+                    <ChevronRightIcon size={16} color={btnTextColor} />
                   </Pressable>
                 </View>
               </View>
