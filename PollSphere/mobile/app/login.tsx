@@ -11,7 +11,8 @@ import {
   Animated,
   Easing,
   Image,
-  TextInput
+  TextInput,
+  PanResponder
 } from 'react-native';
 import { useSignIn, useSignUp, useOAuth, useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
@@ -37,11 +38,33 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import { useTheme } from '../contexts/ThemeContext';
+import Svg, { Path } from 'react-native-svg';
 import * as WebBrowser from 'expo-web-browser';
 
 WebBrowser.maybeCompleteAuthSession();
 
 const ONBOARDING_KEY = 'pollsphere_onboarding_done';
+
+const GoogleLogoIcon = ({ size = 20 }: { size?: number }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path
+      fill="#4285F4"
+      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+    />
+    <Path
+      fill="#34A853"
+      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+    />
+    <Path
+      fill="#FBBC05"
+      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+    />
+    <Path
+      fill="#EA4335"
+      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+    />
+  </Svg>
+);
 
 const ZapIcon = Zap as any;
 const ShieldIcon = Shield as any;
@@ -460,6 +483,257 @@ const TrophyInsightsAnim = () => {
   );
 };
 
+const CreatePollMockupAnim = () => {
+  return (
+    <View style={mockupStyles.mockupContainer}>
+      {/* Central Phone Mockup Card */}
+      <View style={mockupStyles.phoneFrame}>
+        {/* Phone Header */}
+        <View style={mockupStyles.phoneHeaderRow}>
+          <Text style={mockupStyles.phoneBackArrow}>←</Text>
+          <Text style={mockupStyles.phoneTitleText}>New Poll</Text>
+          <Text style={mockupStyles.phonePreviewText}>Preview</Text>
+        </View>
+
+        {/* Question Box */}
+        <View style={mockupStyles.mockSection}>
+          <Text style={mockupStyles.mockSectionLabel}>QUESTION</Text>
+          <View style={mockupStyles.mockQuestionBox}>
+            <Text style={mockupStyles.mockQuestionText}>
+              What's your favorite frontend framework?
+            </Text>
+          </View>
+        </View>
+
+        {/* Options Box */}
+        <View style={mockupStyles.mockSection}>
+          <Text style={mockupStyles.mockSectionLabel}>OPTIONS</Text>
+          <View style={mockupStyles.mockOptionRow}>
+            <View style={mockupStyles.mockCircleRadio} />
+            <Text style={mockupStyles.mockOptionText}>React</Text>
+            <Text style={mockupStyles.dragHandle}>≡</Text>
+          </View>
+          <View style={mockupStyles.mockOptionRow}>
+            <View style={mockupStyles.mockCircleRadio} />
+            <Text style={mockupStyles.mockOptionText}>Next.js</Text>
+            <Text style={mockupStyles.dragHandle}>≡</Text>
+          </View>
+          <View style={mockupStyles.mockOptionRow}>
+            <View style={mockupStyles.mockCircleRadio} />
+            <Text style={mockupStyles.mockOptionText}>Vue.js</Text>
+            <Text style={mockupStyles.dragHandle}>≡</Text>
+          </View>
+
+          <View style={mockupStyles.addOptionBtnPill}>
+            <Text style={mockupStyles.addOptionText}>+ Add Option</Text>
+          </View>
+        </View>
+
+        {/* Settings Box */}
+        <View style={mockupStyles.mockSection}>
+          <Text style={mockupStyles.mockSectionLabel}>SETTINGS</Text>
+          <View style={mockupStyles.settingRow}>
+            <View style={mockupStyles.settingIconTextGroup}>
+              <Text style={{ fontSize: 11 }}>🕶️</Text>
+              <Text style={mockupStyles.settingLabelText}>Anonymous Voting</Text>
+            </View>
+            <View style={mockupStyles.toggleOnSwitch} />
+          </View>
+          <View style={mockupStyles.settingRow}>
+            <View style={mockupStyles.settingIconTextGroup}>
+              <Text style={{ fontSize: 11 }}>📅</Text>
+              <View>
+                <Text style={mockupStyles.settingLabelText}>Expiry Date & Time</Text>
+                <Text style={mockupStyles.settingSubValueText}>25 May 2025, 11:00 AM</Text>
+              </View>
+            </View>
+            <Text style={mockupStyles.arrowChevron}>›</Text>
+          </View>
+          <View style={mockupStyles.settingRowCyan}>
+            <View style={mockupStyles.settingIconTextGroup}>
+              <Text style={{ fontSize: 11 }}>🔗</Text>
+              <Text style={mockupStyles.settingCyanText}>Share Poll Link</Text>
+            </View>
+            <Text style={mockupStyles.arrowChevronCyan}>›</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Floating Callout Badges */}
+      <View style={mockupStyles.calloutBadgeTopLeft}>
+        <View style={mockupStyles.badgeIconYellow}>
+          <Text style={{ fontSize: 10 }}>✏️</Text>
+        </View>
+        <Text style={mockupStyles.badgeTitleYellow}>Add Question</Text>
+        <Text style={mockupStyles.badgeSubText}>Ask anything that matters</Text>
+      </View>
+
+      <View style={mockupStyles.calloutBadgeTopRight}>
+        <View style={mockupStyles.badgeIconCyan}>
+          <Text style={{ fontSize: 10 }}>☰</Text>
+        </View>
+        <Text style={mockupStyles.badgeTitleCyan}>Add Options</Text>
+        <Text style={mockupStyles.badgeSubText}>Unlimited options, easy to manage</Text>
+      </View>
+
+      <View style={mockupStyles.calloutBadgeMidLeft}>
+        <View style={mockupStyles.badgeIconCyan}>
+          <Text style={{ fontSize: 10 }}>🕶️</Text>
+        </View>
+        <Text style={mockupStyles.badgeTitleCyan}>Anonymous Voting</Text>
+        <Text style={mockupStyles.badgeSubText}>Keep responses private</Text>
+      </View>
+
+      <View style={mockupStyles.calloutBadgeMidRight}>
+        <View style={mockupStyles.badgeIconYellow}>
+          <Text style={{ fontSize: 10 }}>📅</Text>
+        </View>
+        <Text style={mockupStyles.badgeTitleYellow}>Smart Expiry</Text>
+        <Text style={mockupStyles.badgeSubText}>Set date & time automatically</Text>
+      </View>
+
+      <View style={mockupStyles.calloutBadgeBottomCenter}>
+        <View style={mockupStyles.badgeIconCyan}>
+          <Text style={{ fontSize: 10 }}>🔗</Text>
+        </View>
+        <Text style={mockupStyles.badgeTitleCyan}>Share Instantly</Text>
+        <Text style={mockupStyles.badgeSubText}>Share via link in one click</Text>
+      </View>
+    </View>
+  );
+};
+
+const TrackResultsMockupAnim = () => {
+  return (
+    <View style={trackStyles.cardWrapper}>
+      {/* Top Header Row inside Dashboard Card */}
+      <View style={trackStyles.cardHeaderRow}>
+        <View style={trackStyles.titleLiveGroup}>
+          <Text style={trackStyles.cardTitle}>Poll Results</Text>
+          <Text style={trackStyles.liveDotText}>• Live</Text>
+        </View>
+        <View style={trackStyles.rightHeaderGroup}>
+          <Text style={trackStyles.voterCountText}>👥 124</Text>
+          <View style={trackStyles.shareResultsBtn}>
+            <Text style={trackStyles.shareResultsText}>Share Results ∝</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* 2x2 Grid Layout */}
+      <View style={trackStyles.gridRow}>
+        {/* Widget 1: Total Responses */}
+        <View style={trackStyles.widgetBox}>
+          <Text style={trackStyles.widgetLabel}>Total Responses</Text>
+          <View style={trackStyles.valueBadgeRow}>
+            <Text style={trackStyles.bigValueText}>124</Text>
+            <View style={trackStyles.statBadgeCyan}>
+              <Text style={trackStyles.statBadgeText}>+24% ↗ vs last poll</Text>
+            </View>
+          </View>
+          <View style={trackStyles.sparklineTrack}>
+            <View style={trackStyles.sparklineBarActive} />
+          </View>
+        </View>
+
+        {/* Widget 2: Top Choice */}
+        <View style={trackStyles.widgetBox}>
+          <Text style={trackStyles.widgetLabel}>Top Choice</Text>
+          <View style={trackStyles.topChoiceRow}>
+            <Text style={trackStyles.choiceNameText}>React</Text>
+            <Text style={{ fontSize: 14 }}>⚛️</Text>
+          </View>
+          <View style={trackStyles.progressRow}>
+            <View style={trackStyles.progressBarCyan}>
+              <View style={{ width: '43%', height: '100%', backgroundColor: '#00E5CC', borderRadius: 2 }} />
+            </View>
+            <Text style={trackStyles.progressPercentText}>43% 🔥</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={trackStyles.gridRow}>
+        {/* Widget 3: Responses Over Time Graph */}
+        <View style={trackStyles.widgetBox}>
+          <Text style={trackStyles.widgetLabel}>Responses Over Time</Text>
+          <View style={trackStyles.graphBox}>
+            <View style={trackStyles.graphYAxis}>
+              <Text style={trackStyles.axisText}>160</Text>
+              <Text style={trackStyles.axisText}>120</Text>
+              <Text style={trackStyles.axisText}>80</Text>
+              <Text style={trackStyles.axisText}>40</Text>
+              <Text style={trackStyles.axisText}>0</Text>
+            </View>
+            <View style={trackStyles.graphCanvas}>
+              <View style={trackStyles.graphLineCyan} />
+              <View style={trackStyles.graphDotPoint} />
+            </View>
+          </View>
+          <View style={trackStyles.graphXAxis}>
+            <Text style={trackStyles.axisText}>10 AM</Text>
+            <Text style={trackStyles.axisText}>11 AM</Text>
+            <Text style={trackStyles.axisText}>12 PM</Text>
+            <Text style={trackStyles.axisText}>1 PM</Text>
+            <Text style={trackStyles.axisText}>2 PM</Text>
+            <Text style={trackStyles.axisText}>Now</Text>
+          </View>
+        </View>
+
+        {/* Widget 4: Choices Breakdown */}
+        <View style={trackStyles.widgetBox}>
+          <Text style={trackStyles.widgetLabel}>Choices Breakdown</Text>
+          
+          <View style={trackStyles.breakdownRow}>
+            <Text style={trackStyles.breakdownLabel}>React</Text>
+            <View style={trackStyles.breakdownBarTrack}>
+              <View style={[trackStyles.breakdownBarFill, { width: '43%', backgroundColor: '#00E5CC' }]} />
+            </View>
+            <Text style={[trackStyles.breakdownPercent, { color: '#00E5CC' }]}>43%</Text>
+          </View>
+
+          <View style={trackStyles.breakdownRow}>
+            <Text style={trackStyles.breakdownLabel}>Next.js</Text>
+            <View style={trackStyles.breakdownBarTrack}>
+              <View style={[trackStyles.breakdownBarFill, { width: '31%', backgroundColor: '#FFCC00' }]} />
+            </View>
+            <Text style={[trackStyles.breakdownPercent, { color: '#FFCC00' }]}>31%</Text>
+          </View>
+
+          <View style={trackStyles.breakdownRow}>
+            <Text style={trackStyles.breakdownLabel}>Vue.js</Text>
+            <View style={trackStyles.breakdownBarTrack}>
+              <View style={[trackStyles.breakdownBarFill, { width: '15%', backgroundColor: '#A855F7' }]} />
+            </View>
+            <Text style={[trackStyles.breakdownPercent, { color: '#A855F7' }]}>15%</Text>
+          </View>
+
+          <View style={trackStyles.breakdownRow}>
+            <Text style={trackStyles.breakdownLabel}>Svelte</Text>
+            <View style={trackStyles.breakdownBarTrack}>
+              <View style={[trackStyles.breakdownBarFill, { width: '8%', backgroundColor: '#EF4444' }]} />
+            </View>
+            <Text style={[trackStyles.breakdownPercent, { color: '#EF4444' }]}>8%</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Bottom Publish Banner */}
+      <View style={trackStyles.publishBannerRow}>
+        <View style={trackStyles.megaphoneBadge}>
+          <Text style={{ fontSize: 12 }}>📢</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={trackStyles.publishTitleText}>Publish Results</Text>
+          <Text style={trackStyles.publishSubText}>Share results publicly with your audience.</Text>
+        </View>
+        <View style={trackStyles.publishNowPillBtn}>
+          <Text style={trackStyles.publishNowBtnText}>Publish Now →</Text>
+        </View>
+      </View>
+    </View>
+  );
+};
+
 const animStyles = StyleSheet.create({
   center: {
     height: 120,
@@ -728,6 +1002,539 @@ const animStyles = StyleSheet.create({
   },
 });
 
+const mockupStyles = StyleSheet.create({
+  mockupContainer: {
+    width: '100%',
+    minHeight: 380,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    marginVertical: 10,
+  },
+  phoneFrame: {
+    width: 220,
+    backgroundColor: '#09090b',
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: '#00E5CC',
+    padding: 12,
+    shadowColor: '#00E5CC',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  phoneHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  phoneBackArrow: {
+    color: '#00E5CC',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  phoneTitleText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  phonePreviewText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#00E5CC',
+  },
+  mockSection: {
+    marginBottom: 8,
+  },
+  mockSectionLabel: {
+    fontFamily: 'SpaceMono',
+    fontSize: 8,
+    fontWeight: '900',
+    color: '#71717A',
+    marginBottom: 4,
+  },
+  mockQuestionBox: {
+    backgroundColor: '#121214',
+    borderWidth: 1,
+    borderColor: '#27272A',
+    borderRadius: 10,
+    padding: 8,
+  },
+  mockQuestionText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    lineHeight: 14,
+  },
+  mockOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#121214',
+    borderWidth: 1,
+    borderColor: '#27272A',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    marginBottom: 4,
+  },
+  mockCircleRadio: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: '#00E5CC',
+    marginRight: 6,
+  },
+  mockOptionText: {
+    flex: 1,
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  dragHandle: {
+    color: '#71717A',
+    fontSize: 12,
+  },
+  addOptionBtnPill: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#00E5CC',
+    borderStyle: 'dashed',
+    borderRadius: 8,
+    paddingVertical: 5,
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  addOptionText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#00E5CC',
+  },
+  settingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#121214',
+    borderWidth: 1,
+    borderColor: '#27272A',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    marginBottom: 4,
+  },
+  settingRowCyan: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#064E46',
+    borderWidth: 1,
+    borderColor: '#00E5CC',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
+  settingIconTextGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  settingLabelText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  settingSubValueText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 8,
+    color: '#A1A1AA',
+  },
+  settingCyanText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#00E5CC',
+  },
+  toggleOnSwitch: {
+    width: 22,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#00E5CC',
+  },
+  arrowChevron: {
+    color: '#71717A',
+    fontSize: 14,
+  },
+  arrowChevronCyan: {
+    color: '#00E5CC',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+
+  // Floating Badges
+  calloutBadgeTopLeft: {
+    position: 'absolute',
+    top: 10,
+    left: 0,
+    backgroundColor: '#09090b',
+    borderWidth: 1.5,
+    borderColor: '#FFCC00',
+    borderRadius: 12,
+    padding: 8,
+    width: 105,
+  },
+  badgeIconYellow: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: '#3F3500',
+    borderWidth: 1,
+    borderColor: '#FFCC00',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  badgeTitleYellow: {
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#FFCC00',
+  },
+  calloutBadgeTopRight: {
+    position: 'absolute',
+    top: 40,
+    right: 0,
+    backgroundColor: '#09090b',
+    borderWidth: 1.5,
+    borderColor: '#00E5CC',
+    borderRadius: 12,
+    padding: 8,
+    width: 110,
+  },
+  badgeIconCyan: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: '#064E46',
+    borderWidth: 1,
+    borderColor: '#00E5CC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  badgeTitleCyan: {
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#00E5CC',
+  },
+  badgeSubText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 7,
+    color: '#A1A1AA',
+    marginTop: 2,
+    lineHeight: 10,
+  },
+  calloutBadgeMidLeft: {
+    position: 'absolute',
+    top: 180,
+    left: -5,
+    backgroundColor: '#09090b',
+    borderWidth: 1.5,
+    borderColor: '#00E5CC',
+    borderRadius: 12,
+    padding: 8,
+    width: 105,
+  },
+  calloutBadgeMidRight: {
+    position: 'absolute',
+    top: 190,
+    right: -5,
+    backgroundColor: '#09090b',
+    borderWidth: 1.5,
+    borderColor: '#FFCC00',
+    borderRadius: 12,
+    padding: 8,
+    width: 105,
+  },
+  calloutBadgeBottomCenter: {
+    position: 'absolute',
+    bottom: -15,
+    backgroundColor: '#09090b',
+    borderWidth: 1.5,
+    borderColor: '#00E5CC',
+    borderRadius: 12,
+    padding: 8,
+    width: 130,
+    alignItems: 'center',
+  },
+});
+
+const trackStyles = StyleSheet.create({
+  cardWrapper: {
+    width: '100%',
+    backgroundColor: '#09090b',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#00E5CC',
+    padding: 14,
+    gap: 10,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  titleLiveGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  cardTitle: {
+    fontFamily: 'SpaceMono',
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  liveDotText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#00E5CC',
+  },
+  rightHeaderGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  voterCountText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    color: '#A1A1AA',
+  },
+  shareResultsBtn: {
+    borderWidth: 1,
+    borderColor: '#00E5CC',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: '#064E46',
+  },
+  shareResultsText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#00E5CC',
+  },
+  gridRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  widgetBox: {
+    flex: 1,
+    backgroundColor: '#121214',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#27272A',
+    padding: 10,
+  },
+  widgetLabel: {
+    fontFamily: 'SpaceMono',
+    fontSize: 8,
+    fontWeight: '900',
+    color: '#71717A',
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  valueBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  bigValueText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  statBadgeCyan: {
+    backgroundColor: '#064E46',
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  statBadgeText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 7,
+    fontWeight: '900',
+    color: '#00E5CC',
+  },
+  sparklineTrack: {
+    width: '100%',
+    height: 3,
+    backgroundColor: '#27272A',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  sparklineBarActive: {
+    width: '65%',
+    height: '100%',
+    backgroundColor: '#00E5CC',
+  },
+  topChoiceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  choiceNameText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  progressBarCyan: {
+    flex: 1,
+    height: 6,
+    backgroundColor: '#27272A',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressPercentText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#00E5CC',
+  },
+  graphBox: {
+    flexDirection: 'row',
+    height: 45,
+    alignItems: 'flex-end',
+  },
+  graphYAxis: {
+    justifyContent: 'space-between',
+    height: '100%',
+    paddingRight: 4,
+  },
+  axisText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 6,
+    color: '#71717A',
+  },
+  graphCanvas: {
+    flex: 1,
+    height: '100%',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  graphLineCyan: {
+    width: '100%',
+    height: 2,
+    backgroundColor: '#00E5CC',
+    transform: [{ rotate: '-12deg' }],
+  },
+  graphDotPoint: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#00E5CC',
+    position: 'absolute',
+    right: 2,
+    top: 6,
+  },
+  graphXAxis: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 3,
+  },
+  breakdownLabel: {
+    fontFamily: 'SpaceMono',
+    fontSize: 8,
+    color: '#A1A1AA',
+    width: 38,
+  },
+  breakdownBarTrack: {
+    flex: 1,
+    height: 4,
+    backgroundColor: '#27272A',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  breakdownBarFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  breakdownPercent: {
+    fontFamily: 'SpaceMono',
+    fontSize: 7,
+    fontWeight: '900',
+    width: 22,
+    textAlign: 'right',
+  },
+  publishBannerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#121214',
+    borderWidth: 1,
+    borderColor: '#064E46',
+    borderRadius: 12,
+    padding: 8,
+    gap: 8,
+    marginTop: 4,
+  },
+  megaphoneBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#064E46',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  publishTitleText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  publishSubText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 7,
+    color: '#A1A1AA',
+  },
+  publishNowPillBtn: {
+    backgroundColor: '#00E5CC',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  publishNowBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#09090b',
+  },
+});
+
 export default function LoginScreen() {
   const { isLoaded: isAuthLoaded, isSignedIn } = useAuth();
   const { signIn, setActive, isLoaded } = useSignIn() as any;
@@ -760,49 +1567,41 @@ export default function LoginScreen() {
       badge: "LIVE BATTLE",
       subBadge: "HIGH TRAFFIC POLL #482",
       title: "What's your favorite frontend framework?",
+      subTitle: "Real-time updates, zero delay",
       desc: "Watch votes update in real-time with zero latency as participants submit choices.",
       renderAnim: () => <LiveSocketsAnim />,
       color: '#09090b',
     },
     {
-      badge: "SECURITY GATE",
-      subBadge: "IP & AUTH GUARDS",
-      title: "Anti-Spam Shield Protection",
-      desc: "Prevent double-voting using strict IP gating and Clerk authentication controls.",
-      renderAnim: () => <SpamShieldAnim />,
+      badge: "CREATE POLLS",
+      subBadge: "FAST & POWERFUL",
+      title: "Create Powerful Polls",
+      subTitle: "Build interactive polls in less than a minute.",
+      desc: "Customize questions, options, expiry dates, and privacy controls in seconds.",
+      renderAnim: () => <CreatePollMockupAnim />,
       color: '#09090b',
+      features: [
+        { icon: '🕶️', title: 'Anonymous Voting', desc: 'Protect participant privacy.', color: '#FFCC00' },
+        { icon: '📅', title: 'Smart Expiry', desc: 'Poll closes automatically.', color: '#00E5CC' },
+        { icon: '🔗', title: 'One-Click Share', desc: 'Share via link instantly.', color: '#00E5CC' },
+      ],
+      buttonText: 'CREATE POLLS  →',
     },
     {
       badge: "ANALYTICS",
       subBadge: "REALTIME FEED",
-      title: "Live Dashboard Metrics",
-      desc: "Premium charts and voter metrics visualised instantly as voting progress unfolds.",
-      renderAnim: () => <AnalyticsChartAnim />,
+      title: "Track Results. Make Impact.",
+      subTitle: "Get real-time insights and publish results with ease.",
+      desc: "Live stats and trends as votes come in with powerful chart breakdowns.",
+      renderAnim: () => <TrackResultsMockupAnim />,
       color: '#09090b',
-    },
-    {
-      badge: "VERSATILITY",
-      subBadge: "CONFIG OPTIONS",
-      title: "Flexible Access Gating",
-      desc: "Configure completely anonymous public rooms or Clerk-authenticated secure polls.",
-      renderAnim: () => <ResponseModesAnim />,
-      color: '#09090b',
-    },
-    {
-      badge: "CREATOR WIZARD",
-      subBadge: "FAST PUBLISH",
-      title: "Design & Publish in 60s",
-      desc: "Draft options, customize settings, and launch live campaigns in a single click.",
-      renderAnim: () => <CampaignWizardAnim />,
-      color: '#09090b',
-    },
-    {
-      badge: "FINAL VERDICT",
-      subBadge: "WINNER PROJECTIONS",
-      title: "Auto Winner & Trends",
-      desc: "Capture crowd favorites, final trends, and projection outcomes automatically.",
-      renderAnim: () => <TrophyInsightsAnim />,
-      color: '#09090b',
+      features: [
+        { icon: '📈', title: 'Real-time Insights', desc: 'Live stats and trends as votes come in.', color: '#00E5CC' },
+        { icon: '🍰', title: 'Smart Analytics', desc: 'Understand responses with powerful charts.', color: '#FFCC00' },
+        { icon: '🔗', title: 'Share & Publish', desc: 'Share results or make them public instantly.', color: '#A855F7' },
+      ],
+      buttonText: 'GET STARTED  →',
+      bottomCaption: 'Create your first poll and engage your audience today!',
     },
   ];
 
@@ -992,6 +1791,24 @@ export default function LoginScreen() {
     router.replace('/(tabs)');
   };
 
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dy) < 40;
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -35) {
+          // Swiped left -> Next slide
+          setCurrentSlide((prev) => Math.min(prev + 1, onboardingSlides.length - 1));
+        } else if (gestureState.dx > 35) {
+          // Swiped right -> Previous slide
+          setCurrentSlide((prev) => Math.max(prev - 1, 0));
+        }
+      },
+    })
+  ).current;
+
   // Still loading stored onboarding preference
   if (showOnboarding === null) {
     return null;
@@ -1000,118 +1817,147 @@ export default function LoginScreen() {
   if (showOnboarding) {
     const slide = onboardingSlides[currentSlide];
     return (
-      <SafeAreaView style={[styles.onboardingContainer, { backgroundColor: colors.background }]} edges={['top', 'bottom', 'left', 'right']}>
-        <View style={styles.onboardingWrapper}>
-          {/* Header Row with Logo and Skip button at top-right */}
-          <View style={styles.onboardingHeaderRow}>
-            <View style={styles.onboardingHeaderLeft}>
-              <View style={styles.miniLogoRow}>
-                <Image 
-                  source={require('../assets/images/image.png')} 
-                  style={styles.miniLogoImage} 
-                  resizeMode="contain"
-                />
-                <Text style={[styles.logoMiniText, { color: colors.foreground }]}>PollSphere</Text>
+      <SafeAreaView style={styles.onboardingPageContainer} edges={['top', 'bottom', 'left', 'right']} {...panResponder.panHandlers}>
+        <ScrollView contentContainerStyle={styles.onboardingScrollContent} showsVerticalScrollIndicator={false}>
+          {/* Header Row */}
+          <View style={styles.onboardingTopHeaderRow}>
+            <View style={styles.brandTitleGroup}>
+              <View style={styles.onboardingAppIconSquare}>
+                <BarChartIcon size={22} color="#00E5CC" strokeWidth={2.5} />
               </View>
-              <Text style={styles.subtitleMini}>Real-time polling</Text>
+              <View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={styles.brandTitleWhite}>Poll</Text>
+                  <Text style={styles.brandTitleCyan}>Sphere</Text>
+                </View>
+                <Text style={styles.brandSubText}>REAL-TIME POLLING</Text>
+              </View>
             </View>
-            <Pressable 
+
+            <Pressable
               onPress={() => {
                 SecureStore.setItemAsync(ONBOARDING_KEY, 'true');
                 setShowOnboarding(false);
-              }} 
-              style={[styles.topSkipBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
+              }}
+              style={styles.onboardingSkipBtnPill}
             >
-              <Text style={[styles.topSkipText, { color: colors.foreground }]}>Skip</Text>
+              <Text style={styles.onboardingSkipText}>SKIP</Text>
             </Pressable>
           </View>
 
-          {/* Neo-brutalist Onboarding Card Container */}
-          <View style={styles.brutalCardContainer}>
-            {/* Solid offset shadow layer */}
-            <View style={[styles.brutalCardShadow, { backgroundColor: colors.border, borderColor: colors.border }]} />
-            
-            {/* Main Card Body */}
-            <View style={[styles.brutalCardBody, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              {/* Card Header Row matching the user's image */}
-              <View style={styles.cardHeaderRow}>
-                <View style={styles.liveBadge}>
-                  <Text style={styles.liveBadgeText}>{slide.badge}</Text>
-                </View>
+          {/* Main Card Container */}
+          <View style={styles.onboardingMainCardGlowing}>
+            {/* Card Header Row */}
+            <View style={styles.cardHeaderRowCustom}>
+              <View style={styles.liveBattleBadge}>
+                <Text style={styles.liveBattleBadgeText}>{slide.badge}</Text>
+              </View>
+              <View style={styles.trafficRow}>
+                <ZapIcon size={12} color="#00E5CC" />
                 <Text style={styles.trafficText}>{slide.subBadge}</Text>
               </View>
+            </View>
 
-              {/* Card Title */}
-              <Text style={[styles.slideHeaderTitle, { color: colors.foreground }]}>{slide.title}</Text>
+            {/* Slide Title */}
+            <Text style={styles.slideHeaderTitleFormatted}>
+              {slide.title}
+            </Text>
 
-              {/* Render animated custom visualizer */}
+            {/* Render Animated Interactive Visualizer */}
+            <View style={styles.animContainerBox}>
               {slide.renderAnim()}
+            </View>
 
-              {/* Progress Line indicators inside the card matching user's image */}
-              <View style={styles.indicatorTrack}>
-                {onboardingSlides.map((_, idx) => (
-                  <View 
-                    key={idx} 
-                    style={[
-                      styles.indicatorBar, 
-                      idx === currentSlide ? styles.indicatorBarActive : styles.indicatorBarInactive
-                    ]} 
-                  />
-                ))}
-              </View>
+            {/* Progress Line indicators */}
+            <View style={styles.onboardingIndicatorTrack}>
+              {onboardingSlides.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={[
+                    styles.indicatorBar,
+                    idx === currentSlide ? styles.indicatorBarActiveCyan : styles.indicatorBarInactiveMuted
+                  ]}
+                />
+              ))}
             </View>
           </View>
 
-          {/* Description sub-card */}
-          <View style={[styles.descCard, { backgroundColor: colors.muted, borderColor: colors.border }]}>
-            <Text style={[styles.slideDescText, { color: colors.foreground }]}>{slide.desc}</Text>
+          {/* Description Sub-Card */}
+          <View style={styles.onboardingDescSubCard}>
+            <View style={styles.descIconCircleBadge}>
+              <BarChartIcon size={20} color="#00E5CC" strokeWidth={2} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.descSubCardTitle}>{slide.subTitle || 'Real-time updates, zero delay'}</Text>
+              <Text style={styles.descSubCardText}>{slide.desc}</Text>
+            </View>
           </View>
 
-          {/* Controls with stacked Back and Next buttons */}
-          <View style={styles.onboardingControlsStacked}>
-            <BrutalButton
-              title={currentSlide === 5 ? "Get Started 🚀" : "Next Slide →"}
-              variant="primary"
-              onPress={() => {
-                if (currentSlide < 5) {
-                  setCurrentSlide(currentSlide + 1);
-                } else {
-                  SecureStore.setItemAsync(ONBOARDING_KEY, 'true');
-                  setShowOnboarding(false);
-                }
-              }}
-              style={styles.fullNextBtn}
-            />
+          {/* Solid Cyan Action Button */}
+          <Pressable
+            onPress={() => {
+              if (currentSlide < onboardingSlides.length - 1) {
+                setCurrentSlide(currentSlide + 1);
+              } else {
+                SecureStore.setItemAsync(ONBOARDING_KEY, 'true');
+                setShowOnboarding(false);
+              }
+            }}
+            style={styles.onboardingNextPillBtn}
+          >
+            <Text style={styles.onboardingNextBtnText}>
+              {(slide as any).buttonText || (currentSlide === onboardingSlides.length - 1 ? "GET STARTED 🚀" : "NEXT SLIDE  →")}
+            </Text>
+          </Pressable>
 
-            {currentSlide > 0 ? (
-              <Pressable 
-                onPress={() => {
-                  setCurrentSlide(currentSlide - 1);
-                }} 
-                style={styles.backLinkBtn}
-              >
-                <Text style={styles.backLinkText}>← Go to Previous Slide</Text>
-              </Pressable>
+          {(slide as any).bottomCaption ? (
+            <Text style={styles.onboardingBottomCaptionText}>{(slide as any).bottomCaption}</Text>
+          ) : null}
+
+          {/* Bottom 3-Column Features */}
+          <View style={styles.bottomFeaturesRow}>
+            {(slide as any).features ? (
+              (slide as any).features.map((feat: any, idx: number) => (
+                <View key={idx} style={styles.featureColCardCustom}>
+                  <Text style={{ fontSize: 18, marginBottom: 4 }}>{feat.icon}</Text>
+                  <Text style={[styles.featureColTitleText, { color: feat.color || '#00E5CC' }]}>{feat.title}</Text>
+                  <Text style={styles.featureColSubText}>{feat.desc}</Text>
+                </View>
+              ))
             ) : (
-              <View style={styles.backLinkPlaceholder} />
+              <>
+                <View style={styles.featureCol}>
+                  <UsersIcon size={20} color="#00E5CC" />
+                  <Text style={styles.featureColText}>Engage your audience</Text>
+                </View>
+                <View style={styles.featureCol}>
+                  <ZapIcon size={20} color="#FFCC00" />
+                  <Text style={styles.featureColText}>Get instant feedback</Text>
+                </View>
+                <View style={styles.featureCol}>
+                  <ShieldIcon size={20} color="#A855F7" />
+                  <Text style={styles.featureColText}>Secure & anonymous</Text>
+                </View>
+              </>
             )}
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.loginPageContainer}
-    >
-      <ScrollView contentContainerStyle={styles.loginScrollContent} showsVerticalScrollIndicator={false}>
-        {/* Top Logo Header */}
-        <View style={styles.topLogoHeaderContainer}>
-          <View style={styles.appIconBadgeCircle}>
-            <BarChartIcon size={26} color="#00E5CC" strokeWidth={2.5} />
-          </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }} edges={['top', 'bottom', 'left', 'right']}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.loginPageContainer}
+      >
+        <ScrollView contentContainerStyle={styles.loginScrollContent} showsVerticalScrollIndicator={false}>
+          {/* Top Logo Header */}
+          <View style={styles.topLogoHeaderContainer}>
+            <View style={styles.appIconBadgeCircle}>
+              <BarChartIcon size={26} color="#00E5CC" strokeWidth={2.5} />
+            </View>
           <Text style={styles.appTitleText}>PollSphere</Text>
           <Text style={styles.appSubtitleText}>Real-time feedback & polling platform</Text>
         </View>
@@ -1330,9 +2176,7 @@ export default function LoginScreen() {
                 disabled={loading}
                 style={styles.googleYellowBtn}
               >
-                <View style={styles.googleGLogoCircle}>
-                  <Text style={styles.googleGLogoText}>G</Text>
-                </View>
+                <GoogleLogoIcon size={20} />
                 <Text style={styles.googleBtnText}>CONTINUE WITH GOOGLE</Text>
               </Pressable>
 
@@ -1384,6 +2228,7 @@ export default function LoginScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -1792,13 +2637,14 @@ const styles = StyleSheet.create({
   },
   loginScrollContent: {
     flexGrow: 1,
-    padding: 20,
-    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 20 : 16,
     paddingBottom: 40,
     alignItems: 'center',
   },
   topLogoHeaderContainer: {
     alignItems: 'center',
+    marginTop: 10,
     marginBottom: 20,
   },
   appIconBadgeCircle: {
@@ -2068,6 +2914,247 @@ const styles = StyleSheet.create({
     color: '#A1A1AA',
     marginBottom: 12,
     textAlign: 'center',
+  },
+
+  // --- Onboarding Screenshot Matching Styles ---
+  onboardingPageContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  onboardingScrollContent: {
+    flexGrow: 1,
+    padding: 20,
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    paddingBottom: 30,
+  },
+  onboardingTopHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  brandTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  onboardingAppIconSquare: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#09090b',
+    borderWidth: 2,
+    borderColor: '#00E5CC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandTitleWhite: {
+    fontFamily: 'SpaceMono',
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  brandTitleCyan: {
+    fontFamily: 'SpaceMono',
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#00E5CC',
+  },
+  brandSubText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 8,
+    fontWeight: '900',
+    color: '#71717A',
+    letterSpacing: 1,
+    marginTop: -2,
+  },
+  onboardingSkipBtnPill: {
+    borderWidth: 1.5,
+    borderColor: '#3F3F46',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: '#09090b',
+  },
+  onboardingSkipText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  onboardingMainCardGlowing: {
+    width: '100%',
+    backgroundColor: '#09090b',
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: '#00E5CC',
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#00E5CC',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  liveBattleBadge: {
+    backgroundColor: '#064E46',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#00E5CC',
+  },
+  liveBattleBadgeText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#00E5CC',
+    letterSpacing: 0.5,
+  },
+  trafficRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  slideHeaderTitleFormatted: {
+    fontFamily: 'SpaceMono',
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    marginVertical: 14,
+    lineHeight: 24,
+  },
+  animContainerBox: {
+    width: '100%',
+    marginVertical: 10,
+  },
+  onboardingIndicatorTrack: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 16,
+  },
+  indicatorBarActiveCyan: {
+    width: 24,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#00E5CC',
+  },
+  indicatorBarInactiveMuted: {
+    width: 8,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#27272A',
+  },
+  onboardingDescSubCard: {
+    width: '100%',
+    backgroundColor: '#09090b',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#27272A',
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 18,
+  },
+  descIconCircleBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#064E46',
+    borderWidth: 1.5,
+    borderColor: '#00E5CC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  descSubCardTitle: {
+    fontFamily: 'SpaceMono',
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  descSubCardText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#A1A1AA',
+    lineHeight: 14,
+  },
+  onboardingNextPillBtn: {
+    width: '100%',
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#00E5CC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+    shadowColor: '#00E5CC',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  onboardingNextBtnText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#09090b',
+    letterSpacing: 1,
+  },
+  bottomFeaturesRow: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingTop: 8,
+  },
+  featureCol: {
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+  },
+  featureColText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#A1A1AA',
+    textAlign: 'center',
+  },
+  featureColCardCustom: {
+    flex: 1,
+    backgroundColor: '#09090b',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#27272A',
+    padding: 10,
+    alignItems: 'center',
+    marginHorizontal: 3,
+  },
+  featureColTitleText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '900',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  featureColSubText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 8,
+    color: '#A1A1AA',
+    textAlign: 'center',
+    lineHeight: 11,
+  },
+  onboardingBottomCaptionText: {
+    fontFamily: 'SpaceMono',
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#71717A',
+    textAlign: 'center',
+    marginTop: -14,
+    marginBottom: 20,
   },
 
 });
