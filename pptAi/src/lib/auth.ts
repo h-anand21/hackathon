@@ -10,6 +10,7 @@ export const auth = betterAuth({
   }),
   trustedOrigins: [
     'http://localhost:3000',
+    'https://dootppt.netlify.app',
     process.env.BETTER_AUTH_URL!,
   ].filter(Boolean),
   socialProviders:{

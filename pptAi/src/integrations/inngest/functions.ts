@@ -100,34 +100,21 @@ const slidesResponseSchema = z.object({
   slides: z.array(slideSchema),
 })
 
-export const generatePresentation = inngest.createFunction(
-  {
-    id: 'generate-presentation',
-    retries: 2,
-    triggers: [{ event: 'presentation/generate' }],
-  },
-  async ({ event, step }) => {
-    const { presentationId } = event.data as { presentationId: string }
-
-    const presentation = await step.run('fetch-presentation', async () => {
-      const p = await prisma.presentation.findUnique({
-        where: { id: presentationId },
-      })
-      if (!p) throw new Error('Presentation not found')
-      return p
+export async function executePresentationGeneration(presentationId: string) {
+  try {
+    const presentation = await prisma.presentation.findUnique({
+      where: { id: presentationId },
     })
+    if (!presentation) throw new Error('Presentation not found')
 
-    await step.run('mark-generating', async () => {
-      await prisma.presentation.update({
-        where: { id: presentationId },
-        data: { status: 'GENERATING' },
-      })
+    await prisma.presentation.update({
+      where: { id: presentationId },
+      data: { status: 'GENERATING' },
     })
 
     const imageStyle = IMAGE_STYLE_MAP[presentation.style] ?? IMAGE_STYLE_MAP.professional
 
-    const { slides } = await step.run('generate-slides-content', async () => {
-      const systemPrompt = `You are a world-class presentation designer. Create a compelling, visually intelligent presentation.
+    const systemPrompt = `You are a world-class presentation designer. Create a compelling, visually intelligent presentation.
 
 Style: ${presentation.style}
 Tone: ${presentation.tone}
@@ -161,107 +148,109 @@ Schema:
   ]
 }`
 
-      const result = await generateText({
-        model: mesh.chat('google/gemini-3.5-flash'),
-        system: systemPrompt,
-        prompt: presentation.prompt,
-      })
-
-      const rawJson = cleanAndParseJSON(result.text)
-      const parsed = slidesResponseSchema.parse(rawJson)
-      return parsed
+    const result = await generateText({
+      model: mesh.chat('google/gemini-3.5-flash'),
+      system: systemPrompt,
+      prompt: presentation.prompt,
     })
 
-    await step.run('delete-old-slides', async () => {
-      await prisma.slide.deleteMany({
-        where: { presentationId },
-      })
+    const rawJson = cleanAndParseJSON(result.text)
+    const { slides } = slidesResponseSchema.parse(rawJson)
+
+    await prisma.slide.deleteMany({
+      where: { presentationId },
     })
 
-    await step.run('create-slides', async () => {
-      const NO_IMAGE_LAYOUTS = new Set(['diagram', 'text-only', 'stat-card'])
+    const NO_IMAGE_LAYOUTS = new Set(['diagram', 'text-only', 'stat-card'])
 
-      const data = await Promise.all(
-        slides.map(async (s, i) => {
-          const needsImage = !NO_IMAGE_LAYOUTS.has(s.layoutType) && s.imagePrompt?.trim()
-          let imageUrl: string | null = null
+    const data = await Promise.all(
+      slides.map(async (s, i) => {
+        const needsImage = !NO_IMAGE_LAYOUTS.has(s.layoutType) && s.imagePrompt?.trim()
+        let imageUrl: string | null = null
 
-          if (needsImage) {
-            // fallback URL — used if AI image generation fails
-            imageUrl = buildFallbackImageUrl(s.imagePrompt)
-            console.log(`[slide ${i}] Generating image for: "${s.imagePrompt.slice(0, 60)}..."`)
-            console.log(`[slide ${i}] MESH_API_KEY set: ${!!process.env.MESH_API_KEY}`)
+        if (needsImage) {
+          imageUrl = buildFallbackImageUrl(s.imagePrompt)
+          try {
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 8000)
 
-            try {
-              const response = await fetch('https://api.meshapi.ai/v1/images/generations', {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${process.env.MESH_API_KEY}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  model: 'openai/gpt-image-1',
-                  prompt: `${s.imagePrompt}. Presentation slide visual, 16:9 aspect ratio, professional quality.`,
-                  n: 1,
-                  size: '1024x1024',
-                }),
-              })
+            const response = await fetch('https://api.meshapi.ai/v1/images/generations', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${process.env.MESH_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                model: 'openai/gpt-image-1',
+                prompt: `${s.imagePrompt}. Presentation slide visual, 16:9 aspect ratio, professional quality.`,
+                n: 1,
+                size: '1024x1024',
+              }),
+              signal: controller.signal,
+            }).finally(() => clearTimeout(timeoutId))
 
-              console.log(`[slide ${i}] MeshAPI response status: ${response.status}`)
-              if (response.ok) {
-                const resJson = await response.json()
-                const tempUrl = resJson.data?.[0]?.url
-                console.log(`[slide ${i}] tempUrl: ${tempUrl ? 'got URL' : 'MISSING'}`)
-                if (tempUrl) {
-                  // Try ImageKit upload, but fall back to direct URL if it fails
-                  try {
-                    const permanentUrl = await uploadImageFromUrl(
-                      tempUrl,
-                      `slide-${presentationId}-${i}`,
-                    )
-                    imageUrl = permanentUrl || tempUrl
-                    console.log(`[slide ${i}] saved to: ${imageUrl}`)
-                  } catch {
-                    // ImageKit failed (quota?), use MeshAPI URL directly
-                    imageUrl = tempUrl
-                    console.log(`[slide ${i}] ImageKit failed, using MeshAPI URL directly`)
-                  }
+            if (response.ok) {
+              const resJson = await response.json()
+              const tempUrl = resJson.data?.[0]?.url
+              if (tempUrl) {
+                try {
+                  const permanentUrl = await uploadImageFromUrl(
+                    tempUrl,
+                    `slide-${presentationId}-${i}`,
+                  )
+                  imageUrl = permanentUrl || tempUrl
+                } catch {
+                  imageUrl = tempUrl
                 }
-              } else {
-                const errText = await response.text()
-                console.warn(`[slide ${i}] MeshAPI error ${response.status}: ${errText.slice(0, 200)}`)
               }
-            } catch (err) {
-              console.warn(`[slide ${i}] Failed to generate image:`, err)
             }
+          } catch {
+            // fallback URL already assigned
           }
+        }
 
-          return {
-            presentationId,
-            order: i,
-            title: s.title,
-            content: s.content,
-            notes: s.notes ?? null,
-            imagePrompt: s.imagePrompt ?? null,
-            imageUrl,
-            layoutType: s.layoutType,
-            diagramType: s.diagramType !== 'none' ? s.diagramType : null,
-            diagramData: s.diagramData ?? null,
-          }
-        })
-      )
-
-      await prisma.slide.createMany({ data })
-    })
-
-    await step.run('mark-completed', async () => {
-      await prisma.presentation.update({
-        where: { id: presentationId },
-        data: { status: 'COMPLETED' },
+        return {
+          presentationId,
+          order: i,
+          title: s.title,
+          content: s.content,
+          notes: s.notes ?? null,
+          imagePrompt: s.imagePrompt ?? null,
+          imageUrl,
+          layoutType: s.layoutType,
+          diagramType: s.diagramType !== 'none' ? s.diagramType : null,
+          diagramData: s.diagramData ?? null,
+        }
       })
+    )
+
+    await prisma.slide.createMany({ data })
+
+    await prisma.presentation.update({
+      where: { id: presentationId },
+      data: { status: 'COMPLETED' },
     })
 
     return { success: true, slideCount: slides.length }
+  } catch (err) {
+    console.error('Failed to execute presentation generation:', err)
+    await prisma.presentation.update({
+      where: { id: presentationId },
+      data: { status: 'FAILED' },
+    }).catch(() => {})
+    throw err
+  }
+}
+
+export const generatePresentation = inngest.createFunction(
+  {
+    id: 'generate-presentation',
+    retries: 2,
+    triggers: [{ event: 'presentation/generate' }],
+  },
+  async ({ event }) => {
+    const { presentationId } = event.data as { presentationId: string }
+    return executePresentationGeneration(presentationId)
   },
 )
 

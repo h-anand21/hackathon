@@ -39,8 +39,24 @@
       "bundler": "metro",
       "output": "static"
     },
+    "updates": {
+      "url": "https://u.expo.dev/73b076ba-9e92-4b95-b31d-fcb75d43895d"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "plugins": [
       "expo-router",
+      "expo-updates",
+      "./plugins/withExcludeOldSupportLibs",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableJetifier": true
+          }
+        }
+      ],
       [
         "expo-splash-screen",
         {

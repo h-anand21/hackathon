@@ -17,13 +17,6 @@ import { X, Share2, Copy, QrCode, Check, MessageCircle } from 'lucide-react-nati
 import { useTheme } from '../contexts/ThemeContext';
 import * as Clipboard from 'expo-clipboard';
 
-// Safely require react-native-share to avoid crash in Expo Go
-let RNShare: any = null;
-try {
-  RNShare = require('react-native-share').default || require('react-native-share');
-} catch (e) {
-  // TurboModule not available in Expo Go app
-}
 
 const XIcon = X as any;
 const Share2Icon = Share2 as any;
@@ -79,42 +72,16 @@ export function PollQRCodeModal({ visible, onClose, pollId, pollTitle }: PollQRC
         result: 'tmpfile',
       });
 
-      let sharedSuccess = false;
-
-      // 1. If RNShare TurboModule is available in native build, use it for Flipkart-style image+caption intent
-      if (RNShare && typeof RNShare.open === 'function') {
-        try {
-          const base64Uri = await captureRef(qrViewRef, {
-            format: 'png',
-            quality: 1,
-            result: 'data-uri',
-          });
-          await RNShare.open({
-            title: pollTitle || 'Vote on PollSphere',
-            message: shareText,
-            url: base64Uri,
-            type: 'image/png',
-            failOnCancel: false,
-          });
-          sharedSuccess = true;
-        } catch (e) {
-          console.log('RNShare error or cancelled:', e);
-        }
-      }
-
-      // 2. Fallback for Expo Go (or if RNShare was unavailable)
-      if (!sharedSuccess) {
-        await Clipboard.setStringAsync(shareText);
-        const canShare = await Sharing.isAvailableAsync();
-        if (canShare) {
-          await Sharing.shareAsync(fileUri, {
-            mimeType: 'image/png',
-            dialogTitle: 'Share Poll QR Code Card',
-            UTI: 'public.png',
-          });
-        } else {
-          await Share.share({ message: shareText });
-        }
+      await Clipboard.setStringAsync(shareText);
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'image/png',
+          dialogTitle: 'Share Poll QR Code Card',
+          UTI: 'public.png',
+        });
+      } else {
+        await Share.share({ message: shareText });
       }
     } catch (err: any) {
       try {

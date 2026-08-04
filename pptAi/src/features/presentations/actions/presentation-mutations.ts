@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 
 import { prisma } from '#/db'
 import { inngest } from '#/integrations/inngest/client'
+import { executePresentationGeneration } from '#/integrations/inngest/functions'
 
 import { deriveTitle, requirePresentationUserId } from '../lib/server-helpers'
 import {
@@ -31,7 +32,12 @@ export const createPresentation = createServerFn({ method: 'POST' })
     await inngest.send({
       name: 'presentation/generate',
       data: { presentationId: presentation.id },
-    })
+    }).catch(() => {})
+
+    // Background direct execution fallback so generation never gets stuck
+    executePresentationGeneration(presentation.id).catch((err) =>
+      console.error('[Fallback Generation Error]', err)
+    )
 
     return presentation
   })
@@ -81,7 +87,11 @@ export const regeneratePresentation = createServerFn({ method: 'POST' })
     await inngest.send({
       name: 'presentation/generate',
       data: { presentationId: data.id },
-    })
+    }).catch(() => {})
+
+    executePresentationGeneration(data.id).catch((err) =>
+      console.error('[Fallback Regeneration Error]', err)
+    )
 
     return { ok: true as const }
   })

@@ -1,5 +1,4 @@
 [build]
-  base = "pptAi"
   command = "npx prisma generate && vite build"
   publish = "dist/client"
 

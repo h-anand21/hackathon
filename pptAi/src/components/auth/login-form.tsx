@@ -16,22 +16,25 @@ export default function LoginForm({ redirectTo }: { redirectTo?: string }) {
   const handleSocialLogin = async (provider: 'github' | 'google') => {
     try {
       setIsSubmitting(provider)
-      await authClient.signIn.social({
+      const res = await authClient.signIn.social({
         provider,
+        callbackURL: redirectTo || '/',
         fetchOptions: {
-          onSuccess: () => {
-            toast.success('Logged in successfully!')
-            const internalRedirect = toInternalPath(redirectTo)
-            navigate({ to: (internalRedirect ?? '/') as any })
-          },
           onError: ({ error }) => {
+            console.error('Social login error:', error)
             toast.error(error.message || 'Failed to login. Please try again.')
             setIsSubmitting(null)
           },
         },
       })
-    } catch {
-      toast.error('Failed to login. Please try again.')
+      if (res?.error) {
+        console.error('Social login res error:', res.error)
+        toast.error(res.error.message || 'Failed to login.')
+        setIsSubmitting(null)
+      }
+    } catch (err: any) {
+      console.error('Social login catch:', err)
+      toast.error(err?.message || 'Failed to login. Please try again.')
       setIsSubmitting(null)
     }
   }
