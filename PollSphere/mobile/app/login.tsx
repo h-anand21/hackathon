@@ -1647,6 +1647,7 @@ export default function LoginScreen() {
       const { createdSessionId, setActive: setOAuthActive } = await startOAuthFlow();
       if (createdSessionId && setOAuthActive) {
         await setOAuthActive({ session: createdSessionId });
+        setAuthToken(createdSessionId);
         router.replace('/(tabs)');
       }
     } catch (err: any) {
@@ -1672,13 +1673,25 @@ export default function LoginScreen() {
     setError('');
 
     try {
-      const completeSignIn = await signIn.create({
+      let completeSignIn = await signIn.create({
         identifier: email,
         password,
       });
 
-      await setActive({ session: completeSignIn.createdSessionId });
-      router.replace('/(tabs)');
+      if (completeSignIn.status === 'needs_first_factor') {
+        completeSignIn = await signIn.attemptFirstFactor({
+          strategy: 'password',
+          password,
+        });
+      }
+
+      if (completeSignIn.status === 'complete' && completeSignIn.createdSessionId) {
+        await setActive({ session: completeSignIn.createdSessionId });
+        setAuthToken(completeSignIn.createdSessionId);
+        router.replace('/(tabs)');
+      } else {
+        setError('Sign in status incomplete. Please try again.');
+      }
     } catch (err: any) {
       setError(parseClerkError(err, 'Invalid email or password'));
     } finally {
@@ -1728,6 +1741,7 @@ export default function LoginScreen() {
 
       if (completeSignUp.status === 'complete') {
         await setActive({ session: completeSignUp.createdSessionId });
+        setAuthToken(completeSignUp.createdSessionId);
         router.replace('/(tabs)');
       } else {
         setError('Verification status incomplete. Please try again.');
