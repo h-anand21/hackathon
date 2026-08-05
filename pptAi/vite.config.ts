@@ -17,6 +17,20 @@ const config = defineConfig({
     netlify(),
     viteReact()
   ],
+  optimizeDeps: {
+    include: [
+      'defu',
+      'nanostores',
+      'better-auth',
+      'better-auth/react',
+      '@better-fetch/fetch',
+      'inngest',
+      'ai',
+      '@ai-sdk/openai',
+      'sonner',
+      'lucide-react',
+    ],
+  },
   ssr: {
     noExternal: ['pptxgenjs'],
   },
