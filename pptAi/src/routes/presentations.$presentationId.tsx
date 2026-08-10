@@ -104,12 +104,12 @@ export const Route = createFileRoute('/presentations/$presentationId')({
 })
 
 const THEMES = [
-  { id: 'dark-slate', label: 'Dark Slate', color: '#3B82F6', bg: '#0F172A' },
-  { id: 'light-paper', label: 'Light Paper', color: '#2563EB', bg: '#F8FAFC' },
-  { id: 'ocean', label: 'Ocean', color: '#38BDF8', bg: '#0C1445' },
-  { id: 'forest', label: 'Forest', color: '#22C55E', bg: '#0D2818' },
-  { id: 'sunset', label: 'Sunset', color: '#F97316', bg: '#1C0A00' },
-  { id: 'purple-haze', label: 'Purple Haze', color: '#A855F7', bg: '#1A0533' },
+  { id: 'obsidian-neon', label: 'Obsidian Neon', color: '#06B6D4', secondaryColor: '#8B5CF6', bg: '#07090E', tag: 'Cyber Pro' },
+  { id: 'silicon-slate', label: 'Silicon Slate', color: '#3B82F6', secondaryColor: '#F59E0B', bg: '#0B1120', tag: 'Enterprise' },
+  { id: 'nordic-minimal', label: 'Nordic Minimal', color: '#10B981', secondaryColor: '#0F172A', bg: '#F8FAFC', tag: 'Editorial' },
+  { id: 'tokyo-sunset', label: 'Tokyo Sunset', color: '#F43F5E', secondaryColor: '#F59E0B', bg: '#030305', tag: 'Creative' },
+  { id: 'emerald-matrix', label: 'Emerald Matrix', color: '#10B981', secondaryColor: '#6EE7B7', bg: '#03120E', tag: 'Deep Tech' },
+  { id: 'aurora-indigo', label: 'Aurora Indigo', color: '#6366F1', secondaryColor: '#EC4899', bg: '#0A0818', tag: 'AI Studio' },
 ]
 
 type RightPanelTab = 'settings' | 'theme' | 'notes'
@@ -979,20 +979,33 @@ function PresentationDetailPage() {
             {rightTab === 'theme' && (
               <div className="p-5 space-y-6">
                 <div>
-                  <h3 className="text-[11px] text-slate-400 uppercase tracking-widest font-bold mb-4">Color Themes</h3>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-[11px] text-slate-400 uppercase tracking-widest font-bold font-mono">Taste Themes</h3>
+                    <span className="text-[10px] text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-full font-mono">6 Curated</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2.5">
                     {THEMES.map((th) => (
                       <button
                         key={th.id}
                         onClick={() => setActiveTheme(th.id)}
-                        className={`flex flex-col items-start gap-2.5 rounded-xl p-3 text-left transition-all duration-300 border ${activeTheme === th.id ? 'border-[#FF8A2A] bg-[#FF8A2A]/5 shadow-[0_0_15px_rgba(255,138,42,0.1)]' : 'border-white/5 bg-[#10131B]/50 hover:bg-[#10131B] hover:border-white/10 hover:shadow-[0_0_20px_rgba(255,138,42,0.05)]'}`}
+                        className={`group relative flex flex-col items-start gap-2 rounded-xl p-2.5 text-left transition-all duration-300 border ${
+                          activeTheme === th.id
+                            ? 'border-cyan-400 bg-cyan-500/10 shadow-[0_0_20px_rgba(6,182,212,0.15)] ring-1 ring-cyan-400/40'
+                            : 'border-white/5 bg-[#0F131C] hover:bg-[#141A26] hover:border-white/15'
+                        }`}
                       >
                         {/* Preview swatch */}
-                        <div className="w-full h-12 rounded-lg overflow-hidden flex shadow-inner">
+                        <div className="w-full h-10 rounded-lg overflow-hidden flex shadow-inner border border-white/10 relative">
                           <div className="flex-1" style={{ background: th.bg }} />
-                          <div className="w-6" style={{ background: th.color }} />
+                          <div className="w-3.5" style={{ background: th.color }} />
+                          <div className="w-3.5" style={{ background: th.secondaryColor }} />
                         </div>
-                        <span className={`text-[11px] font-semibold tracking-wide ${activeTheme === th.id ? 'text-[#FF8A2A]' : 'text-slate-300'}`}>{th.label}</span>
+                        <div className="w-full flex items-center justify-between">
+                          <span className={`text-[11px] font-semibold tracking-tight font-display ${activeTheme === th.id ? 'text-cyan-300' : 'text-slate-200'}`}>
+                            {th.label}
+                          </span>
+                          <span className="text-[9px] text-slate-500 font-mono">{th.tag}</span>
+                        </div>
                       </button>
                     ))}
                   </div>

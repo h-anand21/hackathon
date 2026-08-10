@@ -21,13 +21,140 @@ type SlidePreviewProps = {
   theme?: string
 }
 
-const THEMES: Record<string, { bg: string; text: string; muted: string; accent: string; surface: string }> = {
-  'dark-slate': { bg: '#0F172A', text: '#F8FAFC', muted: '#94A3B8', accent: '#3B82F6', surface: 'rgba(255,255,255,0.06)' },
-  'light-paper': { bg: '#F8FAFC', text: '#0F172A', muted: '#64748B', accent: '#2563EB', surface: 'rgba(0,0,0,0.04)' },
-  'ocean': { bg: '#0C1445', text: '#E0F2FE', muted: '#7DD3FC', accent: '#38BDF8', surface: 'rgba(255,255,255,0.06)' },
-  'forest': { bg: '#0D2818', text: '#ECFDF5', muted: '#86EFAC', accent: '#22C55E', surface: 'rgba(255,255,255,0.06)' },
-  'sunset': { bg: '#1C0A00', text: '#FFF7ED', muted: '#FCA5A5', accent: '#F97316', surface: 'rgba(255,255,255,0.06)' },
-  'purple-haze': { bg: '#1A0533', text: '#FAF5FF', muted: '#C084FC', accent: '#A855F7', surface: 'rgba(255,255,255,0.06)' },
+const THEMES: Record<string, { bg: string; text: string; muted: string; accent: string; surface: string; border: string; glow: string; fontDisplay: string; fontBody: string }> = {
+  'obsidian-neon': {
+    bg: '#07090E',
+    text: '#F8FAFC',
+    muted: '#94A3B8',
+    accent: '#06B6D4',
+    surface: 'rgba(15, 19, 28, 0.85)',
+    border: 'rgba(6, 182, 212, 0.2)',
+    glow: 'radial-gradient(circle at 10% 10%, rgba(6, 182, 212, 0.12) 0%, transparent 60%)',
+    fontDisplay: "'Plus Jakarta Sans', sans-serif",
+    fontBody: "'Inter', sans-serif",
+  },
+  'silicon-slate': {
+    bg: '#0B1120',
+    text: '#F8FAFC',
+    muted: '#94A3B8',
+    accent: '#3B82F6',
+    surface: 'rgba(22, 30, 49, 0.85)',
+    border: 'rgba(59, 130, 246, 0.2)',
+    glow: 'radial-gradient(circle at 90% 10%, rgba(59, 130, 246, 0.15) 0%, transparent 65%)',
+    fontDisplay: "'Outfit', sans-serif",
+    fontBody: "'Inter', sans-serif",
+  },
+  'nordic-minimal': {
+    bg: '#F8FAFC',
+    text: '#0F172A',
+    muted: '#475569',
+    accent: '#10B981',
+    surface: '#FFFFFF',
+    border: 'rgba(15, 23, 42, 0.1)',
+    glow: 'radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.06) 0%, transparent 70%)',
+    fontDisplay: "'Plus Jakarta Sans', sans-serif",
+    fontBody: "'Inter', sans-serif",
+  },
+  'tokyo-sunset': {
+    bg: '#030305',
+    text: '#FFF1F2',
+    muted: '#FDA4AF',
+    accent: '#F43F5E',
+    surface: 'rgba(24, 18, 22, 0.85)',
+    border: 'rgba(244, 63, 94, 0.22)',
+    glow: 'radial-gradient(circle at 100% 100%, rgba(244, 63, 94, 0.16) 0%, transparent 60%)',
+    fontDisplay: "'Outfit', sans-serif",
+    fontBody: "'Inter', sans-serif",
+  },
+  'emerald-matrix': {
+    bg: '#03120E',
+    text: '#ECFDF5',
+    muted: '#A7F3D0',
+    accent: '#10B981',
+    surface: 'rgba(6, 30, 23, 0.85)',
+    border: 'rgba(16, 185, 129, 0.22)',
+    glow: 'radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.15) 0%, transparent 65%)',
+    fontDisplay: "'Plus Jakarta Sans', sans-serif",
+    fontBody: "'Inter', sans-serif",
+  },
+  'aurora-indigo': {
+    bg: '#0A0818',
+    text: '#EEF2FF',
+    muted: '#C7D2FE',
+    accent: '#6366F1',
+    surface: 'rgba(20, 16, 43, 0.85)',
+    border: 'rgba(99, 102, 241, 0.25)',
+    glow: 'radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.18) 0%, transparent 60%)',
+    fontDisplay: "'Outfit', sans-serif",
+    fontBody: "'Inter', sans-serif",
+  },
+  // Legacy aliases
+  'dark-slate': {
+    bg: '#0B1120',
+    text: '#F8FAFC',
+    muted: '#94A3B8',
+    accent: '#3B82F6',
+    surface: 'rgba(22, 30, 49, 0.85)',
+    border: 'rgba(59, 130, 246, 0.2)',
+    glow: 'radial-gradient(circle at 90% 10%, rgba(59, 130, 246, 0.15) 0%, transparent 65%)',
+    fontDisplay: "'Outfit', sans-serif",
+    fontBody: "'Inter', sans-serif",
+  },
+  'light-paper': {
+    bg: '#F8FAFC',
+    text: '#0F172A',
+    muted: '#475569',
+    accent: '#10B981',
+    surface: '#FFFFFF',
+    border: 'rgba(15, 23, 42, 0.1)',
+    glow: 'radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.06) 0%, transparent 70%)',
+    fontDisplay: "'Plus Jakarta Sans', sans-serif",
+    fontBody: "'Inter', sans-serif",
+  },
+  'ocean': {
+    bg: '#07090E',
+    text: '#F8FAFC',
+    muted: '#94A3B8',
+    accent: '#06B6D4',
+    surface: 'rgba(15, 19, 28, 0.85)',
+    border: 'rgba(6, 182, 212, 0.2)',
+    glow: 'radial-gradient(circle at 10% 10%, rgba(6, 182, 212, 0.12) 0%, transparent 60%)',
+    fontDisplay: "'Plus Jakarta Sans', sans-serif",
+    fontBody: "'Inter', sans-serif",
+  },
+  'forest': {
+    bg: '#03120E',
+    text: '#ECFDF5',
+    muted: '#A7F3D0',
+    accent: '#10B981',
+    surface: 'rgba(6, 30, 23, 0.85)',
+    border: 'rgba(16, 185, 129, 0.22)',
+    glow: 'radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.15) 0%, transparent 65%)',
+    fontDisplay: "'Plus Jakarta Sans', sans-serif",
+    fontBody: "'Inter', sans-serif",
+  },
+  'sunset': {
+    bg: '#030305',
+    text: '#FFF1F2',
+    muted: '#FDA4AF',
+    accent: '#F43F5E',
+    surface: 'rgba(24, 18, 22, 0.85)',
+    border: 'rgba(244, 63, 94, 0.22)',
+    glow: 'radial-gradient(circle at 100% 100%, rgba(244, 63, 94, 0.16) 0%, transparent 60%)',
+    fontDisplay: "'Outfit', sans-serif",
+    fontBody: "'Inter', sans-serif",
+  },
+  'purple-haze': {
+    bg: '#0A0818',
+    text: '#EEF2FF',
+    muted: '#C7D2FE',
+    accent: '#6366F1',
+    surface: 'rgba(20, 16, 43, 0.85)',
+    border: 'rgba(99, 102, 241, 0.25)',
+    glow: 'radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.18) 0%, transparent 60%)',
+    fontDisplay: "'Outfit', sans-serif",
+    fontBody: "'Inter', sans-serif",
+  },
 }
 
 function parseBullets(content: string): string[] {
@@ -52,7 +179,8 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
 
   const slideStyle: React.CSSProperties = {
     background: t.bg,
-    fontFamily: "'Inter', 'Segoe UI', sans-serif",
+    backgroundImage: t.glow,
+    fontFamily: t.fontBody,
   }
 
   // Image crop helpers based on slide.imageStyle
@@ -89,7 +217,7 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
             <div className="w-12 h-1 mx-auto mb-6" style={{ background: t.accent }} />
             <h1
               className="font-black tracking-tight mb-6"
-              style={{ color: t.text, fontSize: isFullscreen ? 'clamp(2.5rem,6vw,5rem)' : 'clamp(1.5rem,3vw,2.5rem)', lineHeight: 1.1 }}
+              style={{ color: t.text, fontFamily: t.fontDisplay, fontSize: isFullscreen ? 'clamp(2.5rem,6vw,5rem)' : 'clamp(1.5rem,3vw,2.5rem)', lineHeight: 1.1 }}
             >
               {slide.title}
             </h1>
@@ -113,11 +241,11 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
           className={`relative flex flex-col justify-center px-16 overflow-hidden ${isFullscreen ? 'w-full h-full' : 'aspect-video'}`}
           style={slideStyle}
         >
-          <div className="w-1 self-stretch max-h-20 rounded-full absolute left-10" style={{ background: t.accent }} />
-          <h2 className="font-black mb-6" style={{ color: t.text, fontSize: isFullscreen ? 'clamp(2rem,4vw,3.5rem)' : 'clamp(1.25rem,2.5vw,2rem)', lineHeight: 1.2 }}>
+          <div className="w-1.5 self-stretch max-h-24 rounded-full absolute left-10" style={{ background: t.accent }} />
+          <h2 className="font-black mb-6 tracking-tight" style={{ color: t.text, fontFamily: t.fontDisplay, fontSize: isFullscreen ? 'clamp(2rem,4vw,3.5rem)' : 'clamp(1.25rem,2.5vw,2rem)', lineHeight: 1.2 }}>
             {slide.title}
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {bullets.map((b, i) => (
               <p key={i} style={{ color: t.muted, fontSize: isFullscreen ? '1.2rem' : '0.9rem', lineHeight: 1.7 }}>
                 {b}
@@ -140,8 +268,8 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
         >
           {/* Header */}
           <div className="px-10 pt-10 pb-6">
-            <div className="w-8 h-0.5 mb-3" style={{ background: t.accent }} />
-            <h2 className="font-bold" style={{ color: t.text, fontSize: isFullscreen ? '2rem' : '1.2rem' }}>
+            <div className="w-8 h-1 rounded-full mb-3" style={{ background: t.accent }} />
+            <h2 className="font-bold tracking-tight" style={{ color: t.text, fontFamily: t.fontDisplay, fontSize: isFullscreen ? '2rem' : '1.2rem' }}>
               {slide.title}
             </h2>
           </div>
@@ -158,9 +286,9 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
                   const val = parts[0]?.trim() ?? b
                   const lbl = parts[1]?.trim() ?? ''
                   return (
-                    <div key={i} className="rounded-2xl p-6 text-center" style={{ background: t.surface, border: `1px solid ${t.accent}20` }}>
-                      <div className="text-4xl font-black mb-2" style={{ color: t.accent }}>{val}</div>
-                      {lbl && <div className="text-sm" style={{ color: t.muted }}>{lbl}</div>}
+                    <div key={i} className="rounded-2xl p-6 text-center backdrop-blur-md shadow-lg" style={{ background: t.surface, border: `1px solid ${t.border}` }}>
+                      <div className="text-4xl font-black mb-2 font-mono tracking-tight" style={{ color: t.accent }}>{val}</div>
+                      {lbl && <div className="text-sm font-medium" style={{ color: t.muted }}>{lbl}</div>}
                     </div>
                   )
                 })}
@@ -183,8 +311,8 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
         >
           {/* Header */}
           <div className="px-10 pt-8 pb-4 flex-shrink-0">
-            <div className="w-8 h-0.5 mb-3" style={{ background: t.accent }} />
-            <h2 className="font-bold" style={{ color: t.text, fontSize: isFullscreen ? '1.8rem' : '1.1rem' }}>
+            <div className="w-8 h-1 rounded-full mb-3" style={{ background: t.accent }} />
+            <h2 className="font-bold tracking-tight" style={{ color: t.text, fontFamily: t.fontDisplay, fontSize: isFullscreen ? '1.8rem' : '1.1rem' }}>
               {slide.title}
             </h2>
           </div>
@@ -213,18 +341,18 @@ export function SlidePreview({ slide, isFullscreen, theme = 'dark-slate' }: Slid
       >
         {/* Text side */}
         <div className="flex-1 flex flex-col justify-center px-10 py-8 relative z-10 min-w-0">
-          <div className="w-8 h-0.5 mb-4" style={{ background: t.accent }} />
+          <div className="w-8 h-1 rounded-full mb-4" style={{ background: t.accent }} />
           <h2
-            className="font-bold mb-5 leading-tight"
-            style={{ color: t.text, fontSize: isFullscreen ? 'clamp(1.5rem,3.5vw,3rem)' : 'clamp(1rem,2vw,1.5rem)' }}
+            className="font-bold mb-5 leading-tight tracking-tight"
+            style={{ color: t.text, fontFamily: t.fontDisplay, fontSize: isFullscreen ? 'clamp(1.5rem,3.5vw,3rem)' : 'clamp(1rem,2vw,1.5rem)' }}
           >
             {slide.title}
           </h2>
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {bullets.map((b, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: t.accent }} />
-                <p style={{ color: t.muted, fontSize: isFullscreen ? '1.1rem' : '0.82rem', lineHeight: 1.65 }}>{b}</p>
+              <div key={i} className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ background: t.accent }} />
+                <p style={{ color: t.muted, fontSize: isFullscreen ? '1.1rem' : '0.85rem', lineHeight: 1.65 }}>{b}</p>
               </div>
             ))}
           </div>

@@ -14,13 +14,61 @@ function safeParseJSON<T>(str: string | null | undefined, fallback: T): T {
   try { return JSON.parse(str) as T } catch { return fallback }
 }
 
-export function DiagramRenderer({ diagramType, diagramData, theme = 'dark-slate' }: DiagramRendererProps) {
-  const isDark = theme !== 'light-paper'
-  const accent = isDark ? '#3B82F6' : '#2563EB'
-  const textPrimary = isDark ? '#F8FAFC' : '#0F172A'
-  const textMuted = isDark ? '#94A3B8' : '#64748B'
-  const cardBg = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
-  const borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+const THEME_PALETTES: Record<string, { accent: string; secondaryAccent: string; textPrimary: string; textMuted: string; cardBg: string; borderColor: string }> = {
+  'obsidian-neon': {
+    accent: '#06B6D4',
+    secondaryAccent: '#8B5CF6',
+    textPrimary: '#F8FAFC',
+    textMuted: '#94A3B8',
+    cardBg: 'rgba(15, 19, 28, 0.85)',
+    borderColor: 'rgba(6, 182, 212, 0.25)',
+  },
+  'silicon-slate': {
+    accent: '#3B82F6',
+    secondaryAccent: '#F59E0B',
+    textPrimary: '#F8FAFC',
+    textMuted: '#94A3B8',
+    cardBg: 'rgba(22, 30, 49, 0.85)',
+    borderColor: 'rgba(59, 130, 246, 0.25)',
+  },
+  'nordic-minimal': {
+    accent: '#10B981',
+    secondaryAccent: '#0F172A',
+    textPrimary: '#0F172A',
+    textMuted: '#64748B',
+    cardBg: '#FFFFFF',
+    borderColor: 'rgba(15, 23, 42, 0.1)',
+  },
+  'tokyo-sunset': {
+    accent: '#F43F5E',
+    secondaryAccent: '#F59E0B',
+    textPrimary: '#FFF1F2',
+    textMuted: '#FDA4AF',
+    cardBg: 'rgba(24, 18, 22, 0.85)',
+    borderColor: 'rgba(244, 63, 94, 0.25)',
+  },
+  'emerald-matrix': {
+    accent: '#10B981',
+    secondaryAccent: '#6EE7B7',
+    textPrimary: '#ECFDF5',
+    textMuted: '#A7F3D0',
+    cardBg: 'rgba(6, 30, 23, 0.85)',
+    borderColor: 'rgba(16, 185, 129, 0.25)',
+  },
+  'aurora-indigo': {
+    accent: '#6366F1',
+    secondaryAccent: '#EC4899',
+    textPrimary: '#EEF2FF',
+    textMuted: '#C7D2FE',
+    cardBg: 'rgba(20, 16, 43, 0.85)',
+    borderColor: 'rgba(99, 102, 241, 0.25)',
+  },
+}
+
+export function DiagramRenderer({ diagramType, diagramData, theme = 'obsidian-neon' }: DiagramRendererProps) {
+  const palette = THEME_PALETTES[theme] ?? THEME_PALETTES['obsidian-neon']
+  const { accent, secondaryAccent, textPrimary, textMuted, cardBg, borderColor } = palette
+
 
   if (diagramType === 'flow') {
     const data = safeParseJSON<FlowData>(diagramData, { steps: [] })
@@ -98,16 +146,16 @@ export function DiagramRenderer({ diagramType, diagramData, theme = 'dark-slate'
         {stats.map((stat, i) => (
           <div
             key={i}
-            className="flex flex-col items-center gap-2 rounded-2xl px-8 py-6"
+            className="flex flex-col items-center gap-2.5 rounded-2xl px-8 py-6 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.3)] transition-transform hover:scale-105 duration-300"
             style={{ background: cardBg, border: `1px solid ${borderColor}`, minWidth: '160px' }}
           >
             <div
-              className="text-5xl font-black tracking-tight"
-              style={{ color: accent, lineHeight: 1 }}
+              className="text-5xl font-black tracking-tight font-mono"
+              style={{ color: accent, lineHeight: 1, textShadow: `0 0 30px ${accent}40` }}
             >
               {stat?.value}
             </div>
-            <div className="text-sm text-center font-medium" style={{ color: textMuted }}>
+            <div className="text-xs uppercase tracking-wider text-center font-semibold" style={{ color: textMuted }}>
               {stat?.label}
             </div>
           </div>

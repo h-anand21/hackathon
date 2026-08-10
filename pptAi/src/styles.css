@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 @import 'tw-animate-css';
@@ -6,15 +6,15 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Light mode: zinc base with peach accent */
+  /* Light mode: zinc base with clean modern accent */
   --background: oklch(0.985 0.002 247);
   --foreground: oklch(0.145 0.014 247);
   --card: oklch(0.995 0 0);
   --card-foreground: oklch(0.145 0.014 247);
   --popover: oklch(0.995 0 0);
   --popover-foreground: oklch(0.145 0.014 247);
-  --primary: oklch(0.72 0.14 45);
-  --primary-foreground: oklch(0.145 0.014 247);
+  --primary: oklch(0.65 0.18 245);
+  --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.96 0.003 247);
   --secondary-foreground: oklch(0.205 0.014 247);
   --muted: oklch(0.96 0.003 247);
@@ -25,7 +25,7 @@
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.90 0.003 247);
   --input: oklch(0.90 0.003 247);
-  --ring: oklch(0.72 0.14 45);
+  --ring: oklch(0.65 0.18 245);
   --radius: 0.75rem;
 
   /* Glass effect vars */
@@ -35,35 +35,37 @@
 }
 
 .dark {
-  /* Dark mode: zinc base with peach accent */
-  --background: oklch(0.12 0.01 250);
-  --foreground: oklch(0.985 0.002 247);
-  --card: oklch(0.17 0.012 250);
-  --card-foreground: oklch(0.985 0.002 247);
-  --popover: oklch(0.17 0.012 250);
-  --popover-foreground: oklch(0.985 0.002 247);
-  --primary: oklch(0.78 0.12 45);
-  --primary-foreground: oklch(0.12 0.01 250);
-  --secondary: oklch(0.22 0.012 250);
-  --secondary-foreground: oklch(0.985 0.002 247);
-  --muted: oklch(0.22 0.012 250);
-  --muted-foreground: oklch(0.65 0.01 247);
-  --accent: oklch(0.22 0.012 250);
-  --accent-foreground: oklch(0.985 0.002 247);
-  --destructive: oklch(0.55 0.2 27);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.26 0.012 250);
-  --input: oklch(0.26 0.012 250);
-  --ring: oklch(0.78 0.12 45);
+  /* Dark mode: obsidian neon base */
+  --background: #07090E;
+  --foreground: #F8FAFC;
+  --card: #0F131C;
+  --card-foreground: #F8FAFC;
+  --popover: #0F131C;
+  --popover-foreground: #F8FAFC;
+  --primary: #06B6D4;
+  --primary-foreground: #07090E;
+  --secondary: #161D2B;
+  --secondary-foreground: #F8FAFC;
+  --muted: #131824;
+  --muted-foreground: #94A3B8;
+  --accent: #1E293B;
+  --accent-foreground: #38BDF8;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #06B6D4;
 
-  /* Glass effect vars - dark */
-  --glass-bg: rgba(30, 30, 35, 0.6);
+  /* High-taste glass effect */
+  --glass-bg: rgba(15, 19, 28, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
 }
 
 @theme inline {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -257,3 +259,111 @@ body {
   box-shadow: 0 0 30px rgba(255, 138, 42, 0.25);
   border-color: rgba(255, 138, 42, 0.5);
 }
+
+/* ─────────────────────────────────────────────────────────────
+   High-Taste Presentation Themes (Inspired by iOfficeAI / OfficeCLI)
+   ───────────────────────────────────────────────────────────── */
+
+/* 1. Obsidian Neon (Default Pro Cyber Dark) */
+.theme-obsidian-neon {
+  --slide-bg: #07090E;
+  --slide-surface: rgba(15, 19, 28, 0.85);
+  --slide-border: rgba(6, 182, 212, 0.2);
+  --slide-title: #FFFFFF;
+  --slide-text: #94A3B8;
+  --slide-accent: #06B6D4;
+  --slide-accent-secondary: #8B5CF6;
+  --slide-glow: radial-gradient(circle at 10% 10%, rgba(6, 182, 212, 0.12) 0%, transparent 60%);
+  background-color: var(--slide-bg);
+  color: var(--slide-text);
+}
+
+/* 2. Silicon Slate (Enterprise Pitch Deck) */
+.theme-silicon-slate {
+  --slide-bg: #0B1120;
+  --slide-surface: rgba(22, 30, 49, 0.85);
+  --slide-border: rgba(59, 130, 246, 0.2);
+  --slide-title: #F8FAFC;
+  --slide-text: #CBD5E1;
+  --slide-accent: #3B82F6;
+  --slide-accent-secondary: #F59E0B;
+  --slide-glow: radial-gradient(circle at 90% 10%, rgba(59, 130, 246, 0.15) 0%, transparent 65%);
+  background-color: var(--slide-bg);
+  color: var(--slide-text);
+}
+
+/* 3. Nordic Minimalist (Paper Editorial) */
+.theme-nordic-minimal {
+  --slide-bg: #F8FAFC;
+  --slide-surface: #FFFFFF;
+  --slide-border: rgba(15, 23, 42, 0.1);
+  --slide-title: #0F172A;
+  --slide-text: #475569;
+  --slide-accent: #10B981;
+  --slide-accent-secondary: #0F172A;
+  --slide-glow: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.06) 0%, transparent 70%);
+  background-color: var(--slide-bg);
+  color: var(--slide-text);
+}
+
+/* 4. Tokyo Sunset (Bold High-Contrast Creative) */
+.theme-tokyo-sunset {
+  --slide-bg: #030305;
+  --slide-surface: rgba(24, 18, 22, 0.85);
+  --slide-border: rgba(244, 63, 94, 0.22);
+  --slide-title: #FFF1F2;
+  --slide-text: #FDA4AF;
+  --slide-accent: #F43F5E;
+  --slide-accent-secondary: #F59E0B;
+  --slide-glow: radial-gradient(circle at 100% 100%, rgba(244, 63, 94, 0.16) 0%, transparent 60%);
+  background-color: var(--slide-bg);
+  color: var(--slide-text);
+}
+
+/* 5. Emerald Matrix (Deep Tech & Climate) */
+.theme-emerald-matrix {
+  --slide-bg: #03120E;
+  --slide-surface: rgba(6, 30, 23, 0.85);
+  --slide-border: rgba(16, 185, 129, 0.22);
+  --slide-title: #ECFDF5;
+  --slide-text: #A7F3D0;
+  --slide-accent: #10B981;
+  --slide-accent-secondary: #6EE7B7;
+  --slide-glow: radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.15) 0%, transparent 65%);
+  background-color: var(--slide-bg);
+  color: var(--slide-text);
+}
+
+/* 6. Aurora Indigo (Deep Twilight & AI Labs) */
+.theme-aurora-indigo {
+  --slide-bg: #0A0818;
+  --slide-surface: rgba(20, 16, 43, 0.85);
+  --slide-border: rgba(99, 102, 241, 0.25);
+  --slide-title: #EEF2FF;
+  --slide-text: #C7D2FE;
+  --slide-accent: #6366F1;
+  --slide-accent-secondary: #EC4899;
+  --slide-glow: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.18) 0%, transparent 60%);
+  background-color: var(--slide-bg);
+  color: var(--slide-text);
+}
+
+/* Legacy theme backward compatibility */
+.theme-dark-slate { composes: theme-silicon-slate; }
+.theme-light-paper { composes: theme-nordic-minimal; }
+.theme-ocean { composes: theme-obsidian-neon; }
+.theme-forest { composes: theme-emerald-matrix; }
+.theme-sunset { composes: theme-tokyo-sunset; }
+.theme-purple-haze { composes: theme-aurora-indigo; }
+
+/* 16:9 Slide Canvas Framing */
+.slide-canvas-frame {
+  aspect-ratio: 16 / 9;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-canvas-frame:hover {
+  box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+

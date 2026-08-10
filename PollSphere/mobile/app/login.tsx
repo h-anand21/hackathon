@@ -1673,25 +1673,32 @@ export default function LoginScreen() {
     setError('');
 
     try {
-      let completeSignIn = await signIn.create({
+      const result = await signIn.create({
         identifier: email,
         password,
       });
 
-      if (completeSignIn.status === 'needs_first_factor') {
-        completeSignIn = await signIn.attemptFirstFactor({
+      if (result.createdSessionId) {
+        await setActive({ session: result.createdSessionId });
+        setAuthToken(result.createdSessionId);
+        router.replace('/(tabs)');
+        return;
+      }
+
+      if (result.status === 'needs_first_factor') {
+        const attempt = await signIn.attemptFirstFactor({
           strategy: 'password',
           password,
         });
+        if (attempt.createdSessionId) {
+          await setActive({ session: attempt.createdSessionId });
+          setAuthToken(attempt.createdSessionId);
+          router.replace('/(tabs)');
+          return;
+        }
       }
 
-      if (completeSignIn.status === 'complete' && completeSignIn.createdSessionId) {
-        await setActive({ session: completeSignIn.createdSessionId });
-        setAuthToken(completeSignIn.createdSessionId);
-        router.replace('/(tabs)');
-      } else {
-        setError('Sign in status incomplete. Please try again.');
-      }
+      setError(parseClerkError(result, `Sign in incomplete (${result.status || 'unknown'})`));
     } catch (err: any) {
       setError(parseClerkError(err, 'Invalid email or password'));
     } finally {
