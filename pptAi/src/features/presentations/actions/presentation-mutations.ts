@@ -14,6 +14,7 @@ import {
   duplicateSlideInputSchema,
   deleteSlideInputSchema,
   reorderSlideInputSchema,
+  generateSlideImageInputSchema,
 } from '../types/schemas'
 
 export const createPresentation = createServerFn({ method: 'POST' })
@@ -195,4 +196,75 @@ export const reorderSlide = createServerFn({ method: 'POST' })
 
     return { ok: true }
   })
+
+export const generateSlideImage = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) => generateSlideImageInputSchema.parse(data))
+  .handler(async ({ data }) => {
+    await requirePresentationUserId()
+    const slide = await prisma.slide.findUnique({
+      where: { id: data.slideId },
+    })
+    if (!slide) throw new Error('Slide not found')
+
+    let imageUrl: string | null = null
+
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 12000)
+
+      const response = await fetch('https://api.meshapi.ai/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.MESH_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'openai/gpt-image-1',
+          prompt: `${data.prompt}. Presentation slide visual, 16:9 aspect ratio, 4k high quality, modern design.`,
+          n: 1,
+          size: '1024x1024',
+        }),
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId))
+
+      if (response.ok) {
+        const resJson = await response.json()
+        const tempUrl = resJson.data?.[0]?.url
+        if (tempUrl) {
+          try {
+            const { uploadImageFromUrl } = await import('#/lib/imagekit')
+            imageUrl = await uploadImageFromUrl(
+              tempUrl,
+              `slide-custom-${slide.id}`,
+            )
+          } catch {
+            imageUrl = tempUrl
+          }
+        }
+      }
+    } catch {
+      // Unsplash fallback
+      const keywords = data.prompt
+        .replace(/[^a-zA-Z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter((w) => w.length > 3)
+        .slice(0, 3)
+        .join(',')
+      imageUrl = `https://images.unsplash.com/random/1280x720?${keywords}&auto=format&fit=crop&q=80`
+    }
+
+    if (!imageUrl) {
+      imageUrl = `https://images.unsplash.com/random/1280x720?tech,modern&auto=format&fit=crop&q=80`
+    }
+
+    return prisma.slide.update({
+      where: { id: data.slideId },
+      data: {
+        imageUrl,
+        imagePrompt: data.prompt,
+        imageStyle: data.style ?? 'cover',
+      },
+    })
+  })
+
 

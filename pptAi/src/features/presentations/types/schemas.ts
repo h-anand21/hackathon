@@ -86,5 +86,12 @@ export const reorderSlideInputSchema = z.object({
   direction: z.enum(['up', 'down']),
 })
 
+export const generateSlideImageInputSchema = z.object({
+  slideId: z.string().min(1),
+  prompt: z.string().min(1),
+  style: z.string().optional(),
+})
+
+
 
 

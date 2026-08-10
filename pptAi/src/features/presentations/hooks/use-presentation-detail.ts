@@ -14,6 +14,7 @@ import {
   duplicateSlide,
   deleteSlide,
   reorderSlide,
+  generateSlideImage,
 } from '../actions/presentation-mutations'
 
 type SettingsForm = {
@@ -168,6 +169,20 @@ export function usePresentationDetail(
     },
   })
 
+  const generateSlideImageMut = useMutation({
+    mutationFn: (vars: { slideId: string; prompt: string; style?: string }) =>
+      generateSlideImage({ data: vars }),
+    onSuccess: () => {
+      toast.success('AI Image generated & applied!')
+      queryClient.invalidateQueries({
+        queryKey: presentationQueryKeys.detail(presentationId),
+      })
+    },
+    onError: (e) => {
+      toast.error(e instanceof Error ? e.message : 'Could not generate image')
+    },
+  })
+
   const regenerateMut = useMutation({
     mutationFn: () => regeneratePresentation({ data: { id: presentationId } }),
     onSuccess: () => {
@@ -220,9 +235,11 @@ export function usePresentationDetail(
     duplicateSlideMut,
     deleteSlideMut,
     reorderSlideMut,
+    generateSlideImageMut,
     regenerateMut,
     deleteMut,
   }
 }
+
 
 

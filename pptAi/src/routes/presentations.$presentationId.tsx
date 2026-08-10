@@ -521,42 +521,128 @@ function PresentationDetailPage() {
 
           {activeLeftTab === 'ai' && (
             <div className="flex flex-col h-full">
-              <div className="flex items-center px-4 py-4 border-b border-white/5">
-                <Sparkles className="size-4 text-[#FF8A2A] mr-2" />
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">AI Assistant</span>
+              <div className="flex items-center justify-between px-4 py-4 border-b border-white/5">
+                <div className="flex items-center">
+                  <Sparkles className="size-4 text-cyan-400 mr-2" />
+                  <span className="text-[11px] font-bold text-slate-300 uppercase tracking-widest font-display">AI Copilot</span>
+                </div>
+                <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Active</span>
               </div>
-              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 flex flex-col">
-                <div className="bg-[#10131B] border border-white/5 rounded-xl p-3 text-xs text-slate-300 leading-relaxed relative before:content-[''] before:absolute before:-left-1.5 before:top-4 before:w-3 before:h-3 before:bg-[#10131B] before:border-l before:border-b before:border-white/5 before:rotate-45">
-                  <p>Hi! I'm your AI Copilot.</p>
-                  <p className="mt-1">I can help you rewrite slides, brainstorm content, or structure your presentation.</p>
+
+              {/* Quick Prompt Action Chips */}
+              <div className="px-3 py-2 border-b border-white/5 flex gap-1.5 overflow-x-auto scrollbar-hide">
+                {[
+                  { label: '⚡ Punchy', prompt: `Make slide ${activeSlideIndex + 1} ("${activeSlide?.title}") punchy, bold, and executive-level.` },
+                  { label: '📊 KPIs', prompt: `Extract metrics and convert slide ${activeSlideIndex + 1} into 3 impactful KPI numbers.` },
+                  { label: '🔄 3-Steps', prompt: `Structure slide ${activeSlideIndex + 1} into a 3-stage process flow.` },
+                  { label: '🎨 Image', prompt: `Generate a bespoke visual prompt for slide ${activeSlideIndex + 1} ("${activeSlide?.title}").` },
+                ].map((chip, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      sendMessage({ text: chip.prompt })
+                    }}
+                    className="shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-medium bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 text-slate-300 border border-white/10 transition-colors"
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-3 py-4 space-y-3.5 flex flex-col scrollbar-thin scrollbar-thumb-white/10">
+                <div className="bg-[#0F131C] border border-cyan-500/20 rounded-2xl p-3 text-xs text-slate-300 leading-relaxed shadow-lg">
+                  <p className="font-bold text-cyan-400 font-display flex items-center gap-1.5 mb-1">
+                    <Sparkles className="size-3.5" /> AI Presentation Copilot
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    I can rewrite slide content, extract data KPIs, format diagram flows, and suggest imagery tailored to your theme.
+                  </p>
                 </div>
                 
-                {messages.map((m) => (
-                  <div key={m.id} className={`flex flex-col max-w-[90%] ${m.role === 'user' ? 'self-end' : 'self-start'}`}>
-                    <div className={`text-[10px] text-slate-500 mb-1 px-1 font-medium ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
-                      {m.role === 'user' ? 'You' : 'AI'}
+                {messages.map((m: any) => {
+                  const rawContent = m.content || m.parts?.map((p: any) => p.text).join('') || ''
+                  const proposalMatch = rawContent.match(/```slide-proposal\s*([\s\S]*?)```/)
+                  let proposedTitle = ''
+                  let proposedContent = ''
+
+                  if (proposalMatch && proposalMatch[1]) {
+                    const block = proposalMatch[1]
+                    const titleMatch = block.match(/Title:\s*(.*)/i)
+                    const contentMatch = block.match(/Content:\s*([\s\S]*)/i)
+                    if (titleMatch) proposedTitle = titleMatch[1].trim()
+                    if (contentMatch) proposedContent = contentMatch[1].trim()
+                  }
+
+                  const cleanText = rawContent.replace(/```slide-proposal[\s\S]*?```/g, '').trim()
+
+                  return (
+                    <div key={m.id} className={`flex flex-col max-w-[95%] ${m.role === 'user' ? 'self-end' : 'self-start'}`}>
+                      <div className={`text-[9px] font-mono text-slate-500 mb-1 px-1 ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
+                        {m.role === 'user' ? 'You' : 'PPT.ai Copilot'}
+                      </div>
+                      
+                      <div className={`p-3 rounded-2xl text-xs leading-relaxed ${m.role === 'user' ? 'bg-cyan-500 text-black font-semibold rounded-br-sm shadow-md' : 'bg-[#0F131C] border border-white/10 text-slate-200 rounded-bl-sm shadow-md'}`}>
+                        {cleanText && <p className="whitespace-pre-wrap">{cleanText}</p>}
+
+                        {/* Interactive Slide Proposal Card */}
+                        {proposedTitle && (
+                          <div className="mt-3 p-3 rounded-xl bg-black/50 border border-cyan-500/40 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[9px] font-mono font-bold text-cyan-400 uppercase tracking-widest">
+                                Proposed Slide Update
+                              </span>
+                            </div>
+                            <h4 className="text-xs font-bold text-white font-display">
+                              {proposedTitle}
+                            </h4>
+                            {proposedContent && (
+                              <p className="text-[11px] text-slate-300 whitespace-pre-wrap font-sans">
+                                {proposedContent}
+                              </p>
+                            )}
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={updateSlideMut.isPending || !activeSlide}
+                              onClick={() => {
+                                if (!activeSlide) return
+                                updateSlideMut.mutate({
+                                  id: activeSlide.id,
+                                  title: proposedTitle,
+                                  content: proposedContent,
+                                }, {
+                                  onSuccess: () => toast.success('Slide updated from AI proposal!')
+                                })
+                              }}
+                              className="w-full h-7 mt-2 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-[10px] gap-1 shadow-[0_0_12px_rgba(6,182,212,0.3)]"
+                            >
+                              <Sparkles className="size-3" />
+                              Apply to Current Slide
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className={`p-3 rounded-xl text-xs leading-relaxed whitespace-pre-wrap ${m.role === 'user' ? 'bg-[#FF8A2A] text-white rounded-br-sm shadow-md' : 'bg-[#10131B] border border-white/5 text-slate-300 rounded-bl-sm relative before:content-[\'\'] before:absolute before:-left-1.5 before:top-4 before:w-3 before:h-3 before:bg-[#10131B] before:border-l before:border-b before:border-white/5 before:rotate-45'}`}>
-                      {m.content || (m as any).parts?.map((p: any) => p.text).join('')}
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
                 {isChatLoading && (
-                  <div className="flex gap-1 items-center self-start bg-[#10131B] border border-white/5 p-3 rounded-xl rounded-bl-sm text-xs text-slate-400">
-                    <Loader2 className="size-3 animate-spin text-[#FF8A2A]" /> Thinking...
+                  <div className="flex gap-2 items-center self-start bg-[#0F131C] border border-white/10 p-3 rounded-2xl rounded-bl-sm text-xs text-slate-400">
+                    <Loader2 className="size-3.5 animate-spin text-cyan-400" /> Copilot is drafting...
                   </div>
                 )}
               </div>
-              <form className="p-4 border-t border-white/5 bg-[#0A0C11]" onSubmit={handleChatSubmit}>
+
+              <form className="p-3 border-t border-white/5 bg-[#0A0C11]" onSubmit={handleChatSubmit}>
                 <div className="relative">
                   <input 
                     type="text" 
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Ask AI about your slides..." 
-                    className="w-full bg-[#10131B] border border-white/10 rounded-xl px-3 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-[#FF8A2A] transition-colors" 
+                    placeholder="Ask Copilot (e.g. 'Make slide 1 punchier')..." 
+                    className="w-full bg-[#10131B] border border-white/10 focus:border-cyan-400 rounded-xl px-3 pr-10 py-2.5 text-xs text-white focus:outline-none transition-colors" 
                   />
-                  <Button type="submit" disabled={isChatLoading || !chatInput.trim()} size="icon" className="absolute right-1 top-1 size-7 bg-[#FF8A2A] hover:bg-orange-500 rounded-lg text-white disabled:opacity-50">
+                  <Button type="submit" disabled={isChatLoading || !chatInput.trim()} size="icon" className="absolute right-1 top-1 size-7 bg-cyan-500 hover:bg-cyan-400 rounded-lg text-black disabled:opacity-50 shadow-[0_0_10px_rgba(6,182,212,0.3)]">
                     <Wand2 className="size-3.5" />
                   </Button>
                 </div>
@@ -1080,12 +1166,40 @@ function PresentationDetailPage() {
                           )}
                         </div>
                         <label className="text-[10px] text-slate-500 uppercase tracking-widest font-bold block mb-1">AI Image Prompt (for regenerating)</label>
-                        <textarea
-                          value={canvasImagePrompt}
-                          onChange={(e) => setCanvasImagePrompt(e.target.value)}
-                          placeholder="Describe the image you want for this slide..."
-                          className="w-full h-16 bg-black/20 border border-white/10 focus:border-cyan-500 rounded-xl px-4 py-2 text-xs text-slate-300 focus:outline-none resize-none transition-colors"
-                        />
+                        <div className="flex items-center gap-2">
+                          <textarea
+                            value={canvasImagePrompt}
+                            onChange={(e) => setCanvasImagePrompt(e.target.value)}
+                            placeholder="Describe the image you want for this slide..."
+                            className="flex-1 h-16 bg-black/20 border border-white/10 focus:border-cyan-500 rounded-xl px-4 py-2 text-xs text-slate-300 focus:outline-none resize-none transition-colors"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            disabled={generateSlideImageMut.isPending || !canvasImagePrompt.trim() || !activeSlide}
+                            onClick={() => {
+                              if (!activeSlide || !canvasImagePrompt.trim()) return
+                              generateSlideImageMut.mutate({
+                                slideId: activeSlide.id,
+                                prompt: canvasImagePrompt,
+                                style: canvasImageStyle,
+                              })
+                            }}
+                            className="h-16 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs flex flex-col items-center justify-center gap-1 shadow-[0_0_15px_rgba(6,182,212,0.3)] shrink-0"
+                          >
+                            {generateSlideImageMut.isPending ? (
+                              <>
+                                <Loader2 className="size-4 animate-spin" />
+                                <span>Generating...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="size-4" />
+                                <span>Generate AI Visual</span>
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
