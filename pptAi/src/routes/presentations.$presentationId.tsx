@@ -567,26 +567,156 @@ function PresentationDetailPage() {
           {activeLeftTab === 'design' && (
             <div className="flex flex-col h-full">
               <div className="flex items-center px-4 py-4 border-b border-white/5">
-                <Palette className="size-4 text-pink-400 mr-2" />
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Design & Layout</span>
+                <Palette className="size-4 text-cyan-400 mr-2" />
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-display">Slide Archetype</span>
               </div>
-              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
-                <div className="space-y-3">
-                  <Label className="text-xs text-slate-400">Slide Layout</Label>
+              <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <Label className="text-[10px] text-slate-400 uppercase font-mono tracking-wider font-bold">Active Slide Layout</Label>
+                    <span className="text-[9px] text-cyan-400 font-mono">1-Click Convert</span>
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { value: 'split-right', label: 'Split', emoji: '⬛▪' },
-                      { value: 'hero', label: 'Hero/Cover', emoji: '🎯' },
-                      { value: 'text-only', label: 'Text Only', emoji: '📝' },
-                      { value: 'stat-card', label: 'Stats', emoji: '📊' },
+                      {
+                        value: 'hero',
+                        label: 'Executive Hero',
+                        emoji: '🎯',
+                        tag: 'Cover',
+                        apply: () => updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'hero', diagramType: null }),
+                        isActive: activeSlide?.layoutType === 'hero',
+                      },
+                      {
+                        value: 'split-right',
+                        label: 'Split Right',
+                        emoji: '⬛▪',
+                        tag: 'Visual',
+                        apply: () => updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'split-right', diagramType: null }),
+                        isActive: activeSlide?.layoutType === 'split-right' || (!activeSlide?.layoutType && !activeSlide?.diagramType),
+                      },
+                      {
+                        value: 'split-left',
+                        label: 'Split Left',
+                        emoji: '▪⬛',
+                        tag: 'Visual',
+                        apply: () => updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'split-left', diagramType: null }),
+                        isActive: activeSlide?.layoutType === 'split-left',
+                      },
+                      {
+                        value: 'stat-card',
+                        label: 'KPI Stat Cards',
+                        emoji: '📊',
+                        tag: 'Data',
+                        apply: () =>
+                          updateSlideMut.mutate({
+                            id: activeSlide.id,
+                            layoutType: 'stat-card',
+                            diagramType: 'stats',
+                            diagramData:
+                              activeSlide.diagramData ||
+                              JSON.stringify({
+                                stats: [
+                                  { value: '10x', label: 'Speed Multiplier' },
+                                  { value: '99.9%', label: 'System SLA' },
+                                  { value: '$4.2M', label: 'ARR Milestone' },
+                                ],
+                              }),
+                          }),
+                        isActive: activeSlide?.layoutType === 'stat-card' || activeSlide?.diagramType === 'stats',
+                      },
+                      {
+                        value: 'flow',
+                        label: 'Process Flow',
+                        emoji: '🔄',
+                        tag: 'Process',
+                        apply: () =>
+                          updateSlideMut.mutate({
+                            id: activeSlide.id,
+                            layoutType: 'diagram',
+                            diagramType: 'flow',
+                            diagramData:
+                              activeSlide.diagramData ||
+                              JSON.stringify({
+                                steps: [
+                                  '1. Strategic Discovery',
+                                  '2. Autonomous Execution',
+                                  '3. Global Rollout',
+                                ],
+                              }),
+                          }),
+                        isActive: activeSlide?.diagramType === 'flow',
+                      },
+                      {
+                        value: 'comparison',
+                        label: 'Comparison',
+                        emoji: '⚖️',
+                        tag: 'Analysis',
+                        apply: () =>
+                          updateSlideMut.mutate({
+                            id: activeSlide.id,
+                            layoutType: 'diagram',
+                            diagramType: 'comparison',
+                            diagramData:
+                              activeSlide.diagramData ||
+                              JSON.stringify({
+                                left: { label: 'Legacy Manual', points: ['High latency', 'Manual formatting'] },
+                                right: { label: 'PPT.ai Engine', points: ['Instant AI output', 'Deterministic vector'] },
+                              }),
+                          }),
+                        isActive: activeSlide?.diagramType === 'comparison',
+                      },
+                      {
+                        value: 'bento',
+                        label: 'Bento Matrix',
+                        emoji: '🍱',
+                        tag: 'Grid',
+                        apply: () =>
+                          updateSlideMut.mutate({
+                            id: activeSlide.id,
+                            layoutType: 'bento',
+                            diagramType: 'bento',
+                            diagramData:
+                              activeSlide.diagramData ||
+                              JSON.stringify({
+                                items: [
+                                  { title: 'Deterministic Engine', desc: 'Zero visual overlap architecture.', tag: 'Core' },
+                                  { title: '4K Vector Clarity', desc: 'Native shapes with infinite zoom.', tag: 'Vector' },
+                                  { title: 'Sub-10s Generation', desc: 'Asynchronous streaming pipelines.', tag: 'Speed' },
+                                ],
+                              }),
+                          }),
+                        isActive: activeSlide?.layoutType === 'bento' || activeSlide?.diagramType === 'bento',
+                      },
+                      {
+                        value: 'text-only',
+                        label: 'Quote / Callout',
+                        emoji: '📝',
+                        tag: 'Quote',
+                        apply: () => updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'text-only', diagramType: null }),
+                        isActive: activeSlide?.layoutType === 'text-only',
+                      },
                     ].map((layout) => (
                       <button
                         key={layout.value}
-                        className="flex flex-col items-center gap-2 p-3 rounded-xl border border-white/5 bg-[#10131B] hover:bg-pink-500/10 hover:border-pink-500/30 transition-all text-slate-300 hover:text-white"
-                        onClick={() => toast.success(`Layout changed to ${layout.label}`)}
+                        type="button"
+                        onClick={() => {
+                          if (!activeSlide) return
+                          layout.apply()
+                          toast.success(`Layout changed to ${layout.label}`)
+                        }}
+                        className={`flex flex-col items-start p-2.5 rounded-xl border text-left transition-all relative ${
+                          layout.isActive
+                            ? 'border-cyan-400 bg-cyan-500/15 shadow-[0_0_15px_rgba(6,182,212,0.2)] ring-1 ring-cyan-400/50 text-white'
+                            : 'border-white/5 bg-[#10131B] hover:bg-[#151924] hover:border-white/15 text-slate-300'
+                        }`}
                       >
-                        <span className="text-xl">{layout.emoji}</span>
-                        <span className="text-[10px] text-center font-medium">{layout.label}</span>
+                        <div className="w-full flex items-center justify-between mb-1.5">
+                          <span className="text-lg">{layout.emoji}</span>
+                          <span className="text-[8px] font-mono px-1 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">
+                            {layout.tag}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-bold font-display line-clamp-1">{layout.label}</span>
                       </button>
                     ))}
                   </div>
@@ -1108,6 +1238,161 @@ function PresentationDetailPage() {
                     ))}
                   </div>
                 </div>
+
+                {/* SLIDE ARCHETYPES */}
+                {activeSlide && (
+                  <div className="pt-4 border-t border-white/5">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-[11px] text-slate-400 uppercase tracking-widest font-bold font-mono">
+                        Slide Layout Archetype
+                      </h3>
+                      <span className="text-[9px] text-cyan-400 font-mono">Slide {activeSlideIndex + 1}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        {
+                          value: 'hero',
+                          label: 'Executive Hero',
+                          emoji: '🎯',
+                          tag: 'Cover',
+                          apply: () => updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'hero', diagramType: null }),
+                          isActive: activeSlide?.layoutType === 'hero',
+                        },
+                        {
+                          value: 'split-right',
+                          label: 'Split Right',
+                          emoji: '⬛▪',
+                          tag: 'Visual',
+                          apply: () => updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'split-right', diagramType: null }),
+                          isActive: activeSlide?.layoutType === 'split-right' || (!activeSlide?.layoutType && !activeSlide?.diagramType),
+                        },
+                        {
+                          value: 'split-left',
+                          label: 'Split Left',
+                          emoji: '▪⬛',
+                          tag: 'Visual',
+                          apply: () => updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'split-left', diagramType: null }),
+                          isActive: activeSlide?.layoutType === 'split-left',
+                        },
+                        {
+                          value: 'stat-card',
+                          label: 'KPI Stat Cards',
+                          emoji: '📊',
+                          tag: 'Data',
+                          apply: () =>
+                            updateSlideMut.mutate({
+                              id: activeSlide.id,
+                              layoutType: 'stat-card',
+                              diagramType: 'stats',
+                              diagramData:
+                                activeSlide.diagramData ||
+                                JSON.stringify({
+                                  stats: [
+                                    { value: '10x', label: 'Speed Multiplier' },
+                                    { value: '99.9%', label: 'System SLA' },
+                                    { value: '$4.2M', label: 'ARR Milestone' },
+                                  ],
+                                }),
+                            }),
+                          isActive: activeSlide?.layoutType === 'stat-card' || activeSlide?.diagramType === 'stats',
+                        },
+                        {
+                          value: 'flow',
+                          label: 'Process Flow',
+                          emoji: '🔄',
+                          tag: 'Process',
+                          apply: () =>
+                            updateSlideMut.mutate({
+                              id: activeSlide.id,
+                              layoutType: 'diagram',
+                              diagramType: 'flow',
+                              diagramData:
+                                activeSlide.diagramData ||
+                                JSON.stringify({
+                                  steps: [
+                                    '1. Strategic Discovery',
+                                    '2. Autonomous Execution',
+                                    '3. Global Rollout',
+                                  ],
+                                }),
+                            }),
+                          isActive: activeSlide?.diagramType === 'flow',
+                        },
+                        {
+                          value: 'comparison',
+                          label: 'Comparison',
+                          emoji: '⚖️',
+                          tag: 'Analysis',
+                          apply: () =>
+                            updateSlideMut.mutate({
+                              id: activeSlide.id,
+                              layoutType: 'diagram',
+                              diagramType: 'comparison',
+                              diagramData:
+                                activeSlide.diagramData ||
+                                JSON.stringify({
+                                  left: { label: 'Legacy Manual', points: ['High latency', 'Manual formatting'] },
+                                  right: { label: 'PPT.ai Engine', points: ['Instant AI output', 'Deterministic vector'] },
+                                }),
+                            }),
+                          isActive: activeSlide?.diagramType === 'comparison',
+                        },
+                        {
+                          value: 'bento',
+                          label: 'Bento Matrix',
+                          emoji: '🍱',
+                          tag: 'Grid',
+                          apply: () =>
+                            updateSlideMut.mutate({
+                              id: activeSlide.id,
+                              layoutType: 'bento',
+                              diagramType: 'bento',
+                              diagramData:
+                                activeSlide.diagramData ||
+                                JSON.stringify({
+                                  items: [
+                                    { title: 'Deterministic Engine', desc: 'Zero visual overlap architecture.', tag: 'Core' },
+                                    { title: '4K Vector Clarity', desc: 'Native shapes with infinite zoom.', tag: 'Vector' },
+                                    { title: 'Sub-10s Generation', desc: 'Asynchronous streaming pipelines.', tag: 'Speed' },
+                                  ],
+                                }),
+                            }),
+                          isActive: activeSlide?.layoutType === 'bento' || activeSlide?.diagramType === 'bento',
+                        },
+                        {
+                          value: 'text-only',
+                          label: 'Quote / Callout',
+                          emoji: '📝',
+                          tag: 'Quote',
+                          apply: () => updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'text-only', diagramType: null }),
+                          isActive: activeSlide?.layoutType === 'text-only',
+                        },
+                      ].map((layout) => (
+                        <button
+                          key={layout.value}
+                          type="button"
+                          onClick={() => {
+                            layout.apply()
+                            toast.success(`Layout converted to ${layout.label}`)
+                          }}
+                          className={`flex flex-col items-start p-2.5 rounded-xl border text-left transition-all relative ${
+                            layout.isActive
+                              ? 'border-cyan-400 bg-cyan-500/15 shadow-[0_0_15px_rgba(6,182,212,0.2)] ring-1 ring-cyan-400/50 text-white'
+                              : 'border-white/5 bg-[#0F131C] hover:bg-[#151924] hover:border-white/15 text-slate-300'
+                          }`}
+                        >
+                          <div className="w-full flex items-center justify-between mb-1.5">
+                            <span className="text-base">{layout.emoji}</span>
+                            <span className="text-[8px] font-mono px-1 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">
+                              {layout.tag}
+                            </span>
+                          </div>
+                          <span className="text-[11px] font-bold font-display line-clamp-1">{layout.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
