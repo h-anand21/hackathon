@@ -10,6 +10,10 @@ import {
   presentationIdInputSchema,
   updatePresentationInputSchema,
   updateSlideInputSchema,
+  createSlideInputSchema,
+  duplicateSlideInputSchema,
+  deleteSlideInputSchema,
+  reorderSlideInputSchema,
 } from '../types/schemas'
 
 export const createPresentation = createServerFn({ method: 'POST' })
@@ -103,3 +107,92 @@ export const updateSlide = createServerFn({ method: 'POST' })
     const { id, ...patch } = data
     return prisma.slide.update({ where: { id }, data: patch })
   })
+
+export const createSlide = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) => createSlideInputSchema.parse(data))
+  .handler(async ({ data }) => {
+    await requirePresentationUserId()
+    const count = await prisma.slide.count({
+      where: { presentationId: data.presentationId },
+    })
+    const order = data.order ?? count
+    return prisma.slide.create({
+      data: {
+        presentationId: data.presentationId,
+        title: data.title,
+        content: data.content,
+        layoutType: data.layoutType,
+        diagramType: data.diagramType ?? null,
+        diagramData: data.diagramData ?? null,
+        order,
+      },
+    })
+  })
+
+export const duplicateSlide = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) => duplicateSlideInputSchema.parse(data))
+  .handler(async ({ data }) => {
+    await requirePresentationUserId()
+    const original = await prisma.slide.findUnique({
+      where: { id: data.slideId },
+    })
+    if (!original) throw new Error('Slide not found')
+
+    return prisma.slide.create({
+      data: {
+        presentationId: original.presentationId,
+        title: `${original.title} (Copy)`,
+        content: original.content,
+        notes: original.notes,
+        imageUrl: original.imageUrl,
+        imageStyle: original.imageStyle,
+        imagePrompt: original.imagePrompt,
+        layoutType: original.layoutType,
+        diagramType: original.diagramType,
+        diagramData: original.diagramData,
+        order: original.order + 1,
+      },
+    })
+  })
+
+export const deleteSlide = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) => deleteSlideInputSchema.parse(data))
+  .handler(async ({ data }) => {
+    await requirePresentationUserId()
+    return prisma.slide.delete({
+      where: { id: data.slideId },
+    })
+  })
+
+export const reorderSlide = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) => reorderSlideInputSchema.parse(data))
+  .handler(async ({ data }) => {
+    await requirePresentationUserId()
+    const slides = await prisma.slide.findMany({
+      where: { presentationId: data.presentationId },
+      orderBy: { order: 'asc' },
+    })
+
+    const index = slides.findIndex((s) => s.id === data.slideId)
+    if (index === -1) throw new Error('Slide not found')
+
+    const targetIndex = data.direction === 'up' ? index - 1 : index + 1
+    if (targetIndex < 0 || targetIndex >= slides.length) return { ok: true }
+
+    const currentSlide = slides[index]
+    const targetSlide = slides[targetIndex]
+
+    await prisma.$transaction([
+      prisma.slide.update({
+        where: { id: currentSlide.id },
+        data: { order: targetSlide.order },
+      }),
+      prisma.slide.update({
+        where: { id: targetSlide.id },
+        data: { order: currentSlide.order },
+      }),
+    ])
+
+    return { ok: true }
+  })
+

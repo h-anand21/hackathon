@@ -9,6 +9,7 @@ import {
 import { GenerationStatus } from '#/features/presentations/components/generation-status'
 import { SlideCard } from '#/features/presentations/components/slide-card'
 import { SlidePreview } from '#/features/presentations/components/slide-preview'
+import { AddSlideDialog } from '#/features/presentations/components/add-slide-dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -128,9 +129,10 @@ function PresentationDetailPage() {
   const [showSlideshow, setShowSlideshow] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [rightTab, setRightTab] = useState<RightPanelTab>('theme')
-  const [activeTheme, setActiveTheme] = useState('dark-slate')
+  const [activeTheme, setActiveTheme] = useState('obsidian-neon')
   const [activeLeftTab, setActiveLeftTab] = useState('slides')
   const [zoomLevel, setZoomLevel] = useState(1)
+  const [showAddSlideModal, setShowAddSlideModal] = useState(false)
   // Content editing state (synced to active slide)
   const [editTitle, setEditTitle] = useState('')
   const [editContent, setEditContent] = useState('')
@@ -160,11 +162,40 @@ function PresentationDetailPage() {
     setForm,
     updateMut,
     updateSlideMut,
+    createSlideMut,
+    duplicateSlideMut,
+    deleteSlideMut,
+    reorderSlideMut,
     regenerateMut,
     deleteMut,
   } = usePresentationDetail(presentationId, {
     onDeleted: () => navigate({ to: '/' }),
   })
+
+  // Keyboard Shortcuts for Pro Canvas Navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger when typing in inputs/textareas
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return
+      if (canvasEditing) return
+
+      if (e.key === 'ArrowRight' || e.key === 'j' || e.key === 'PageDown') {
+        e.preventDefault()
+        setActiveSlideIndex((prev) => Math.min(slides.length - 1, prev + 1))
+      } else if (e.key === 'ArrowLeft' || e.key === 'k' || e.key === 'PageUp') {
+        e.preventDefault()
+        setActiveSlideIndex((prev) => Math.max(0, prev - 1))
+      } else if (e.key === 'f' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault()
+        setShowSlideshow(true)
+      } else if (e.key === 'Escape') {
+        setCanvasEditing(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [slides.length, canvasEditing])
 
   const presentationContext = useMemo(() => {
     return slides.map((s, i) => `Slide ${i + 1}:\nTitle: ${s.title}\nContent: ${s.content}`).join('\n\n')
@@ -377,31 +408,53 @@ function PresentationDetailPage() {
                   Slides <span className="text-slate-600 font-normal">({slides.length})</span>
                 </span>
               </div>
-              <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-white/10">
+              <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-2.5 scrollbar-thin scrollbar-thumb-white/10">
                 {slides.map((slide, i) => (
                   <SlideCard
                     key={slide.id}
                     slide={slide}
                     isActive={i === activeSlideIndex}
                     onClick={() => setActiveSlideIndex(i)}
+                    onDuplicate={() => duplicateSlideMut.mutate(slide.id)}
+                    onDelete={() => {
+                      if (slides.length <= 1) {
+                        toast.error('A presentation must have at least one slide.')
+                        return
+                      }
+                      deleteSlideMut.mutate(slide.id, {
+                        onSuccess: () => {
+                          if (activeSlideIndex >= slides.length - 1) {
+                            setActiveSlideIndex(Math.max(0, slides.length - 2))
+                          }
+                        }
+                      })
+                    }}
+                    onMoveUp={() => reorderSlideMut.mutate({ slideId: slide.id, direction: 'up' })}
+                    onMoveDown={() => reorderSlideMut.mutate({ slideId: slide.id, direction: 'down' })}
+                    isFirst={i === 0}
+                    isLast={i === slides.length - 1}
                     index={i + 1}
                   />
                 ))}
                 {slides.length === 0 && !isGenerating && (
                   <div className="flex flex-col items-center justify-center h-32 text-center px-4">
-                    <p className="text-xs text-slate-500">No slides yet</p>
+                    <p className="text-xs text-slate-500 font-mono">No slides yet</p>
                   </div>
                 )}
                 {isGenerating && (
                   <div className="flex flex-col items-center justify-center h-32 gap-2">
-                    <RefreshCw className="size-5 animate-spin text-blue-500" />
-                    <p className="text-xs text-slate-500">Generating…</p>
+                    <RefreshCw className="size-5 animate-spin text-cyan-400" />
+                    <p className="text-xs text-slate-400 font-mono">Generating slides…</p>
                   </div>
                 )}
                 
-                <button className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-[#FF8A2A]/10 to-[#7C5CFF]/10 hover:from-[#FF8A2A]/20 hover:to-[#7C5CFF]/20 border border-[#FF8A2A]/20 transition-all duration-300 flex items-center justify-center gap-2 text-white text-sm font-medium group shadow-[0_0_15px_rgba(255,138,42,0.1)] hover:shadow-[0_0_25px_rgba(255,138,42,0.2)]" onClick={() => toast.info('Add Slide coming soon')}>
-                  <Sparkles className="size-4 text-[#FF8A2A] group-hover:scale-110 transition-transform" />
-                  Add Slide
+                <button
+                  type="button"
+                  onClick={() => setShowAddSlideModal(true)}
+                  className="w-full mt-4 py-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all duration-300 flex items-center justify-center gap-2 text-cyan-300 text-xs font-bold font-display group shadow-[0_0_15px_rgba(6,182,212,0.1)] hover:shadow-[0_0_25px_rgba(6,182,212,0.25)]"
+                >
+                  <Sparkles className="size-4 text-cyan-400 group-hover:scale-110 transition-transform" />
+                  Add Slide Archetype
                 </button>
               </div>
             </>
@@ -824,42 +877,48 @@ function PresentationDetailPage() {
 
                 {/* Editor Overlay (Moved outside scaled container for proper 100% zoom behavior) */}
                 {canvasEditing && (
-                  <div className="absolute inset-8 z-50 flex flex-col bg-[#090B10]/98 backdrop-blur-xl rounded-[24px] border border-[#FF8A2A]/40 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5">
-                      <span className="text-sm font-bold text-[#FF8A2A] flex items-center gap-2"><Type className="size-4" /> Editing Slide</span>
+                  <div className="absolute inset-8 z-50 flex flex-col bg-[#07090E]/98 backdrop-blur-2xl rounded-[24px] border border-cyan-500/40 shadow-[0_25px_80px_rgba(0,0,0,0.8)] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02]">
+                      <span className="text-sm font-bold font-display text-cyan-400 flex items-center gap-2">
+                        <Type className="size-4" /> Editing Slide Content
+                      </span>
                       <div className="flex gap-3">
                         <button
-                          className="text-sm px-4 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+                          className="text-xs font-semibold px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
                           onClick={() => setCanvasEditing(false)}
-                        >Cancel</button>
+                        >
+                          Cancel
+                        </button>
                         <button
-                          className="text-sm px-4 py-1.5 rounded-xl bg-[#FF8A2A] hover:bg-orange-500 text-white font-bold transition-colors"
+                          className="text-xs px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold font-display transition-colors shadow-[0_0_15px_rgba(6,182,212,0.4)]"
                           onClick={() => {
                             if (!activeSlide) return
                             updateSlideMut.mutate(
                               { id: activeSlide.id, title: canvasTitle, content: canvasContent, imagePrompt: canvasImagePrompt, imageStyle: canvasImageStyle },
-                              { onSuccess: () => { setCanvasEditing(false); toast.success('Slide saved!') } }
+                              { onSuccess: () => { setCanvasEditing(false); toast.success('Slide updated!') } }
                             )
                           }}
-                        >{updateSlideMut.isPending ? 'Saving…' : 'Save Changes'}</button>
+                        >
+                          {updateSlideMut.isPending ? 'Saving…' : 'Save Changes'}
+                        </button>
                       </div>
                     </div>
                     <div className="flex-1 flex flex-col gap-6 p-6 overflow-auto">
                       <div>
-                        <label className="text-xs text-slate-400 uppercase tracking-widest font-bold block mb-2">Slide Title</label>
+                        <label className="text-xs text-slate-400 uppercase tracking-widest font-bold font-mono block mb-2">Slide Title</label>
                         <input
                           autoFocus
                           value={canvasTitle}
                           onChange={(e) => setCanvasTitle(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 focus:border-[#FF8A2A] rounded-xl px-4 py-3 text-2xl font-bold text-white focus:outline-none transition-colors"
+                          className="w-full bg-white/5 border border-white/10 focus:border-cyan-400 rounded-xl px-4 py-3 text-xl font-bold font-display text-white focus:outline-none transition-colors"
                         />
                       </div>
                       <div className="flex-1 min-h-[200px]">
-                        <label className="text-xs text-slate-400 uppercase tracking-widest font-bold block mb-2">Content (one bullet per line)</label>
+                        <label className="text-xs text-slate-400 uppercase tracking-widest font-bold font-mono block mb-2">Content (one bullet per line)</label>
                         <textarea
                           value={canvasContent}
                           onChange={(e) => setCanvasContent(e.target.value)}
-                          className="w-full h-full bg-white/5 border border-white/10 focus:border-[#FF8A2A] rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none resize-none transition-colors leading-relaxed"
+                          className="w-full h-full bg-white/5 border border-white/10 focus:border-cyan-400 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none resize-none transition-colors leading-relaxed font-sans"
                         />
                       </div>
                       <div className="pt-4 border-t border-white/10">
@@ -905,34 +964,73 @@ function PresentationDetailPage() {
 
               </div>
 
-              {/* Nav controls */}
-              <div className="h-14 flex items-center justify-between px-6 border-t border-white/5 bg-[#0A0C11]/80 backdrop-blur-md flex-shrink-0 relative z-20">
-                <div className="flex items-center gap-4">
+              {/* Pro Studio Dock bar */}
+              <div className="h-14 flex items-center justify-between px-6 border-t border-white/5 bg-[#0A0C11]/90 backdrop-blur-xl flex-shrink-0 relative z-20">
+                {/* Slide Nav */}
+                <div className="flex items-center gap-2">
                   <Button
-                    variant="ghost" size="sm" className="rounded-lg gap-2 text-slate-400 hover:text-[#FF8A2A] hover:bg-[#FF8A2A]/10 transition-colors"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2.5 rounded-lg gap-1.5 text-slate-400 hover:text-cyan-300 hover:bg-cyan-500/10 transition-colors"
                     disabled={activeSlideIndex === 0}
                     onClick={() => setActiveSlideIndex((i) => Math.max(0, i - 1))}
+                    title="Previous Slide (Left Arrow or K)"
                   >
                     <ChevronLeft className="size-4" />
+                    <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">K</span>
                   </Button>
-                  <span className="text-xs font-medium text-slate-300 min-w-[80px] text-center tracking-wide">
-                    Slide {activeSlideIndex + 1} of {slides.length}
-                  </span>
+                  <div className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-mono font-semibold text-slate-200 min-w-[100px] text-center tracking-tight">
+                    {activeSlideIndex + 1} / {slides.length}
+                  </div>
                   <Button
-                    variant="ghost" size="sm" className="rounded-lg gap-2 text-slate-400 hover:text-[#FF8A2A] hover:bg-[#FF8A2A]/10 transition-colors"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2.5 rounded-lg gap-1.5 text-slate-400 hover:text-cyan-300 hover:bg-cyan-500/10 transition-colors"
                     disabled={activeSlideIndex >= slides.length - 1}
                     onClick={() => setActiveSlideIndex((i) => Math.min(slides.length - 1, i + 1))}
+                    title="Next Slide (Right Arrow or J)"
                   >
+                    <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">J</span>
                     <ChevronRight className="size-4" />
                   </Button>
                 </div>
-                
+
+                {/* Quick Actions Center */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowAddSlideModal(true)}
+                    className="h-8 rounded-lg gap-1.5 border-white/10 bg-white/5 hover:bg-cyan-500/15 hover:border-cyan-500/30 text-slate-300 hover:text-cyan-300 text-xs font-display"
+                  >
+                    <Sparkles className="size-3.5 text-cyan-400" />
+                    Add Slide
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setShowSlideshow(true)}
+                    className="h-8 rounded-lg gap-1.5 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-[0_0_15px_rgba(6,182,212,0.35)]"
+                  >
+                    <Play className="size-3.5 fill-black" />
+                    Present <span className="text-[10px] font-mono opacity-60">F</span>
+                  </Button>
+                </div>
+
+                {/* Zoom Controls */}
                 <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1 border border-white/5">
-                  {['50%', '75%', '100%', '125%', 'Fit Screen'].map((zoom, idx) => {
-                    const value = zoom === 'Fit Screen' ? 1 : parseInt(zoom) / 100
+                  {['50%', '75%', '100%', '125%', 'Fit'].map((zoom, idx) => {
+                    const value = zoom === 'Fit' ? 1 : parseInt(zoom) / 100
                     const isActive = zoomLevel === value
                     return (
-                      <button key={idx} className={`px-3 py-1.5 text-[10px] font-medium rounded-md transition-colors ${isActive ? 'bg-[#FF8A2A] text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-white/10'}`} onClick={() => setZoomLevel(value)}>
+                      <button
+                        key={idx}
+                        className={`px-2.5 py-1 text-[10px] font-mono font-medium rounded-md transition-colors ${
+                          isActive
+                            ? 'bg-cyan-500 text-black font-bold shadow-sm'
+                            : 'text-slate-400 hover:text-white hover:bg-white/10'
+                        }`}
+                        onClick={() => setZoomLevel(value)}
+                      >
                         {zoom}
                       </button>
                     )
@@ -1121,6 +1219,23 @@ function PresentationDetailPage() {
           onClose={() => setShowSlideshow(false)}
         />
       )}
+
+      <AddSlideDialog
+        open={showAddSlideModal}
+        onOpenChange={setShowAddSlideModal}
+        onAddSlide={(data) => {
+          createSlideMut.mutate(data, {
+            onSuccess: (newSlide: any) => {
+              if (newSlide?.id) {
+                // Select newly created slide
+                const newIndex = slides.length
+                setActiveSlideIndex(newIndex)
+              }
+            }
+          })
+        }}
+        isPending={createSlideMut.isPending}
+      />
     </div>
   )
 }

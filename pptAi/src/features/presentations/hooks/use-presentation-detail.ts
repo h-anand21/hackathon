@@ -10,6 +10,10 @@ import {
   regeneratePresentation,
   updatePresentation,
   updateSlide,
+  createSlide,
+  duplicateSlide,
+  deleteSlide,
+  reorderSlide,
 } from '../actions/presentation-mutations'
 
 type SettingsForm = {
@@ -83,8 +87,18 @@ export function usePresentationDetail(
   })
 
   const updateSlideMut = useMutation({
-    mutationFn: (vars: { id: string; title?: string; content?: string; notes?: string; imageUrl?: string | null; imagePrompt?: string | null; imageStyle?: string | null }) =>
-      updateSlide({ data: vars }),
+    mutationFn: (vars: {
+      id: string
+      title?: string
+      content?: string
+      notes?: string
+      imageUrl?: string | null
+      imagePrompt?: string | null
+      imageStyle?: string | null
+      layoutType?: string | null
+      diagramType?: string | null
+      diagramData?: string | null
+    }) => updateSlide({ data: vars }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: presentationQueryKeys.detail(presentationId),
@@ -92,6 +106,65 @@ export function usePresentationDetail(
     },
     onError: (e) => {
       toast.error(e instanceof Error ? e.message : 'Could not save slide')
+    },
+  })
+
+  const createSlideMut = useMutation({
+    mutationFn: (vars: {
+      title: string
+      content: string
+      layoutType: string
+      diagramType?: string | null
+      diagramData?: string | null
+      order?: number
+    }) => createSlide({ data: { ...vars, presentationId } }),
+    onSuccess: () => {
+      toast.success('Slide inserted')
+      queryClient.invalidateQueries({
+        queryKey: presentationQueryKeys.detail(presentationId),
+      })
+    },
+    onError: (e) => {
+      toast.error(e instanceof Error ? e.message : 'Could not create slide')
+    },
+  })
+
+  const duplicateSlideMut = useMutation({
+    mutationFn: (slideId: string) => duplicateSlide({ data: { slideId } }),
+    onSuccess: () => {
+      toast.success('Slide duplicated')
+      queryClient.invalidateQueries({
+        queryKey: presentationQueryKeys.detail(presentationId),
+      })
+    },
+    onError: (e) => {
+      toast.error(e instanceof Error ? e.message : 'Could not duplicate slide')
+    },
+  })
+
+  const deleteSlideMut = useMutation({
+    mutationFn: (slideId: string) => deleteSlide({ data: { slideId } }),
+    onSuccess: () => {
+      toast.success('Slide deleted')
+      queryClient.invalidateQueries({
+        queryKey: presentationQueryKeys.detail(presentationId),
+      })
+    },
+    onError: (e) => {
+      toast.error(e instanceof Error ? e.message : 'Could not delete slide')
+    },
+  })
+
+  const reorderSlideMut = useMutation({
+    mutationFn: (vars: { slideId: string; direction: 'up' | 'down' }) =>
+      reorderSlide({ data: { ...vars, presentationId } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: presentationQueryKeys.detail(presentationId),
+      })
+    },
+    onError: (e) => {
+      toast.error(e instanceof Error ? e.message : 'Could not reorder slide')
     },
   })
 
@@ -143,8 +216,13 @@ export function usePresentationDetail(
     setForm,
     updateMut,
     updateSlideMut,
+    createSlideMut,
+    duplicateSlideMut,
+    deleteSlideMut,
+    reorderSlideMut,
     regenerateMut,
     deleteMut,
   }
 }
+
 
