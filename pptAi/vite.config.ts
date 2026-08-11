@@ -17,7 +17,17 @@ const config = defineConfig({
     netlify(),
     viteReact()
   ],
+  server: {
+    port: 3000,
+    strictPort: true,
+    watch: {
+      usePolling: true,
+      interval: 100,
+    },
+  },
   optimizeDeps: {
+    entries: ['src/routes/**/*.{ts,tsx}'],
+    holdUntilCrawlEnd: true,
     exclude: [
       '@tanstack/react-router',
       '@tanstack/react-start',
@@ -25,6 +35,11 @@ const config = defineConfig({
       '@tanstack/react-cross-context',
     ],
     include: [
+      'react',
+      'react-dom',
+      'react-dom/client',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
       'defu',
       'nanostores',
       'better-auth',
@@ -32,9 +47,17 @@ const config = defineConfig({
       '@better-fetch/fetch',
       'inngest',
       'ai',
+      '@ai-sdk/react',
       '@ai-sdk/openai',
       'sonner',
       'lucide-react',
+      'clsx',
+      'tailwind-merge',
+      'class-variance-authority',
+      'swiper',
+      'swiper/react',
+      'swiper/modules',
+      'zod',
     ],
   },
   ssr: {
