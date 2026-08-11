@@ -10,6 +10,7 @@ import { GenerationStatus } from '#/features/presentations/components/generation
 import { SlideCard } from '#/features/presentations/components/slide-card'
 import { SlidePreview } from '#/features/presentations/components/slide-preview'
 import { AddSlideDialog } from '#/features/presentations/components/add-slide-dialog'
+import { ShareDialog } from '#/features/presentations/components/share-dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -133,6 +134,7 @@ function PresentationDetailPage() {
   const [activeLeftTab, setActiveLeftTab] = useState('slides')
   const [zoomLevel, setZoomLevel] = useState(1)
   const [showAddSlideModal, setShowAddSlideModal] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   // Content editing state (synced to active slide)
   const [editTitle, setEditTitle] = useState('')
   const [editContent, setEditContent] = useState('')
@@ -242,19 +244,18 @@ function PresentationDetailPage() {
     if (!data || slides.length === 0) return
     setIsExporting(true)
     try {
-      const filename = await exportToPptx({ title: data.title, slides })
+      const filename = await exportToPptx({ title: data.title, slides, theme: activeTheme })
       toast.success(`Exported as ${filename}`)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Export failed')
     } finally {
       setIsExporting(false)
     }
-  }, [query.data, slides])
+  }, [query.data, slides, activeTheme])
 
   const handleShare = useCallback(() => {
-    const url = `${window.location.origin}/view/${presentationId}`
-    navigator.clipboard.writeText(url).then(() => toast.success('Link copied!'))
-  }, [presentationId])
+    setShowShareModal(true)
+  }, [])
 
   if (query.isPending) {
     return (
@@ -320,6 +321,10 @@ function PresentationDetailPage() {
             <Button variant="ghost" size="sm" className="rounded-lg gap-1.5 text-slate-300 hover:text-white" onClick={handleExportPptx} disabled={isExporting}>
               <Download className="size-4" />
               <span className="hidden sm:inline text-xs font-medium">{isExporting ? 'Exporting…' : 'Export'}</span>
+            </Button>
+            <Button variant="ghost" size="sm" className="rounded-lg gap-1.5 text-slate-300 hover:text-white" onClick={handleShare}>
+              <Share2 className="size-4" />
+              <span className="hidden sm:inline text-xs font-medium">Share</span>
             </Button>
             <Button
               size="sm"
@@ -1615,9 +1620,17 @@ function PresentationDetailPage() {
         <SlideshowModal
           slides={slides}
           initialIndex={activeSlideIndex}
+          theme={activeTheme}
           onClose={() => setShowSlideshow(false)}
         />
       )}
+
+      <ShareDialog
+        open={showShareModal}
+        onOpenChange={setShowShareModal}
+        presentationId={presentationId}
+        title={data.title}
+      />
 
       <AddSlideDialog
         open={showAddSlideModal}

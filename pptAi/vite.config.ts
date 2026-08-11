@@ -18,6 +18,12 @@ const config = defineConfig({
     viteReact()
   ],
   optimizeDeps: {
+    exclude: [
+      '@tanstack/react-router',
+      '@tanstack/react-start',
+      '@tanstack/router-core',
+      '@tanstack/react-cross-context',
+    ],
     include: [
       'defu',
       'nanostores',

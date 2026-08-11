@@ -13,15 +13,18 @@ export const auth = betterAuth({
     'https://dootppt.netlify.app',
     process.env.BETTER_AUTH_URL!,
   ].filter(Boolean),
-  socialProviders:{
+  emailAndPassword: {
+    enabled: true,
+  },
+  socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     },
-    github:{
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    }
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID || '',
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+    },
   },
   plugins: [tanstackStartCookies()],
 })

@@ -21,8 +21,10 @@ import {
 import { Slider } from '#/components/ui/slider'
 import { Textarea } from '#/components/ui/textarea'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate, Link } from '@tanstack/react-router'
 import { z } from 'zod'
+import { authClient } from '#/lib/auth-client'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar'
 import { 
   Sparkles, 
   Wand2, 
@@ -48,7 +50,9 @@ import {
   Mail,
   Phone,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  User,
+  LogIn
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
@@ -86,6 +90,12 @@ function HomePage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const search = Route.useSearch()
+  
+  const { data: session } = authClient.useSession()
+  const handleSignOut = async () => {
+    await authClient.signOut()
+    navigate({ to: '/login' })
+  }
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   
@@ -235,6 +245,46 @@ function HomePage() {
           }} />
           <SidebarItem icon={Settings} label="Settings" isOpen={isSidebarOpen} active={activeView === 'settings'} onClick={() => setActiveView('settings')} />
         </nav>
+
+        {/* User Account / Sign In Footer */}
+        <div className="p-3 border-t border-white/5 bg-[#07090D]">
+          {session?.user ? (
+            <div className={`flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/10 ${isSidebarOpen ? '' : 'justify-center'}`}>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Avatar className="size-8 border border-white/15 shrink-0">
+                  <AvatarImage src={session.user.image || undefined} alt={session.user.name} />
+                  <AvatarFallback className="bg-cyan-500/20 text-cyan-300 text-xs font-bold font-mono">
+                    {session.user.name ? session.user.name.slice(0, 2).toUpperCase() : <User className="size-4" />}
+                  </AvatarFallback>
+                </Avatar>
+                {isSidebarOpen && (
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-bold text-white truncate">{session.user.name}</span>
+                    <span className="text-[10px] text-slate-400 truncate">{session.user.email}</span>
+                  </div>
+                )}
+              </div>
+              {isSidebarOpen && (
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                  title="Sign out"
+                >
+                  <LogOut className="size-4" />
+                </button>
+              )}
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs transition-colors shadow-[0_0_12px_rgba(6,182,212,0.3)] ${isSidebarOpen ? 'justify-center' : 'justify-center p-2'}`}
+            >
+              <LogIn className="size-4" />
+              {isSidebarOpen && <span>Sign In / Login</span>}
+            </Link>
+          )}
+        </div>
       </aside>
 
       {/* Main Content Area */}

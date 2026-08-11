@@ -27,12 +27,18 @@ export default function Navbar() {
         <a href="#aiflow" className="text-[13px] text-gray-700 hover:text-gray-900 font-medium transition-colors">AI Generation</a>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <a 
+          href={`${APP_URL}/login`} 
+          className="text-[13px] text-gray-700 hover:text-gray-900 font-medium transition-colors px-2 py-1"
+        >
+          Sign In
+        </a>
         <motion.a 
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           href={APP_URL} 
-          className="hidden sm:inline-flex bg-gray-900 text-white text-[13px] font-medium px-4 sm:px-5 py-2 rounded-full hover:bg-gray-800 shadow-sm"
+          className="inline-flex bg-gray-900 text-white text-[13px] font-medium px-4 sm:px-5 py-2 rounded-full hover:bg-gray-800 shadow-sm"
         >
           Get Started
         </motion.a>
@@ -55,6 +61,7 @@ export default function Navbar() {
           >
             <a href="#features" onClick={() => setMobileOpen(false)} className="text-[15px] text-gray-700 hover:text-gray-900 border-b border-gray-200 py-3 font-medium">Toolkit</a>
             <a href="#aiflow" onClick={() => setMobileOpen(false)} className="text-[15px] text-gray-700 hover:text-gray-900 py-3 font-medium border-b border-gray-200">AI Generation</a>
+            <a href={`${APP_URL}/login`} onClick={() => setMobileOpen(false)} className="text-[15px] text-gray-700 hover:text-gray-900 py-3 font-medium border-b border-gray-200">Sign In</a>
             <a href={APP_URL} className="text-[15px] text-gray-900 hover:text-black py-3 font-medium">Get Started</a>
           </motion.div>
         )}
