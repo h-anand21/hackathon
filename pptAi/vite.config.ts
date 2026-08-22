@@ -61,7 +61,8 @@ const config = defineConfig({
     ],
   },
   ssr: {
-    noExternal: ['pptxgenjs'],
+    // child_process, fs, os are Node-only — keep them out of the client bundle
+    external: ['child_process', 'fs', 'os', 'path'],
   },
 })
 

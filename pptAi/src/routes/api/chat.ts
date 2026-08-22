@@ -1,10 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { streamText } from 'ai'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
 
-const mesh = createOpenAI({
-  baseURL: 'https://api.meshapi.ai/v1',
-  apiKey: process.env.MESH_API_KEY,
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY,
+})
+
+const openai = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 })
 
 export const Route = createFileRoute('/api/chat')({
@@ -16,8 +20,12 @@ export const Route = createFileRoute('/api/chat')({
           console.log("Chat API received body:", body)
           const { messages, context } = body
 
+          const modelToUse = (process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY)
+            ? google('gemini-2.0-flash')
+            : openai('gpt-4o-mini')
+
           const result = await streamText({
-            model: mesh.chat('google/gemini-3.5-flash'),
+            model: modelToUse,
             system: `You are an elite AI Presentation Copilot for PPT.ai.
 The user is currently editing a presentation. You have the full context of their slides and the active slide they are working on.
 

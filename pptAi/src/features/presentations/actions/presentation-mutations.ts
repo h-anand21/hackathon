@@ -18,7 +18,7 @@ import {
 } from '../types/schemas'
 
 export const createPresentation = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => createPresentationInputSchema.parse(data))
+  .validator((data: unknown) => createPresentationInputSchema.parse(data))
   .handler(async ({ data }) => {
     const userId = await requirePresentationUserId()
     const presentation = await prisma.presentation.create({
@@ -48,7 +48,7 @@ export const createPresentation = createServerFn({ method: 'POST' })
   })
 
 export const updatePresentation = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => updatePresentationInputSchema.parse(data))
+  .validator((data: unknown) => updatePresentationInputSchema.parse(data))
   .handler(async ({ data }) => {
     const userId = await requirePresentationUserId()
     const { id, ...patch } = data
@@ -64,7 +64,7 @@ export const updatePresentation = createServerFn({ method: 'POST' })
   })
 
 export const deletePresentation = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => presentationIdInputSchema.parse(data))
+  .validator((data: unknown) => presentationIdInputSchema.parse(data))
   .handler(async ({ data }) => {
     const userId = await requirePresentationUserId()
     const existing = await prisma.presentation.findFirst({
@@ -76,7 +76,7 @@ export const deletePresentation = createServerFn({ method: 'POST' })
   })
 
 export const regeneratePresentation = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => presentationIdInputSchema.parse(data))
+  .validator((data: unknown) => presentationIdInputSchema.parse(data))
   .handler(async ({ data }) => {
     const userId = await requirePresentationUserId()
     const existing = await prisma.presentation.findFirst({
@@ -102,7 +102,7 @@ export const regeneratePresentation = createServerFn({ method: 'POST' })
   })
 
 export const updateSlide = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => updateSlideInputSchema.parse(data))
+  .validator((data: unknown) => updateSlideInputSchema.parse(data))
   .handler(async ({ data }) => {
     await requirePresentationUserId()
     const { id, ...patch } = data
@@ -110,7 +110,7 @@ export const updateSlide = createServerFn({ method: 'POST' })
   })
 
 export const createSlide = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => createSlideInputSchema.parse(data))
+  .validator((data: unknown) => createSlideInputSchema.parse(data))
   .handler(async ({ data }) => {
     await requirePresentationUserId()
     const count = await prisma.slide.count({
@@ -131,7 +131,7 @@ export const createSlide = createServerFn({ method: 'POST' })
   })
 
 export const duplicateSlide = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => duplicateSlideInputSchema.parse(data))
+  .validator((data: unknown) => duplicateSlideInputSchema.parse(data))
   .handler(async ({ data }) => {
     await requirePresentationUserId()
     const original = await prisma.slide.findUnique({
@@ -157,7 +157,7 @@ export const duplicateSlide = createServerFn({ method: 'POST' })
   })
 
 export const deleteSlide = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => deleteSlideInputSchema.parse(data))
+  .validator((data: unknown) => deleteSlideInputSchema.parse(data))
   .handler(async ({ data }) => {
     await requirePresentationUserId()
     return prisma.slide.delete({
@@ -166,7 +166,7 @@ export const deleteSlide = createServerFn({ method: 'POST' })
   })
 
 export const reorderSlide = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => reorderSlideInputSchema.parse(data))
+  .validator((data: unknown) => reorderSlideInputSchema.parse(data))
   .handler(async ({ data }) => {
     await requirePresentationUserId()
     const slides = await prisma.slide.findMany({
@@ -198,7 +198,7 @@ export const reorderSlide = createServerFn({ method: 'POST' })
   })
 
 export const generateSlideImage = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => generateSlideImageInputSchema.parse(data))
+  .validator((data: unknown) => generateSlideImageInputSchema.parse(data))
   .handler(async ({ data }) => {
     await requirePresentationUserId()
     const slide = await prisma.slide.findUnique({
@@ -243,18 +243,14 @@ export const generateSlideImage = createServerFn({ method: 'POST' })
         }
       }
     } catch {
-      // Unsplash fallback
-      const keywords = data.prompt
-        .replace(/[^a-zA-Z0-9\s]/g, ' ')
-        .split(/\s+/)
-        .filter((w) => w.length > 3)
-        .slice(0, 3)
-        .join(',')
-      imageUrl = `https://images.unsplash.com/random/1280x720?${keywords}&auto=format&fit=crop&q=80`
+      const cleanPrompt = data.prompt.replace(/[^\w\s,.-]/g, ' ').trim().slice(0, 180)
+      const seed = Math.floor(Math.random() * 100000)
+      imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt + ', modern 3D vector minimal presentation visual, 16:9 aspect ratio, 4k')}?width=1280&height=720&model=flux&nologo=true&seed=${seed}`
     }
 
     if (!imageUrl) {
-      imageUrl = `https://images.unsplash.com/random/1280x720?tech,modern&auto=format&fit=crop&q=80`
+      const seed = Math.floor(Math.random() * 100000)
+      imageUrl = `https://image.pollinations.ai/prompt/modern%20technology%203D%20abstract%20minimal%20presentation%20visual%2C%2016%3A9%2C%204k?width=1280&height=720&model=flux&nologo=true&seed=${seed}`
     }
 
     return prisma.slide.update({

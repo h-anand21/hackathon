@@ -89,7 +89,6 @@ import {
 import { useCallback, useState, useMemo, useRef, useEffect } from 'react'
 import { toast } from 'sonner'
 import { SlideshowModal } from '#/features/presentations/components/slideshow-modal'
-import { exportToPptx } from '#/features/presentations/lib/export-pptx'
 import { Logo } from '#/components/Logo'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
@@ -169,6 +168,7 @@ function PresentationDetailPage() {
     deleteSlideMut,
     reorderSlideMut,
     regenerateMut,
+    generateSlideImageMut,
     deleteMut,
   } = usePresentationDetail(presentationId, {
     onDeleted: () => navigate({ to: '/' }),
@@ -239,19 +239,36 @@ function PresentationDetailPage() {
 
   const { isFullscreen, toggleFullscreen } = useFullscreen('slide-preview-container')
 
+
   const handleExportPptx = useCallback(async () => {
     const data = query.data
     if (!data || slides.length === 0) return
     setIsExporting(true)
     try {
-      const filename = await exportToPptx({ title: data.title, slides, theme: activeTheme })
-      toast.success(`Exported as ${filename}`)
+      const res = await fetch('/api/export-pptx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ presentationId: data.id, theme: activeTheme }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Export failed' }))
+        throw new Error(err.error ?? 'Export failed')
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${data.title.replace(/[^a-zA-Z0-9_ -]/g, '_')}.pptx`
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success('Presentation exported successfully!')
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Export failed')
     } finally {
       setIsExporting(false)
     }
   }, [query.data, slides, activeTheme])
+
 
   const handleShare = useCallback(() => {
     setShowShareModal(true)
@@ -674,7 +691,7 @@ function PresentationDetailPage() {
                         label: 'Executive Hero',
                         emoji: '🎯',
                         tag: 'Cover',
-                        apply: () => updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'hero', diagramType: null }),
+                        apply: () => activeSlide && updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'hero', diagramType: null }),
                         isActive: activeSlide?.layoutType === 'hero',
                       },
                       {
@@ -682,7 +699,7 @@ function PresentationDetailPage() {
                         label: 'Split Right',
                         emoji: '⬛▪',
                         tag: 'Visual',
-                        apply: () => updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'split-right', diagramType: null }),
+                        apply: () => activeSlide && updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'split-right', diagramType: null }),
                         isActive: activeSlide?.layoutType === 'split-right' || (!activeSlide?.layoutType && !activeSlide?.diagramType),
                       },
                       {
@@ -690,7 +707,7 @@ function PresentationDetailPage() {
                         label: 'Split Left',
                         emoji: '▪⬛',
                         tag: 'Visual',
-                        apply: () => updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'split-left', diagramType: null }),
+                        apply: () => activeSlide && updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'split-left', diagramType: null }),
                         isActive: activeSlide?.layoutType === 'split-left',
                       },
                       {
@@ -699,6 +716,7 @@ function PresentationDetailPage() {
                         emoji: '📊',
                         tag: 'Data',
                         apply: () =>
+                          activeSlide &&
                           updateSlideMut.mutate({
                             id: activeSlide.id,
                             layoutType: 'stat-card',
@@ -721,6 +739,7 @@ function PresentationDetailPage() {
                         emoji: '🔄',
                         tag: 'Process',
                         apply: () =>
+                          activeSlide &&
                           updateSlideMut.mutate({
                             id: activeSlide.id,
                             layoutType: 'diagram',
@@ -743,6 +762,7 @@ function PresentationDetailPage() {
                         emoji: '⚖️',
                         tag: 'Analysis',
                         apply: () =>
+                          activeSlide &&
                           updateSlideMut.mutate({
                             id: activeSlide.id,
                             layoutType: 'diagram',
@@ -762,6 +782,7 @@ function PresentationDetailPage() {
                         emoji: '🍱',
                         tag: 'Grid',
                         apply: () =>
+                          activeSlide &&
                           updateSlideMut.mutate({
                             id: activeSlide.id,
                             layoutType: 'bento',
@@ -783,7 +804,7 @@ function PresentationDetailPage() {
                         label: 'Quote / Callout',
                         emoji: '📝',
                         tag: 'Quote',
-                        apply: () => updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'text-only', diagramType: null }),
+                        apply: () => activeSlide && updateSlideMut.mutate({ id: activeSlide.id, layoutType: 'text-only', diagramType: null }),
                         isActive: activeSlide?.layoutType === 'text-only',
                       },
                     ].map((layout) => (

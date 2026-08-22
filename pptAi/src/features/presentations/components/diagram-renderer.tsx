@@ -169,17 +169,39 @@ export function DiagramRenderer({
 
   // ── COMPARISON (A vs B) ───────────────────────────────────────────────────
   if (diagramType === 'comparison') {
+    const defaultLeft = {
+      label: 'Legacy Approach',
+      tag: 'Traditional',
+      points: ['Manual formatting overhead', 'High latency generation', 'Fragmented tooling'],
+    }
+    const defaultRight = {
+      label: 'PPT.ai Autonomous',
+      tag: 'AI Studio',
+      points: ['Sub-10s instant generation', 'Deterministic 4K vector output', 'Curated taste themes'],
+    }
+
     const data = safeParseJSON<ComparisonData>(diagramData, {
-      left: { label: 'Legacy Approach', tag: 'Traditional', points: [] },
-      right: { label: 'PPT.ai Engine', tag: 'Autonomous', points: [] },
+      left: defaultLeft,
+      right: defaultRight,
     })
+
+    const leftSide = {
+      label: data?.left?.label || defaultLeft.label,
+      tag: data?.left?.tag || defaultLeft.tag,
+      points: data?.left?.points?.length ? data.left.points : defaultLeft.points,
+      isPrimary: false,
+    }
+
+    const rightSide = {
+      label: data?.right?.label || defaultRight.label,
+      tag: data?.right?.tag || defaultRight.tag,
+      points: data?.right?.points?.length ? data.right.points : defaultRight.points,
+      isPrimary: true,
+    }
 
     return (
       <div className="w-full h-full flex items-stretch gap-6 px-10 py-6">
-        {[
-          { ...data.left, isPrimary: false },
-          { ...data.right, isPrimary: true },
-        ].map((side, idx) => (
+        {[leftSide, rightSide].map((side, idx) => (
           <div
             key={idx}
             className="flex-1 rounded-2xl p-6 flex flex-col justify-between backdrop-blur-md transition-all duration-300 relative overflow-hidden"
@@ -208,7 +230,7 @@ export function DiagramRenderer({
                 {side.label}
               </h3>
               <div className="space-y-3">
-                {side.points?.map((pt, i) => (
+                {side.points.map((pt, i) => (
                   <div key={i} className="flex items-start gap-2.5 text-xs">
                     <div
                       className="size-4 rounded-full flex items-center justify-center shrink-0 mt-0.5"
@@ -219,7 +241,7 @@ export function DiagramRenderer({
                     >
                       {side.isPrimary ? <Check className="size-2.5" /> : <X className="size-2.5" />}
                     </div>
-                    <span style={{ color: textPrimary }} className="leading-relaxed">
+                    <span style={{ color: textPrimary }} className="leading-relaxed font-sans">
                       {pt}
                     </span>
                   </div>

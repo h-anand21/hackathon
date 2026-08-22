@@ -1,6 +1,5 @@
 import LoginForm from '@/components/auth/login-form'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Sparkles, Presentation } from 'lucide-react'
 import { z } from 'zod'
 import { Logo } from '#/components/Logo'
 

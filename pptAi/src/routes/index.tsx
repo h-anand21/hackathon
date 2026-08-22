@@ -92,6 +92,9 @@ function HomePage() {
   const search = Route.useSearch()
   
   const { data: session } = authClient.useSession()
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => { setIsMounted(true) }, [])
+
   const handleSignOut = async () => {
     await authClient.signOut()
     navigate({ to: '/login' })
@@ -248,7 +251,12 @@ function HomePage() {
 
         {/* User Account / Sign In Footer */}
         <div className="p-3 border-t border-white/5 bg-[#07090D]">
-          {session?.user ? (
+          {!isMounted ? (
+            // Consistent SSR placeholder — same shape as the logged-in state
+            <div className="flex items-center gap-2 p-2 rounded-xl bg-white/5 border border-white/10">
+              <div className="size-8 rounded-full bg-white/10 shrink-0" />
+            </div>
+          ) : session?.user ? (
             <div className={`flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/10 ${isSidebarOpen ? '' : 'justify-center'}`}>
               <div className="flex items-center gap-2.5 min-w-0">
                 <Avatar className="size-8 border border-white/15 shrink-0">

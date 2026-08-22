@@ -1,4 +1,5 @@
 import { Output, generateText } from 'ai'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
 import { z } from 'zod'
 
@@ -7,9 +8,12 @@ import { uploadImageFromUrl } from '#/lib/imagekit'
 
 import { inngest } from './client'
 
-const mesh = createOpenAI({
-  baseURL: 'https://api.meshapi.ai/v1',
-  apiKey: process.env.MESH_API_KEY,
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY,
+})
+
+const openai = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 })
 
 // ---------------------------------------------------------------------------
@@ -17,14 +21,9 @@ const mesh = createOpenAI({
 // ---------------------------------------------------------------------------
 
 function buildFallbackImageUrl(prompt: string): string {
-  // Use Unsplash source with relevant keywords from the prompt
-  const keywords = prompt
-    .replace(/[^a-zA-Z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w.length > 3)
-    .slice(0, 3)
-    .join(',')
-  return `https://images.unsplash.com/random/1280x720?${keywords}&auto=format&fit=crop&q=80`
+  const cleanPrompt = prompt.replace(/[^\w\s,.-]/g, ' ').trim().slice(0, 180)
+  const seed = Math.floor(Math.random() * 100000)
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt + ', modern 3D vector minimal presentation visual, 16:9 aspect ratio, 4k')}?width=1280&height=720&model=flux&nologo=true&seed=${seed}`
 }
 
 function cleanAndParseJSON(text: string): any {
@@ -70,29 +69,29 @@ const IMAGE_STYLE_MAP: Record<string, string> = {
 }
 
 const slideSchema = z.object({
-  title: z.string().describe('Slide title — short and punchy'),
-  content: z.string().describe('Main content (bullet points or short paragraphs). Use • for bullets.'),
+  title: z.string().describe('Slide title — short, punchy and executive'),
+  content: z.string().describe('Structured content with 2-4 points. Use format: "• Strong Feature Name: Concise descriptive detail"'),
   notes: z.string().optional().describe('Speaker notes for the presenter'),
   layoutType: z
-    .enum(['hero', 'split-right', 'split-left', 'text-only', 'stat-card', 'diagram'])
+    .enum(['hero', 'bento', 'stat-card', 'diagram', 'split-right', 'split-left', 'text-only'])
     .describe(
-      'Layout for this slide. Use "hero" for title/cover slides. Use "split-right" or "split-left" for content slides alternating. Use "text-only" for quotes or key statements. Use "stat-card" for slides with 2-3 big numbers/stats. Use "diagram" for process steps, timelines, comparisons, or how-it-works slides.',
+      'Choose diverse layouts across the deck: "hero" for title & closing; "bento" for 3-part feature grids; "stat-card" for 3 big KPI numbers; "diagram" for flow/comparison; "split-right"/"split-left" for editorial slides.',
     ),
   diagramType: z
     .enum(['flow', 'comparison', 'stats', 'timeline', 'none'])
     .describe(
-      'Only if layoutType is "diagram". Use "flow" for step-by-step processes. Use "comparison" for A vs B. Use "stats" for data/numbers. Use "timeline" for roadmaps. Otherwise "none".',
+      'Only if layoutType is "diagram". Use "flow" for step processes; "comparison" for A vs B; "stats" for data/numbers; "timeline" for milestones; otherwise "none".',
     ),
   diagramData: z
     .string()
     .optional()
     .describe(
-      'JSON string of diagram data. For flow: {"steps":["Step 1","Step 2","Step 3"]}. For comparison: {"left":{"label":"Option A","points":["Fast","Cheap"]},"right":{"label":"Option B","points":["Slow","Expensive"]}}. For stats: {"stats":[{"value":"73%","label":"Users satisfied"},{"value":"3x","label":"Faster results"}]}. For timeline: {"events":[{"year":"2022","label":"Founded"},{"year":"2023","label":"Launch"}]}. Leave empty if diagramType is "none".',
+      'JSON string for diagram. For flow: {"steps":[{"title":"Phase 1","desc":"Ingestion"},{"title":"Phase 2","desc":"Processing"},{"title":"Phase 3","desc":"Output"}]}. For comparison: {"left":{"label":"Legacy Approach","points":["Manual entry","High latency"]},"right":{"label":"AI Platform","points":["Instant pipeline","Real-time sync"]}}. For stats: {"stats":[{"value":"99.9%","label":"Uptime SLA"},{"value":"3.8x","label":"Efficiency Gain"},{"value":"$12M","label":"Cost Saved"}]}. Leave empty if not diagram.',
     ),
   imagePrompt: z
     .string()
     .describe(
-      'ONLY fill if layoutType is NOT "diagram", "text-only", or "stat-card". Describe a VERY SPECIFIC image: include the subject, setting, style, and color. Example: "A diverse team of 3 engineers collaborating over a laptop in a modern office, flat vector illustration, blue and white palette". No generic prompts.',
+      'Specific image prompt if layout is split-right/split-left or hero. Include subject, atmosphere, and modern 3D or vector aesthetic.',
     ),
 })
 
@@ -114,7 +113,7 @@ export async function executePresentationGeneration(presentationId: string) {
 
     const imageStyle = IMAGE_STYLE_MAP[presentation.style] ?? IMAGE_STYLE_MAP.professional
 
-    const systemPrompt = `You are a world-class presentation designer. Create a compelling, visually intelligent presentation.
+    const systemPrompt = `You are a world-class presentation designer at Apple/Linear. Create a visually compelling, diverse, and high-taste presentation deck.
 
 Style: ${presentation.style}
 Tone: ${presentation.tone}
@@ -122,15 +121,12 @@ Layout preference: ${presentation.layout}
 Number of slides: ${presentation.slideCount}
 Image style for this presentation: ${imageStyle}
 
-Rules:
-- Slide 1: ALWAYS use layoutType "hero" (title/cover slide)
-- Slide 2-last: Alternate between "split-right" and "split-left" for content slides
-- Use "stat-card" when the slide is about data, metrics, or numbers
-- Use "diagram" when the slide is about a process, steps, timeline, or comparison — in this case set diagramType and diagramData properly
-- Use "text-only" for impactful quote slides or key statements
-- Last slide: Use "hero" for conclusion/CTA
-- For imagePrompt, be VERY specific. Match the slide topic exactly. Include: subject + setting + style + color palette. Never use generic prompts.
-- For diagram slides, skip imagePrompt (leave it empty) — the diagram IS the visual
+CRITICAL RULES FOR HIGH-TASTE DESIGN:
+1. Diversity of Layouts: NEVER repeat the same layout 3 times in a row. Mix "hero", "bento", "stat-card", "diagram", and "split-right".
+2. Structured Bullet Content: Always use the format "• Headline Title: Concrete benefit and explanation". Avoid vague generic sentences.
+3. Stat Slides: When discussing numbers, metrics, or ROI, ALWAYS use layoutType "stat-card" with 3 big numbers in content (e.g. "• $5.4M: Projected Q4 Revenue\\n• 99.9%: Target Availability\\n• 2.5x: Throughput Multiplier").
+4. Process & Comparison: When explaining workflows or traditional vs modern, use layoutType "diagram" and fill diagramData with rich JSON.
+5. Hero Slides: Slide 1 MUST be "hero" with a punchy title and 2-3 mission highlight pills. The final slide should be "hero" or "bento" for next steps/CTA.
 
 You MUST respond with ONLY a valid JSON object. No markdown, no explanation.
 Schema:
@@ -138,23 +134,35 @@ Schema:
   "slides": [
     {
       "title": "string",
-      "content": "string (use • for bullets)",
+      "content": "string (use • Bold Title: Description)",
       "notes": "string (optional)",
-      "layoutType": "hero|split-right|split-left|text-only|stat-card|diagram",
+      "layoutType": "hero|bento|stat-card|diagram|split-right|split-left|text-only",
       "diagramType": "flow|comparison|stats|timeline|none",
       "diagramData": "JSON string or empty",
-      "imagePrompt": "very specific image description or empty"
+      "imagePrompt": "specific image description"
     }
   ]
 }`
 
-    const result = await generateText({
-      model: mesh.chat('google/gemini-3.5-flash'),
-      system: systemPrompt,
-      prompt: presentation.prompt,
-    })
+    let resultText = ''
+    try {
+      const result = await generateText({
+        model: google('gemini-2.0-flash'),
+        system: systemPrompt,
+        prompt: presentation.prompt,
+      })
+      resultText = result.text
+    } catch (geminiErr) {
+      console.warn('Gemini generation failed, falling back to OpenAI gpt-4o-mini...', geminiErr)
+      const result = await generateText({
+        model: openai('gpt-4o-mini'),
+        system: systemPrompt,
+        prompt: presentation.prompt,
+      })
+      resultText = result.text
+    }
 
-    const rawJson = cleanAndParseJSON(result.text)
+    const rawJson = cleanAndParseJSON(resultText)
     const { slides } = slidesResponseSchema.parse(rawJson)
 
     await prisma.slide.deleteMany({

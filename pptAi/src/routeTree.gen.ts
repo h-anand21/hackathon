@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ViewPresentationIdRouteImport } from './routes/view.$presentationId'
 import { Route as PresentationsPresentationIdRouteImport } from './routes/presentations.$presentationId'
 import { Route as ApiInngestRouteImport } from './routes/api/inngest'
+import { Route as ApiExportPptxRouteImport } from './routes/api/export-pptx'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -49,6 +50,11 @@ const ApiInngestRoute = ApiInngestRouteImport.update({
   path: '/api/inngest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExportPptxRoute = ApiExportPptxRouteImport.update({
+  id: '/api/export-pptx',
+  path: '/api/export-pptx',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/login': typeof AuthLoginRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/export-pptx': typeof ApiExportPptxRoute
   '/api/inngest': typeof ApiInngestRoute
   '/presentations/$presentationId': typeof PresentationsPresentationIdRoute
   '/view/$presentationId': typeof ViewPresentationIdRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/login': typeof AuthLoginRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/export-pptx': typeof ApiExportPptxRoute
   '/api/inngest': typeof ApiInngestRoute
   '/presentations/$presentationId': typeof PresentationsPresentationIdRoute
   '/view/$presentationId': typeof ViewPresentationIdRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/_auth/login': typeof AuthLoginRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/export-pptx': typeof ApiExportPptxRoute
   '/api/inngest': typeof ApiInngestRoute
   '/presentations/$presentationId': typeof PresentationsPresentationIdRoute
   '/view/$presentationId': typeof ViewPresentationIdRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/api/chat'
+    | '/api/export-pptx'
     | '/api/inngest'
     | '/presentations/$presentationId'
     | '/view/$presentationId'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/api/chat'
+    | '/api/export-pptx'
     | '/api/inngest'
     | '/presentations/$presentationId'
     | '/view/$presentationId'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/_auth/login'
     | '/api/chat'
+    | '/api/export-pptx'
     | '/api/inngest'
     | '/presentations/$presentationId'
     | '/view/$presentationId'
@@ -136,6 +148,7 @@ export interface RootRouteChildren {
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiExportPptxRoute: typeof ApiExportPptxRoute
   ApiInngestRoute: typeof ApiInngestRoute
   PresentationsPresentationIdRoute: typeof PresentationsPresentationIdRoute
   ViewPresentationIdRoute: typeof ViewPresentationIdRoute
@@ -186,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiInngestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/export-pptx': {
+      id: '/api/export-pptx'
+      path: '/api/export-pptx'
+      fullPath: '/api/export-pptx'
+      preLoaderRoute: typeof ApiExportPptxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -227,6 +247,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRouteRoute: AuthRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiExportPptxRoute: ApiExportPptxRoute,
   ApiInngestRoute: ApiInngestRoute,
   PresentationsPresentationIdRoute: PresentationsPresentationIdRoute,
   ViewPresentationIdRoute: ViewPresentationIdRoute,
